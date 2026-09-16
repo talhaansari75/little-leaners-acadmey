@@ -1,0 +1,1591 @@
+LITTLE LEARNERS ACADEMY — COMPLETE MASTER BUILD PROMPT
+SOURCE ARCHIVE: little-learners-academy-v94.zip
+
+ROLE
+You are the lead product engineer, full-stack engineer, React/TypeScript engineer, UI/UX designer, preschool learning-game designer, animation designer, accessibility engineer, security engineer, QA engineer, offline/PWA engineer, payment engineer, and release engineer.
+
+I am giving you the complete latest ZIP archive:
+little-learners-academy-v94.zip
+
+Your task is NOT to make a mockup, demo, simplified clone, landing page, or partial rewrite.
+
+Your task is to inspect the COMPLETE ZIP and use it as the authoritative source/blueprint to build the actual complete, polished, playable, deployable application:
+
+LITTLE LEARNERS ACADEMY
+
+The final result must feel like a premium children's learning academy, not a generic dashboard and not a technical prototype.
+
+============================================================
+0. ABSOLUTE RULE — USE THE ENTIRE ZIP
+============================================================
+
+BEFORE CODING, EXTRACT AND INSPECT THE ENTIRE ZIP.
+
+Do not inspect only src/.
+
+You MUST inventory and understand:
+- every source file
+- every React/TS/TSX file
+- every JavaScript/ESM script
+- every JSON file
+- every configuration file
+- every migration/schema
+- every server file
+- every authentication file
+- every payment file
+- every test
+- every Markdown/documentation file
+- every .grok reference/skill file
+- every existing implementation note
+- every image
+- every SVG
+- every WAV/audio file
+- every offline asset
+- every service-worker reference
+- every existing feature
+- every existing route/screen
+- every security rule
+- every persistence rule
+- every learning rule
+- every parent-control rule
+- every deployment requirement
+
+Create an internal feature/file/asset checklist from the ZIP.
+
+Do NOT silently omit anything.
+
+If a file is not directly needed in the browser, still inspect it. It may contain architecture, rules, specifications, tests, design guidance, asset-generation rules, deployment rules, or security requirements.
+
+IMPORTANT:
+The ZIP is the source of truth.
+Do not invent a simpler architecture just because it is easier.
+
+============================================================
+1. ZERO ASSET LOSS — PICTURES AND SOUNDS
+============================================================
+
+THIS IS NON-NEGOTIABLE.
+
+Every existing picture, SVG, raster image, WAV, icon, illustration, worksheet, story image, animal image, word image, guide asset, and other usable media in the ZIP must be preserved.
+
+DO NOT:
+- delete assets
+- replace assets with emoji
+- replace assets with placeholders
+- replace real artwork with CSS rectangles
+- replace real audio with silence
+- replace local audio with remote URLs when local audio exists
+- omit assets because there are many of them
+- rename/move assets in a way that breaks references
+- create a new simplified asset pack and ignore the supplied one
+
+Use the supplied assets wherever they are relevant.
+
+The V94 archive currently contains a large asset library including:
+- 146 SVG files
+- 6 PNG files
+- 6 JPG/JPEG files
+- 32 WAV audio files
+- preschool offline artwork
+- animal illustrations
+- animal sounds
+- story illustrations
+- word illustrations
+- class-specific worksheets
+- class-specific learning audio
+- Academy Magic AI artwork
+- existing Open Graph/banner/favicon/install artwork
+- existing game/UI assets
+
+You MUST programmatically verify that every asset reference resolves to a real file.
+
+Particularly preserve and use:
+- all 100 animal SVG illustrations
+- all 20 animal WAV sounds
+- all 20 story SVG illustrations
+- all 12 word SVG illustrations
+- all class-specific worksheets
+- all Nursery audio
+- all KG audio
+- all Montessori audio
+- Academy Magic AI artwork
+- existing icons and branding assets
+- existing PWA/install assets
+- all other image/audio files anywhere in the archive
+
+The exact file inventory in the archive is authoritative; do not assume the counts above are more important than the actual archive contents.
+
+At the end, run an asset audit:
+1. enumerate all image/audio assets from the source ZIP
+2. enumerate all asset references in code/service worker/data
+3. verify every reference exists
+4. verify no source asset was accidentally dropped
+5. report missing count
+6. missing count MUST be 0
+
+============================================================
+2. DO NOT THROW AWAY EXISTING WORK
+============================================================
+
+Do NOT rebuild from scratch unless absolutely necessary.
+
+Preserve and integrate existing:
+- React application architecture
+- TypeScript architecture
+- TanStack routing/state/query where already used
+- existing game systems
+- existing preschool systems
+- existing authentication
+- Better Auth
+- parent gates
+- parent PIN
+- payment/security systems
+- Stripe server-side checkout
+- webhook/entitlement logic
+- offline/PWA system
+- service worker
+- localStorage persistence
+- cloud sync where available
+- server-authoritative reward logic
+- Smart Learning Brain
+- Smart Journey
+- Academy World
+- Wild Whispers
+- mini games
+- stories
+- worksheets
+- audio
+- class-specific curricula
+- existing tests
+- existing migrations
+- deployment checks
+- accessibility systems
+- existing documentation
+
+Improve weak/unfinished systems instead of deleting them.
+
+If two old systems overlap, integrate them behind a clean user experience.
+
+============================================================
+3. PRODUCT IDENTITY
+============================================================
+
+Product name:
+LITTLE LEARNERS ACADEMY
+
+Tagline:
+LEARN • PLAY • GROW
+
+The app is an English-language preschool learning academy.
+
+It must feel:
+- magical
+- warm
+- safe
+- premium
+- playful
+- educational
+- friendly
+- calm when appropriate
+- rewarding without being addictive
+- easy for a small child to understand
+- useful for parents
+
+Do not make it look like a corporate school-management dashboard.
+
+The child-facing UI must be visual-first.
+
+Use:
+- large touch targets
+- large friendly typography
+- expressive illustrations
+- soft depth
+- rounded cards
+- tasteful motion
+- playful transitions
+- clear icons
+- short English labels
+- minimal reading burden
+- strong visual feedback
+
+Avoid:
+- clutter
+- tiny buttons
+- dense text
+- aggressive monetization
+- frightening imagery
+- public chat
+- exposed child profiles
+- unsafe external navigation
+- confusing menus
+
+============================================================
+4. FIRST IMPRESSION — CINEMATIC OPENING
+============================================================
+
+When the app opens, the FIRST IMPRESSION must be beautiful.
+
+Do not show a boring technical splash screen.
+
+Create a full-screen Academy opening experience using the supplied V94 Academy artwork/assets.
+
+Opening sequence:
+1. Full-screen colorful Academy world.
+2. Soft animated background.
+3. Cute Academy mascot/character presentation.
+4. Little Learners Academy title appears elegantly.
+5. Tagline:
+   LEARN • PLAY • GROW
+6. Gentle sparkles/particles.
+7. Subtle motion/parallax where performance allows.
+8. Three pathway hints:
+   Nursery
+   KG
+   Montessori
+9. Large primary CTA:
+   ENTER THE ACADEMY
+10. Optional small:
+   Tap anywhere to begin
+11. If there is no interaction, continue automatically after a short delay.
+12. Respect reduced-motion settings.
+13. Respect music/audio settings.
+14. Opening must work offline once the PWA/app shell is installed.
+15. It must be fast and mobile-first.
+
+Do not make the opening excessively long.
+
+The opening should communicate:
+“This is a complete magical learning world for little children.”
+
+============================================================
+5. EXACTLY THREE LEARNING PATHWAYS
+============================================================
+
+There are EXACTLY THREE pathways.
+
+1. NURSERY
+2. KG
+3. MONTESSORI
+
+Never create:
+- KG-1
+- KG-2
+- KG1
+- KG2
+
+Do not rename them.
+
+Do not merge them.
+
+Do not show all class activities as one generic list.
+
+Each pathway must have its OWN:
+- curriculum
+- activities
+- difficulty
+- learning goals
+- progress
+- recommendations
+- audio
+- worksheets
+- visual identity
+- world/theme
+- reward logic where appropriate
+- learning data
+- Smart Brain profile
+
+============================================================
+6. CLASS-SPECIFIC VISUAL IDENTITY
+============================================================
+
+NURSERY:
+- brightest and most playful
+- large objects
+- simple interactions
+- big animations
+- minimal text
+- friendly animal/character feel
+
+KG:
+- colorful but more structured
+- richer learning cards
+- slightly more detailed challenges
+- stronger early literacy/numeracy progression
+
+MONTESSORI:
+- calm
+- natural
+- tactile
+- organized
+- beautiful minimalism
+- practical-life and sensorial feel
+- nature-inspired presentation
+
+Do not let Montessori become a copy of Nursery/KG.
+
+============================================================
+7. CORE ACADEMY HOME
+============================================================
+
+After the opening, build a beautiful Academy Home.
+
+The child should immediately understand:
+- Continue Learning
+- Choose Class
+- Today's Mission
+- Stars/XP
+- My Pet
+- Explore
+- Rewards
+- Stories
+- Art
+- Music
+- Parent Area (protected)
+
+Suggested visual hierarchy:
+1. greeting
+2. Continue Learning
+3. three class worlds
+4. today's personalized activity
+5. rewards/pet
+6. discovery areas
+7. safe navigation
+
+Make it feel like entering a magical school.
+
+============================================================
+8. VIRTUAL SCHOOL / ACADEMY WORLD
+============================================================
+
+Build the Academy as a living world.
+
+Include/wire:
+- school building
+- classroom/world areas
+- school bus
+- art studio
+- music room
+- story theater
+- mini science lab
+- feelings/emotions corner
+- daily-life/practical-life area
+- discovery/nature area
+- trophy/certificate area
+- work gallery
+- pet area
+
+IMPORTANT:
+These buttons must NOT be dead UI.
+
+Every major room/button must open a real destination, activity, or functional screen.
+
+Do not merely speak the room title and do nothing.
+
+============================================================
+9. LEARNING CURRICULUM
+============================================================
+
+Preserve all existing preschool learning content and expand it into a coherent curriculum.
+
+Existing learning areas include:
+- ABC
+- phonics
+- letters
+- numbers
+- counting
+- colors
+- shapes
+- animals
+- fruits/vegetables
+- body parts
+- vehicles
+- memory
+- drawing
+- coloring
+- tracing
+- puzzles
+- jigsaw
+- drag and drop
+- sorting
+- opposites
+- patterns
+- simple mathematics
+- listening
+- picture-to-word
+- word-to-picture
+- pronunciation
+- nursery rhymes
+- stories
+- English vocabulary
+- Urdu vocabulary where already present
+- Wild Whispers animal learning
+- worksheets
+- parent progress
+
+Keep the existing learning content.
+
+Then organize it properly by class.
+
+============================================================
+10. NURSERY CURRICULUM
+============================================================
+
+Nursery should emphasize:
+- alphabet recognition
+- basic letter sounds
+- counting 1–10
+- colors
+- basic shapes
+- familiar animals
+- simple vocabulary
+- body parts
+- vehicles
+- manners
+- nursery rhymes
+- tracing
+- coloring
+- simple matching
+- simple sorting
+- listening
+
+Interactions should be simple:
+- tap
+- choose
+- match
+- trace
+- listen
+- drag simple objects
+
+Do not overload Nursery with advanced KG/Montessori work.
+
+Use the supplied Nursery audio and worksheets.
+
+============================================================
+11. KG CURRICULUM
+============================================================
+
+KG should emphasize:
+- phonics
+- CVC words
+- early reading
+- vocabulary
+- numbers/counting
+- basic mathematics
+- patterns
+- shapes
+- sorting
+- memory
+- opposites
+- vehicles
+- stories
+- listening
+- tracing
+- coloring
+- structured puzzles
+
+Use the supplied KG audio and worksheets.
+
+Difficulty should progress naturally.
+
+============================================================
+12. MONTESSORI CURRICULUM
+============================================================
+
+Montessori should emphasize:
+- practical life
+- sensorial activities
+- language
+- mathematics
+- sorting/classification
+- nature
+- fine-motor interaction
+- sequencing
+- pattern recognition
+- observation
+- calm concentration
+- independence
+
+Use the supplied Montessori audio and worksheets.
+
+Do not make Montessori simply “KG but harder.”
+
+============================================================
+13. SMART LEARNING BRAIN
+============================================================
+
+The app must intelligently adapt to the child based on observable interaction data.
+
+This must work offline for core functionality.
+
+Track locally:
+- attempts
+- correct answers
+- incorrect answers
+- completion
+- retries
+- skipped activities
+- time spent
+- hints used
+- activity type
+- skill
+- difficulty
+- recent performance
+- preferred interaction modes
+- streaks
+- mastered skills
+- skills needing practice
+
+DO NOT claim to read a child's mind or emotions.
+
+Use only observable interaction signals.
+
+Recommendations should answer:
+“What should this learner do next?”
+
+Possible actions:
+- practice weak skill
+- review recently learned skill
+- increase difficulty
+- decrease difficulty
+- switch activity type
+- change from picture to audio
+- change from game to story
+- offer hands-on activity
+- offer a short success activity after repeated failures
+
+Class-specific skill mapping MUST be valid.
+
+Never record a skill that does not belong to that class.
+
+============================================================
+14. ADAPTIVE DIFFICULTY
+============================================================
+
+The recommendation engine must actually affect the activity.
+
+If recommendation says:
+- gentle → simpler question/content
+- steady → normal progression
+- challenge → harder variation
+
+Do not merely display a difficulty label.
+
+The activity content itself must change.
+
+Examples:
+- fewer choices vs more choices
+- simpler patterns vs longer patterns
+- easier words vs more complex words
+- smaller/larger grids
+- fewer/more distractors
+- more/less help
+
+Never make difficulty frustrating for preschool children.
+
+============================================================
+15. SMART LEARNING STYLE
+============================================================
+
+Do not decide learning style simply by counting how many times a signal occurred.
+
+Measure actual mode performance where possible:
+- accuracy
+- completion
+- retries
+- hints
+- time
+- quit/skip behavior
+
+Compare:
+- picture
+- audio
+- game
+- story
+- hands-on
+
+Use the result only as a recommendation signal, not as a permanent label.
+
+============================================================
+16. SMART JOURNEY
+============================================================
+
+Smart Journey should:
+- show today's recommended activity
+- explain it in simple child-friendly language
+- launch a REAL activity
+- use the selected class
+- respect class-specific curriculum
+- apply recommended difficulty
+- record the result
+- update progress
+- generate the next recommendation
+
+Never let Smart Journey launch an activity from another class.
+
+============================================================
+17. WILD WHISPERS
+============================================================
+
+Preserve the existing Wild Whispers animal-learning system.
+
+Include:
+- Normal mode
+- Silhouette mode
+- Sound mode
+- Easy/Medium/Hard
+- lives
+- streak
+- animal discovery
+- achievements/trophies
+- nature learning library
+- English/Urdu content where existing
+- sound clues
+- parent progress
+- server-authoritative scoring/lives/streak/discovery
+
+Use ALL supplied animal SVGs and ALL supplied animal WAVs.
+
+Do not replace the local assets.
+
+============================================================
+18. STORIES
+============================================================
+
+Preserve the supplied story artwork.
+
+Build a real Story Theater:
+- story list
+- story cover
+- pages/scenes
+- narration where available
+- tap-to-continue
+- simple questions
+- vocabulary moments
+- completion reward
+- progress
+
+Use every supplied story illustration that is part of the story pack.
+
+============================================================
+19. ART STUDIO
+============================================================
+
+Build a real Art Studio:
+- drawing
+- coloring
+- tracing/art activities
+- simple creative prompts
+- save locally
+- My Work Gallery
+- child-safe interface
+- parent-protected export/share if applicable
+
+Do not expose public child artwork.
+
+Use supplied artwork as inspiration/content where appropriate.
+
+============================================================
+20. MUSIC ROOM
+============================================================
+
+Preserve the existing offline-friendly music/piano functionality.
+
+Include:
+- playable keys
+- clear visual feedback
+- simple melodies
+- sound controls
+- offline operation
+
+Use bundled/local audio where available.
+
+============================================================
+21. MINI GAME ARCADE
+============================================================
+
+Preserve and expose the existing mini games.
+
+Games should reinforce:
+- letters
+- sounds
+- numbers
+- memory
+- sorting
+- patterns
+- matching
+- vocabulary
+- listening
+- fine motor skills
+
+Games must remain class-appropriate.
+
+============================================================
+22. VIRTUAL PET
+============================================================
+
+Build a complete but child-safe local pet loop.
+
+Include:
+- pet selection
+- feed
+- play
+- rest/sleep
+- happiness
+- energy
+- fullness
+- simple care feedback
+- persistent local progress
+- rewards
+
+Avoid manipulative mechanics.
+
+Do not require purchases to keep the pet healthy.
+
+============================================================
+23. REWARDS
+============================================================
+
+Use:
+- stars
+- XP
+- trophies
+- certificates
+- unlocks
+- cosmetic rewards
+- pet rewards
+- room decorations
+
+Rewards should reinforce learning.
+
+Do not create gambling-like mechanics.
+
+Trophies must be tied to actual achievements/skills.
+
+Do not unlock “Math Star” merely because generic XP crossed a threshold.
+
+Examples:
+- ABC Star → demonstrated letter/phonics progress
+- Counting Star → demonstrated number/counting progress
+- Art Star → completed art milestones
+- Story Champion → story milestones
+- Montessori Explorer → Montessori skill milestones
+- Nature Explorer → nature/animal milestones
+- Music Explorer → music milestones
+- Discovery Star → broader discovery milestones
+
+Criteria should be transparent and testable.
+
+============================================================
+24. PROGRESS
+============================================================
+
+Every class must have accurate progress.
+
+Never hard-code one universal denominator if classes have different activity counts.
+
+Progress must be based on actual available class activities/skills.
+
+Show:
+- completed
+- in progress
+- needs practice
+- mastered
+- recommended next
+
+Parent dashboard can show deeper analytics.
+
+============================================================
+25. MISSIONS
+============================================================
+
+Daily mission rewards must be idempotent.
+
+A mission must not grant duplicate rewards simply because:
+- a screen remounted
+- user navigated away
+- user returned
+- button was tapped again
+
+Persist mission identity and completion state by appropriate key such as:
+- class
+- day/date
+- mission ID
+
+Server-side authority must be used for important rewards where applicable.
+
+============================================================
+26. PARENT AREA
+============================================================
+
+Parent controls must be protected.
+
+Keep:
+- Parent PIN
+- parent gate
+- purchase approval
+- settings protection
+- external-link protection
+- parent dashboard
+
+Parent PIN:
+- 6 digits
+- cooldown after repeated wrong attempts
+- secure verification
+- never expose PIN to child UI
+
+Children must not be able to bypass the parent gate.
+
+============================================================
+27. PAYMENTS
+============================================================
+
+Preserve existing Stripe architecture.
+
+Important:
+- checkout must be server-side
+- product IDs must be allowlisted
+- entitlement state must be server-authoritative
+- webhook verification must be secure
+- refunds/lifecycle/idempotency must be preserved
+- purchase screens accessible to children must require parent approval
+- no secret key in browser
+- no price/entitlement trust from client
+
+Do not make payments child-controlled.
+
+============================================================
+28. AUTHENTICATION
+============================================================
+
+Preserve Better Auth and existing authentication architecture.
+
+Keep:
+- sign in
+- sign up
+- session handling
+- server verification
+- authorization boundaries
+- account data isolation
+- parent-controlled data where appropriate
+
+Do not weaken existing security for convenience.
+
+============================================================
+29. PRIVACY AND CHILD SAFETY
+============================================================
+
+This is a children's application.
+
+Do not introduce:
+- public child profiles
+- public chat
+- direct child-to-stranger messaging
+- exposed child identity
+- unsafe external links
+- unprotected purchases
+- unnecessary personal-data collection
+
+Keep parent controls around:
+- account settings
+- purchases
+- external navigation
+- advanced settings
+- exports/sharing
+
+============================================================
+30. OFFLINE-FIRST
+============================================================
+
+The learning experience must be offline-first.
+
+Offline should support:
+- core curriculum
+- images
+- animal assets
+- story assets
+- worksheets
+- bundled audio
+- Smart Learning Brain
+- Smart Journey core logic
+- progress
+- pet
+- rewards
+- local saves
+- core mini games
+
+Use the existing PWA/service-worker architecture.
+
+Important technical truth:
+A browser cannot guarantee first-ever loading without any network unless the app has already been installed/cached. Therefore:
+- make the installed PWA work offline
+- cache the app shell
+- cache required preschool assets
+- cache required application chunks after they are fetched
+- avoid fragile install behavior
+- provide an offline-ready indicator
+- do not falsely claim that a brand-new first visit works without network
+
+Every service-worker asset reference must resolve.
+
+============================================================
+31. AUDIO
+============================================================
+
+Use bundled WAV audio whenever available.
+
+Class audio:
+Nursery:
+- abc-sounds.wav
+- colors.wav
+- count-1-10.wav
+- manners.wav
+
+KG:
+- reading.wav
+- phonics.wav
+- counting.wav
+- cvc-words.wav
+
+Montessori:
+- language.wav
+- math.wav
+- practical-life.wav
+- sensorial.wav
+
+Animal audio:
+Use every supplied animal WAV.
+
+Audio behavior:
+- replay button
+- pause/stop where appropriate
+- volume control
+- respects mute setting
+- no surprise loud audio
+- graceful fallback if audio cannot play
+
+Browser speech synthesis may be used as an enhancement, but it must NOT replace bundled offline audio where bundled audio exists.
+
+============================================================
+32. ACCESSIBILITY
+============================================================
+
+Implement:
+- large touch targets
+- keyboard support where relevant
+- focus states
+- accessible labels
+- sufficient contrast
+- reduced motion
+- audio controls
+- no critical information communicated by color alone
+- child-friendly interactions
+
+============================================================
+33. RESPONSIVE / DEVICE SUPPORT
+============================================================
+
+Primary target:
+- mobile phones
+- tablets
+
+Also support desktop reasonably.
+
+Do not let:
+- buttons overflow
+- cards clip
+- game grids become unusable
+- modals exceed viewport
+- text become microscopic
+
+Test portrait and landscape where relevant.
+
+============================================================
+34. ANIMATION AND GAME FEEL
+============================================================
+
+Use animation intentionally:
+- entrance transitions
+- reward sparkle
+- gentle mascot movement
+- button feedback
+- success celebration
+- progress animation
+- world transitions
+
+Do not animate everything.
+
+Preserve performance on low-end Android devices.
+
+Respect reduced motion.
+
+============================================================
+35. UI/UX QUALITY BAR
+============================================================
+
+The finished UI should feel:
+- premium
+- cohesive
+- polished
+- delightful
+- modern
+- child-safe
+- intentional
+
+No screen should look like unfinished developer scaffolding.
+
+Remove:
+- dead buttons
+- placeholder cards
+- TODO text
+- broken links
+- fake interactions
+- console errors
+- empty screens
+- inaccessible controls
+
+Every visible CTA should either:
+A) perform a real action
+B) open a real screen
+C) be clearly disabled with a reason
+
+============================================================
+36. EXISTING GAME SYSTEMS
+============================================================
+
+The ZIP contains a substantial inherited game/RPG architecture.
+
+Do NOT delete it simply because the Academy is now the main product.
+
+Inspect and preserve systems such as:
+- worlds
+- journey
+- quests
+- missions
+- dialogue
+- NPCs
+- combat
+- rewards
+- achievements
+- inventory
+- crafting
+- pets
+- notifications
+- statistics
+- profiles
+- settings
+- social/multiplayer architecture where appropriate
+- creator systems
+- analytics
+- accessibility
+- PWA
+- voice
+- AI puzzle systems
+- playtest/release systems
+
+Where a legacy feature is not appropriate for the preschool child-facing home, keep it safely behind the appropriate parent/admin/developer route rather than deleting code blindly.
+
+============================================================
+37. ROUTING AND NAVIGATION
+============================================================
+
+Main child flow:
+
+OPEN
+→ CINEMATIC ACADEMY OPENING
+→ ACADEMY HOME
+→ CHOOSE/CONTINUE CLASS
+→ CLASS WORLD
+→ LEARN
+→ PLAY
+→ REWARD
+→ SMART RECOMMENDATION
+→ RETURN TO WORLD
+
+Main class flow:
+
+Nursery
+→ Nursery World
+→ Nursery Activities
+→ Nursery Progress
+
+KG
+→ KG World
+→ KG Activities
+→ KG Progress
+
+Montessori
+→ Montessori World
+→ Montessori Activities
+→ Montessori Progress
+
+No cross-class activity leakage.
+
+============================================================
+38. LOCAL DATA
+============================================================
+
+Offline/local data may include:
+- progress
+- settings
+- current class
+- smart signals
+- recommendations
+- pet state
+- mission state
+- gallery
+- unlocks
+- rewards
+
+Use stable storage keys and migrations if schemas change.
+
+Do not corrupt existing saved data.
+
+============================================================
+39. SERVER AUTHORITY
+============================================================
+
+Important game/economic state must not be trusted from the browser.
+
+Server-authoritative where applicable:
+- rewards
+- purchases
+- entitlements
+- important score
+- lives/streak where existing system requires it
+- discovery
+- account state
+
+Do not expose secrets.
+
+============================================================
+40. ERROR HANDLING
+============================================================
+
+Add graceful handling for:
+- missing audio
+- failed image
+- offline mode
+- API failure
+- auth expiration
+- payment failure
+- invalid session
+- corrupted local data
+- unsupported browser features
+
+Do not leave the user on a blank white page.
+
+Use existing GameErrorBoundary and improve where needed.
+
+============================================================
+41. PERFORMANCE
+============================================================
+
+Optimize:
+- initial loading
+- image decoding
+- lazy loading non-critical screens
+- audio loading
+- animation
+- large asset lists
+- service worker caching
+- React rendering
+
+Do not remove assets merely to improve performance.
+
+Use lazy loading/code splitting where appropriate.
+
+The cinematic opening must still feel instant.
+
+============================================================
+42. SEO / PWA / BRANDING
+============================================================
+
+Preserve and improve:
+- favicon
+- Open Graph artwork
+- X/social preview artwork
+- install assets
+- PWA metadata
+- manifest
+- service worker
+- app name
+- theme colors
+- mobile viewport
+
+Do not break existing branding assets.
+
+============================================================
+43. CONFIGURATION / ENVIRONMENT
+============================================================
+
+Preserve secure production configuration.
+
+Production must fail closed if required secrets/configuration are missing.
+
+Do not generate fake production secrets.
+
+Preserve validation for:
+- BETTER_AUTH_SECRET
+- DATABASE_URL
+- APP_URL
+- Stripe secrets/webhook
+- required Stripe price IDs
+- other environment variables already required by the ZIP
+
+Never expose secrets to client bundles.
+
+============================================================
+44. DATABASE / MIGRATIONS
+============================================================
+
+Inspect and preserve all migrations.
+
+Do not randomly reset or delete existing data.
+
+Ensure:
+- migrations are ordered
+- schema is compatible
+- production migration path is safe
+- auth data is preserved
+- preschool data is preserved
+- entitlements/purchases remain consistent
+
+============================================================
+45. TESTING — MANDATORY
+============================================================
+
+Before declaring the project complete, run:
+
+- static tests
+- existing regression tests
+- TypeScript typecheck
+- lint
+- build
+- asset audit
+- service-worker asset audit
+- route/screen audit
+- class separation audit
+- parent-gate audit
+- payment security audit
+- offline audit
+- accessibility smoke test
+- browser smoke test if environment supports it
+
+Fix failures rather than ignoring them.
+
+Do NOT claim:
+“all tests passed”
+unless they actually passed.
+
+If a test cannot run because of an environment limitation, clearly identify it.
+
+============================================================
+46. NEW REGRESSION TESTS
+============================================================
+
+Add tests for:
+- exactly 3 pathways
+- no KG-1/KG-2
+- class activity isolation
+- valid class-to-skill mappings
+- Smart Journey launches class-valid activity
+- adaptive difficulty actually changes activity content
+- learning-mode performance calculation
+- correct progress denominator
+- mission reward idempotency
+- pet persistence
+- trophy criteria
+- Academy room navigation
+- every child-visible purchase route is parent-gated
+- offline asset references
+- every audio asset reference
+- every image asset reference
+- service worker asset integrity
+
+============================================================
+47. FULL ASSET AUDIT
+============================================================
+
+At release time, generate an inventory.
+
+For every image/audio asset:
+- source path
+- referenced paths
+- whether loaded
+- whether used
+- whether copied into build
+- whether service worker handles it where required
+
+FAIL the release if:
+- any source asset is missing
+- any referenced asset is missing
+- any audio reference is broken
+- any image reference is broken
+
+The source archive must not lose files.
+
+============================================================
+48. SECURITY AUDIT
+============================================================
+
+Check for:
+- client-side secrets
+- unsafe purchase calls
+- unprotected admin routes
+- unprotected parent settings
+- unauthorized data access
+- insecure direct object references
+- missing auth checks
+- missing server authorization
+- unsafe external links
+- child access to parent controls
+- Stripe secret leakage
+- webhook verification problems
+
+Fix all discovered issues.
+
+============================================================
+49. VISUAL QA
+============================================================
+
+Actually inspect the important screens, not only source code.
+
+At minimum verify:
+1. opening screen
+2. Academy Home
+3. Nursery World
+4. KG World
+5. Montessori World
+6. activity screen
+7. Smart Journey
+8. Wild Whispers
+9. Story Theater
+10. Art Studio
+11. Music Room
+12. Pet
+13. Trophy/Certificate area
+14. Parent Gate
+15. Parent Dashboard
+16. payment flow
+17. offline state
+
+Check:
+- clipping
+- spacing
+- readability
+- animation
+- touch targets
+- broken images
+- broken audio
+- navigation
+- loading states
+- error states
+
+============================================================
+50. NO FAKE COMPLETION
+============================================================
+
+Never say something is complete if it is only:
+- a mockup
+- a placeholder
+- a static card
+- a speech-only button
+- a fake progress bar
+- a fake reward
+- a dead navigation link
+- an unimplemented pet
+- an unimplemented room
+- an unimplemented adaptive system
+
+If something is intentionally deferred, explicitly document it.
+
+============================================================
+51. BUILD STRATEGY
+============================================================
+
+Use this order:
+
+PHASE A — UNDERSTAND
+1. Extract ZIP.
+2. Inventory files.
+3. Inventory assets.
+4. Read architecture/docs.
+5. Read existing tests.
+6. Map routes/components.
+7. Map class curriculum.
+8. Map server/data systems.
+
+PHASE B — PRESERVE
+9. Preserve working systems.
+10. Preserve all assets.
+11. Preserve migrations.
+12. Preserve tests.
+
+PHASE C — EXPERIENCE
+13. Build polished opening.
+14. Build Academy Home.
+15. Build class worlds.
+16. Wire rooms.
+17. Wire activities.
+18. Wire stories/art/music/pets.
+
+PHASE D — INTELLIGENCE
+19. Validate class skills.
+20. Implement Smart Brain.
+21. Implement Smart Journey.
+22. Implement adaptive difficulty.
+23. Implement learning-mode performance.
+
+PHASE E — SAFETY
+24. Parent gate.
+25. Purchases.
+26. Auth.
+27. privacy.
+28. server authority.
+
+PHASE F — OFFLINE
+29. service worker.
+30. asset caching.
+31. local persistence.
+32. offline fallback.
+
+PHASE G — QA
+33. tests.
+34. typecheck.
+35. lint.
+36. build.
+37. asset audit.
+38. browser smoke.
+39. visual QA.
+40. security audit.
+
+PHASE H — RELEASE
+41. Fix all blockers.
+42. Re-run tests.
+43. Re-run build.
+44. Verify ZIP/build output.
+45. Produce final release.
+
+============================================================
+52. IMPORTANT: DO NOT ASK FOR PERMISSION FOR NORMAL IMPLEMENTATION
+============================================================
+
+Proceed automatically.
+
+Do not repeatedly ask:
+“Should I continue?”
+“Do you want me to implement this?”
+“Can I fix this?”
+“Should I build the next part?”
+
+If a normal engineering decision is needed, make the safest reasonable decision and continue.
+
+Only stop for a genuinely impossible blocker or missing credential that cannot be supplied from the project/environment.
+
+============================================================
+53. FINAL DELIVERABLE
+============================================================
+
+The final application must be:
+- complete
+- playable
+- beautiful
+- responsive
+- child-safe
+- class-separated
+- intelligent
+- offline-first
+- secure
+- tested
+- deployable
+
+The final child experience should feel like:
+
+A child opens the app
+→ sees a magical Academy
+→ enters
+→ chooses Nursery/KG/Montessori
+→ enters a beautiful world
+→ learns through games, stories, audio and hands-on activities
+→ earns stars and XP
+→ cares for a pet
+→ unlocks rooms/rewards
+→ gets a smart next activity
+→ sees real progress
+→ wants to explore the Academy again
+
+============================================================
+54. FINAL RELEASE CHECKLIST
+============================================================
+
+Do not declare RELEASE READY until all applicable checks are green:
+
+[ ] ZIP fully inspected
+[ ] all source files preserved
+[ ] all documentation inspected
+[ ] all tests inspected
+[ ] all images preserved
+[ ] all SVGs preserved
+[ ] all WAVs preserved
+[ ] all story assets preserved
+[ ] all animal assets preserved
+[ ] all worksheets preserved
+[ ] all class audio preserved
+[ ] Academy artwork preserved
+[ ] no broken asset references
+[ ] exactly 3 pathways
+[ ] no KG-1/KG-2
+[ ] Nursery isolated
+[ ] KG isolated
+[ ] Montessori isolated
+[ ] opening experience complete
+[ ] Academy Home complete
+[ ] Academy rooms functional
+[ ] activities functional
+[ ] Smart Brain functional
+[ ] Smart Journey functional
+[ ] adaptive difficulty functional
+[ ] learning-mode metrics functional
+[ ] progress accurate
+[ ] missions idempotent
+[ ] pet functional
+[ ] trophies tied to real achievements
+[ ] Wild Whispers functional
+[ ] stories functional
+[ ] Art Studio functional
+[ ] Music Room functional
+[ ] Parent Gate functional
+[ ] payment parent-gated
+[ ] auth secure
+[ ] server authority preserved
+[ ] offline mode tested
+[ ] service worker audited
+[ ] accessibility checked
+[ ] responsive checked
+[ ] security audit passed
+[ ] typecheck passed
+[ ] lint passed
+[ ] tests passed
+[ ] production build passed
+[ ] browser smoke passed where available
+[ ] final release package verified
+
+FINAL INSTRUCTION:
+
+Do not build a simplified “version inspired by” the ZIP.
+
+Build the actual Little Learners Academy represented by the ZIP, preserving ALL existing functionality and ALL assets, while completing, polishing, wiring, securing, testing, and improving it.
+
+MOST IMPORTANT:
+NO FILE LEFT BEHIND.
+NO PICTURE LEFT BEHIND.
+NO SOUND LEFT BEHIND.
+NO BROKEN REFERENCE.
+NO DEAD BUTTON.
+NO FAKE FEATURE.
+NO CLASS MIXING.
+NO KG-1/KG-2.
+NO UNPROTECTED CHILD PURCHASE.
+NO FALSE “BUILD PASSED” CLAIM.
+
+Use the complete V94 ZIP as the source of truth and produce the finished application.

@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import test from 'node:test';
+const root=process.cwd();
+const world=fs.readFileSync(path.join(root,'src/components/v13/AcademyWorld.tsx'),'utf8');
+const css=fs.readFileSync(path.join(root,'src/styles.css'),'utf8');
+test('V87 has exactly three class pathways',()=>{assert.match(world,/Nursery/);assert.match(world,/KG/);assert.match(world,/Montessori/);assert.doesNotMatch(world,/KG-1|KG-2/);});
+test('V87 adds academy magic features',()=>{for(const x of ['Today\'s','Magic Rooms','My Little Friend','Magic School Bus','Trophy Garden','Feelings','Mini Science Lab']) assert.match(world,new RegExp(x.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')));});
+test('V87 has responsive colourful presentation styles',()=>{for(const x of ['academy-mission','academy-quick-grid','academy-pet-card','academy-bus','academy-bottom-links']) assert.match(css,new RegExp('\\.'+x));assert.match(css,/prefers-reduced-motion/);});
+console.log('V87 academy magic checks: PASS');

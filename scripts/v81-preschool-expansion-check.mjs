@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+const root = process.cwd();
+const hub = fs.readFileSync(path.join(root,'src/components/v13/AdvancedPreschoolHub.tsx'),'utf8');
+assert.match(hub,/DailyAdventure/);
+assert.match(hub,/SmartTeacher/);
+assert.match(hub,/ArtStudio/);
+assert.match(hub,/mw-adventure-step/);
+assert.match(hub,/mw-teacher-mode/);
+assert.match(hub,/mw-art-marks/);
+const stories=fs.readdirSync(path.join(root,'public/offline/preschool/stories')).filter(x=>/^story-[0-9]+\.svg$/.test(x));
+assert.equal(stories.length,20);
+console.log('V81 expansion checks: PASS');
