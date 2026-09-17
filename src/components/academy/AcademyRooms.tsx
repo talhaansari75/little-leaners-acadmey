@@ -491,10 +491,6 @@ function AnimalAtlasRoom({ onBack, onSpeak }: { onBack: () => void; onSpeak: (te
   );
 }
 
-      </div>
-    </AcademyRoomShell>
-  );
-}
 
 function WorksheetRoom({ klass, onBack, onComplete }: { klass: LearningClass; onBack: () => void; onComplete: () => void }) {
   const sheets = WORKSHEETS[klass];
