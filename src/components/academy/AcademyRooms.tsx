@@ -450,7 +450,7 @@ function SchoolBusRoom({
     <AcademyRoomShell title="Magic School Bus" kicker={`Now visiting ${klass}`} onBack={onBack}>
       <p className="academy-room-lead">Choose a class, then hop off at a lesson.</p>
       <div className="academy-class-row">
-        {(["Nursery", "KG", "Montessori"] as LearningClass[]).map((name) => (
+        {(["Playgroup", "Nursery", "KG-1", "KG-2", "Class 1"] as LearningClass[]).map((name) => (
           <button key={name} type="button" className={`academy-class-pill ${klass === name ? "is-on" : ""}`} onClick={() => { onSelectClass(name); onSpeak(`${name} stop`); }}>{name}</button>
         ))}
       </div>
