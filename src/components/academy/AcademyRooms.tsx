@@ -338,9 +338,9 @@ function StoryTheaterRoom({
 }
 
 function ScienceLabRoom({ klass, onBack, onComplete, onSpeak }: { klass: LearningClass; onBack: () => void; onComplete: () => void; onSpeak: (text: string) => void }) {
-  const items = klass === "Nursery"
+  const items = klass === "Playgroup" || klass === "Nursery"
     ? [{ prompt: "What needs water to grow?", art: "/offline/preschool/words/tree.svg", choices: ["A tree", "A rock", "A spoon"], correct: "A tree" }]
-    : klass === "KG"
+    : klass === "KG-1" || klass === "KG-2"
       ? [{ prompt: "Which vehicle can fly?", art: "/offline/preschool/words/car.svg", choices: ["A plane", "A bus", "A train"], correct: "A plane" }]
       : [{ prompt: "Living or non-living: a cat?", art: "/offline/preschool/words/cat.svg", choices: ["Living", "Non-living", "A color"], correct: "Living" }];
   const item = items[0]!;
@@ -442,9 +442,36 @@ function SchoolBusRoom({
   onSpeak: (text: string) => void;
 }) {
   const stops: Record<LearningClass, Array<{ label: string; id: string }>> = {
-    Nursery: [{ label: "ABC Fun", id: "letters" }, { label: "Color Garden", id: "colors" }, { label: "Count & Learn", id: "numbers" }],
-    KG: [{ label: "Phonics Builder", id: "kg-phonics" }, { label: "Math Mountain", id: "kg-math" }, { label: "Reading Library", id: "kg-reading" }],
-    Montessori: [{ label: "Sensorial Studio", id: "mont-sensorial" }, { label: "Practical Life", id: "mont-practical" }, { label: "Nature Corner", id: "mont-nature" }],
+    Playgroup: [
+      { label: "ABC Fun", id: "pg-abc" },
+      { label: "Colors", id: "pg-colors" },
+      { label: "Shapes", id: "pg-shapes" },
+      { label: "Counting", id: "pg-numbers" },
+    ],
+    Nursery: [
+      { label: "Letters", id: "letters" },
+      { label: "Colors", id: "colors" },
+      { label: "Counting", id: "numbers" },
+      { label: "Rhymes", id: "rhymes" },
+    ],
+    "KG-1": [
+      { label: "Phonics", id: "kg-phonics" },
+      { label: "Math", id: "kg-math" },
+      { label: "Reading", id: "kg-reading" },
+      { label: "Patterns", id: "kg-patterns" },
+    ],
+    "KG-2": [
+      { label: "Advanced Phonics", id: "kg-phonics" },
+      { label: "Addition & Subtraction", id: "kg-math" },
+      { label: "Reading", id: "kg-reading" },
+      { label: "Science", id: "kg-vehicles" },
+    ],
+    "Class 1": [
+      { label: "Writing", id: "class1-writing" },
+      { label: "Mathematics", id: "class1-math" },
+      { label: "Science", id: "class1-science" },
+      { label: "Reading", id: "kg-reading" },
+    ],
   };
   return (
     <AcademyRoomShell title="Magic School Bus" kicker={`Now visiting ${klass}`} onBack={onBack}>

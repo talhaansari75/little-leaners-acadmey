@@ -1,9 +1,15 @@
+import { LEARNING_CLASSES, getSelectedClass } from "@/lib/academy/classSelection";
 import { useEffect, useMemo, useState } from "react";
 import { Brain, ChevronRight, Sparkles, Target, Zap } from "lucide-react";
 import { getLearningProfile, recommendNext, type LearningClass, type Recommendation } from "@/lib/intelligence/learningBrain";
 
 const CLASS_COPY: Record<LearningClass, { emoji: string; line: string }> = {
-  Nursery: { emoji: "🟢", line: "small steps, lots of playful practice" },
+  Playgroup: { emoji: "🧸", line: "play, pictures and happy first steps" },
+
+  "KG-1": { emoji: "🔵", line: "phonics, words and early reading" },
+  "KG-2": { emoji: "🟣", line: "stronger reading, spelling and maths" },
+  "Class 1": { emoji: "⭐", line: "reading, writing, maths and discovery" },
+
   KG: { emoji: "🔵", line: "curious practice with growing challenges" },
   Montessori: { emoji: "🌱", line: "calm, hands-on discovery" },
 };
@@ -20,7 +26,7 @@ export function SmartLearningFriend({ className }: { className?: string }) {
     const onStorage = () => {
       try {
         const value = localStorage.getItem("lla-class");
-        if (value === "Nursery" || value === "KG" || value === "Montessori") setKlass(value);
+        if (LEARNING_CLASSES.includes(value as LearningClass)) setKlass(value as LearningClass);
       } catch {}
       setProfileVersion((v) => v + 1);
     };
@@ -28,7 +34,7 @@ export function SmartLearningFriend({ className }: { className?: string }) {
     const timer = window.setInterval(() => {
       try {
         const value = localStorage.getItem("lla-class");
-        if (value === "Nursery" || value === "KG" || value === "Montessori") setKlass(value);
+        if (LEARNING_CLASSES.includes(value as LearningClass)) setKlass(value as LearningClass);
       } catch {}
       setProfileVersion((v) => v + 1);
     }, 1200);

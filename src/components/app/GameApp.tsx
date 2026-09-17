@@ -65,6 +65,8 @@ import { PublishReadinessScreen } from "@/components/v39/PublishReadinessScreen"
 import { JourneyLoading } from "@/components/screens/JourneyPolish";
 import { WildWhispersScreen } from "@/components/v13/WildWhispersScreen";
 import { PreschoolLearningScreen } from "@/components/v13/PreschoolLearningScreen";
+import { ClassSelectionScreen } from "@/components/v13/ClassSelectionScreen";
+import { getSelectedClass } from "@/lib/academy/classSelection";
 import { KidsLockOverlay } from "@/components/v13/KidsLockOverlay";
 
 export function GameApp() {

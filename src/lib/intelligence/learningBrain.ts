@@ -1,13 +1,24 @@
-export type LearningClass = "Playgroup" | "Nursery" | "KG-1" | "KG-2" | "Class 1";
-export type LearningSignal = "picture" | "audio" | "game" | "story" | "hands-on";
+import {
+  LEARNING_CLASSES,
+  type LearningClass,
+} from "@/lib/academy/classSelection";
+
+export { LEARNING_CLASSES };
+export type { LearningClass };
+
+export type LearningSignal =
+  | "game"
+  | "picture"
+  | "audio"
+  | "story"
+  | "hands-on";
 
 export type SkillStat = {
   attempts: number;
   correct: number;
-  totalMs: number;
-  lastAt: number;
+  totalTimeMs: number;
+  lastAttemptAt: number;
   signal?: LearningSignal;
-  signalStats?: Partial<Record<LearningSignal, { attempts: number; correct: number }>>;
 };
 
 export type LearningProfile = {
@@ -19,146 +30,357 @@ export type LearningProfile = {
 export type Recommendation = {
   className: LearningClass;
   skill: string;
+  difficulty: "gentle" | "steady" | "challenge";
+  mode: LearningSignal;
   title: string;
   reason: string;
-  mode: LearningSignal;
-  difficulty: "gentle" | "steady" | "challenge";
   confidence: number;
 };
 
-export const LEARNING_BRAIN_KEY = "lla-smart-learning-brain-v1";
-
 export const CLASS_SKILLS: Record<LearningClass, string[]> = {
-  Nursery: ["letters", "numbers", "colors", "shapes", "animals", "rhymes"],
-  KG: ["phonics", "words", "math", "reading", "patterns", "science"],
-  Montessori: ["practical-life", "sensorial", "language", "mathematics", "sorting", "nature"],
+  Playgroup: [
+    "alphabets",
+    "colors",
+    "shapes",
+    "numbers",
+    "animals",
+    "rhymes",
+  ],
+  Nursery: [
+    "letters",
+    "numbers",
+    "colors",
+    "shapes",
+    "animals",
+    "rhymes",
+  ],
+  "KG-1": [
+    "phonics",
+    "words",
+    "counting",
+    "reading",
+    "patterns",
+    "science",
+  ],
+  "KG-2": [
+    "phonics",
+    "spelling",
+    "addition",
+    "subtraction",
+    "reading",
+    "science",
+  ],
+  "Class 1": [
+    "reading",
+    "writing",
+    "grammar",
+    "mathematics",
+    "science",
+    "general-knowledge",
+  ],
 };
 
-const TITLES: Record<string, string> = {
-  letters: "Alphabet Adventure", numbers: "Counting Fun", colors: "Color Explorer", shapes: "Shape Safari", animals: "Animal Discovery", rhymes: "Rhythm & Rhyme",
-  phonics: "Phonics Builder", words: "Word Builder", math: "Math Mountain", reading: "Reading Library", patterns: "Pattern Detective", science: "Mini Science Lab",
-  "practical-life": "Practical Life", sensorial: "Sensorial Discovery", language: "Language Shelf", mathematics: "Montessori Mathematics", sorting: "Sorting Station", nature: "Nature Corner",
-};
-
-
-function normalizeSignalStats(value: unknown): SkillStat["signalStats"] {
-  if (!value || typeof value !== "object") return {};
-  const out: SkillStat["signalStats"] = {};
-  for (const mode of ["picture", "audio", "game", "story", "hands-on"] as LearningSignal[]) {
-    const raw = (value as Record<string, unknown>)[mode];
-    if (!raw || typeof raw !== "object") continue;
-    const r = raw as Record<string, unknown>;
-    out[mode] = { attempts: Math.max(0, Number(r.attempts) || 0), correct: Math.max(0, Number(r.correct) || 0) };
-  }
-  return out;
-}
+const EMPTY_STAT = (): SkillStat => ({
+  attempts: 0,
+  correct: 0,
+  totalTimeMs: 0,
+  lastAttemptAt: 0,
+});
 
 export function emptyLearningProfile(): LearningProfile {
-  const byClass = {} as LearningProfile["byClass"];
-  (Object.keys(CLASS_SKILLS) as LearningClass[]).forEach((name) => { byClass[name] = {}; });
-  return { byClass, lastClass: "Nursery", updatedAt: 0 };
+  const byClass = {} as Record<LearningClass, Record<string, SkillStat>>;
+
+  for (const name of LEARNING_CLASSES) {
+    byClass[name] = {};
+  }
+
+  return {
+    byClass,
+    lastClass: "Nursery",
+    updatedAt: 0,
+  };
 }
 
-export function normalizeProfile(value: unknown): LearningProfile {
+export function normalizeProfile(input: unknown): LearningProfile {
   const fallback = emptyLearningProfile();
-  if (!value || typeof value !== "object") return fallback;
-  const input = value as Partial<LearningProfile>;
-  for (const className of Object.keys(CLASS_SKILLS) as LearningClass[]) {
-    const source = input.byClass?.[className];
-    if (!source || typeof source !== "object") continue;
+
+  if (!input || typeof input !== "object") {
+    return fallback;
+  }
+
+  const source = input as Partial<LearningProfile>;
+
+  for (const className of LEARNING_CLASSES) {
+    const sourceStats =
+      source.byClass &&
+      typeof source.byClass === "object" &&
+      source.byClass[className] &&
+      typeof source.byClass[className] === "object"
+        ? source.byClass[className]
+        : {};
+
+    fallback.byClass[className] = {};
+
     for (const skill of CLASS_SKILLS[className]) {
-      const raw = (source as Record<string, unknown>)[skill];
-      if (!raw || typeof raw !== "object") continue;
-      const r = raw as Partial<SkillStat>;
-      fallback.byClass[className][skill] = {
-        attempts: Math.max(0, Number(r.attempts) || 0),
-        correct: Math.max(0, Number(r.correct) || 0),
-        totalMs: Math.max(0, Number(r.totalMs) || 0),
-        lastAt: Math.max(0, Number(r.lastAt) || 0),
-        signal: r.signal,
-        signalStats: normalizeSignalStats(r.signalStats),
-      };
+      const raw = (sourceStats as Record<string, unknown>)[skill];
+
+      if (raw && typeof raw === "object") {
+        const stat = raw as Partial<SkillStat>;
+
+        fallback.byClass[className][skill] = {
+          attempts: Number(stat.attempts) || 0,
+          correct: Number(stat.correct) || 0,
+          totalTimeMs: Number(stat.totalTimeMs) || 0,
+          lastAttemptAt: Number(stat.lastAttemptAt) || 0,
+          signal:
+            stat.signal === "game" ||
+            stat.signal === "picture" ||
+            stat.signal === "audio" ||
+            stat.signal === "story" ||
+            stat.signal === "hands-on"
+              ? stat.signal
+              : undefined,
+        };
+      }
     }
   }
-  fallback.lastClass = input.lastClass === "KG" || input.lastClass === "Montessori" ? input.lastClass : "Nursery";
-  fallback.updatedAt = Math.max(0, Number(input.updatedAt) || 0);
+
+  if (
+    typeof source.lastClass === "string" &&
+    LEARNING_CLASSES.includes(source.lastClass as LearningClass)
+  ) {
+    fallback.lastClass = source.lastClass as LearningClass;
+  }
+
+  fallback.updatedAt = Number(source.updatedAt) || 0;
+
   return fallback;
 }
 
-
-export function skillForActivity(className: LearningClass, activityKind: string): string {
+export function skillForActivity(
+  className: LearningClass,
+  activityKind: string,
+): string {
   const maps: Record<LearningClass, Record<string, string>> = {
-    Nursery: { letters: "letters", numbers: "numbers", colors: "colors", shapes: "shapes", body: "letters", rhymes: "rhymes", listen: "animals", animals: "animals" },
-    KG: { letters: "phonics", numbers: "math", patterns: "patterns", story: "reading", vehicles: "science", puzzle: "reading", math: "math", listen: "phonics" },
-    Montessori: { letters: "language", numbers: "mathematics", colors: "sensorial", shapes: "sensorial", sorting: "sorting", tracing: "language", listen: "nature", math: "mathematics" },
+    Playgroup: {
+      letters: "alphabets",
+      numbers: "numbers",
+      colors: "colors",
+      shapes: "shapes",
+      body: "alphabets",
+      rhymes: "rhymes",
+      listen: "animals",
+      animals: "animals",
+    },
+    Nursery: {
+      letters: "letters",
+      numbers: "numbers",
+      colors: "colors",
+      shapes: "shapes",
+      body: "letters",
+      rhymes: "rhymes",
+      listen: "animals",
+      animals: "animals",
+    },
+    "KG-1": {
+      letters: "phonics",
+      numbers: "counting",
+      math: "counting",
+      patterns: "patterns",
+      story: "reading",
+      listen: "science",
+      vehicles: "science",
+      puzzle: "words",
+    },
+    "KG-2": {
+      letters: "phonics",
+      numbers: "addition",
+      math: "addition",
+      patterns: "spelling",
+      story: "reading",
+      listen: "science",
+      vehicles: "science",
+      puzzle: "reading",
+    },
+    "Class 1": {
+      letters: "writing",
+      numbers: "mathematics",
+      math: "mathematics",
+      patterns: "mathematics",
+      story: "reading",
+      listen: "science",
+      vehicles: "science",
+      puzzle: "general-knowledge",
+      tracing: "writing",
+    },
   };
-  return maps[className][activityKind] ?? CLASS_SKILLS[className][0];
+
+  return (
+    maps[className][activityKind] ??
+    CLASS_SKILLS[className][0]
+  );
 }
 
-export function recordLearningSignal(profile: LearningProfile, className: LearningClass, skill: string, correct: boolean, elapsedMs = 0, signal?: LearningSignal, now = Date.now()): LearningProfile {
+function profileForClass(
+  profile: LearningProfile,
+  className: LearningClass,
+): Record<string, SkillStat> {
+  if (!profile.byClass[className]) {
+    profile.byClass[className] = {};
+  }
+
+  return profile.byClass[className];
+}
+
+export function recordLearningSignal(
+  profile: LearningProfile,
+  className: LearningClass,
+  skill: string,
+  correct: boolean,
+  elapsedMs = 0,
+  signal?: LearningSignal,
+  now = Date.now(),
+): LearningProfile {
   const next = normalizeProfile(profile);
-  if (!CLASS_SKILLS[className].includes(skill)) return next;
-  const old = next.byClass[className][skill] ?? { attempts: 0, correct: 0, totalMs: 0, lastAt: 0 };
-  next.byClass[className][skill] = {
+  const stats = profileForClass(next, className);
+
+  const old = stats[skill] ?? EMPTY_STAT();
+
+  stats[skill] = {
     attempts: old.attempts + 1,
     correct: old.correct + (correct ? 1 : 0),
-    totalMs: old.totalMs + Math.max(0, elapsedMs),
-    lastAt: now,
+    totalTimeMs: old.totalTimeMs + Math.max(0, elapsedMs),
+    lastAttemptAt: now,
     signal: signal ?? old.signal,
-    signalStats: signal ? { ...(old.signalStats ?? {}), [signal]: {
-      attempts: (old.signalStats?.[signal]?.attempts ?? 0) + 1,
-      correct: (old.signalStats?.[signal]?.correct ?? 0) + (correct ? 1 : 0),
-    } } : old.signalStats,
   };
+
   next.lastClass = className;
   next.updatedAt = now;
+
   return next;
 }
 
-function scoreSkill(stat: SkillStat | undefined, now: number): number {
-  if (!stat || stat.attempts === 0) return 50; // new skills get a gentle exploration chance
-  const accuracy = stat.correct / stat.attempts;
-  const ageDays = Math.max(0, (now - stat.lastAt) / 86400000);
-  const freshness = Math.min(30, ageDays * 4);
-  const struggle = (1 - accuracy) * 70;
-  const repetition = Math.max(0, 12 - stat.attempts);
-  return struggle + freshness + repetition;
+export function recommendNext(
+  profile: LearningProfile,
+  className: LearningClass = profile.lastClass,
+  now = Date.now(),
+): Recommendation {
+  const normalized = normalizeProfile(profile);
+  const skills = CLASS_SKILLS[className];
+  const stats = profileForClass(normalized, className);
+
+  let bestSkill = skills[0];
+  let lowestScore = Number.POSITIVE_INFINITY;
+
+  for (const skill of skills) {
+    const stat = stats[skill];
+
+    if (!stat || stat.attempts === 0) {
+      bestSkill = skill;
+      break;
+    }
+
+    const accuracy = stat.correct / Math.max(1, stat.attempts);
+    const recentPenalty =
+      stat.lastAttemptAt > 0 &&
+      now - stat.lastAttemptAt < 24 * 60 * 60 * 1000
+        ? 0.1
+        : 0;
+
+    const score = accuracy - recentPenalty;
+
+    if (score < lowestScore) {
+      lowestScore = score;
+      bestSkill = skill;
+    }
+  }
+
+  const stat = stats[bestSkill];
+  const accuracy = stat?.attempts
+    ? stat.correct / stat.attempts
+    : 0;
+
+  const difficulty =
+    !stat || stat.attempts < 2
+      ? "gentle"
+      : accuracy >= 0.85
+        ? "challenge"
+        : accuracy < 0.6
+          ? "gentle"
+          : "steady";
+
+  const mode: LearningSignal =
+    stat?.signal ??
+    (className === "Playgroup"
+      ? "picture"
+      : className === "Nursery"
+        ? "game"
+        : "hands-on");
+
+  return {
+    className,
+    skill: bestSkill,
+    difficulty,
+    mode,
+    title: `${bestSkill.replaceAll("-", " ")} practice`,
+    reason:
+      !stat || stat.attempts === 0
+        ? "This is a fresh skill for this class."
+        : accuracy < 0.6
+          ? "A little more practice will help this skill grow."
+          : accuracy >= 0.85
+            ? "This skill is going well, so a small challenge is ready."
+            : "Keep building this skill with another practice round.",
+    confidence: stat?.attempts
+      ? Math.min(99, 60 + Math.min(35, stat.attempts * 5))
+      : 60,
+  };
 }
 
-export function recommendNext(profile: LearningProfile, className: LearningClass = profile.lastClass, now = Date.now()): Recommendation {
-  const stats = profile.byClass[className] ?? {};
-  const skill = CLASS_SKILLS[className].slice().sort((a, b) => scoreSkill(stats[b], now) - scoreSkill(stats[a], now))[0];
-  const stat = stats[skill];
-  const accuracy = stat?.attempts ? stat.correct / stat.attempts : 0.5;
-  const difficulty: Recommendation["difficulty"] = accuracy < 0.55 ? "gentle" : accuracy > 0.88 && stat.attempts >= 3 ? "challenge" : "steady";
-  const reason = !stat || stat.attempts === 0
-    ? "You have not explored this skill yet."
-    : accuracy < 0.7
-      ? "A little extra practice can help this skill grow."
-      : "It has been a while since this skill was practiced.";
-  const modeScores = (Object.entries(stat?.signalStats ?? {}) as [LearningSignal, { attempts: number; correct: number }][]).filter(([, value]) => value.attempts > 0);
-  const bestMode = modeScores.sort((a, b) => {
-    const aAcc = a[1].correct / a[1].attempts;
-    const bAcc = b[1].correct / b[1].attempts;
-    return (bAcc + Math.min(.2, b[1].attempts * .02)) - (aAcc + Math.min(.2, a[1].attempts * .02));
-  })[0]?.[0];
-  const mode: LearningSignal = bestMode ?? stat?.signal ?? (className === "Montessori" ? "hands-on" : "game");
-  const confidence = Math.round(Math.min(98, 58 + Math.min(35, (stat?.attempts ?? 0) * 6)));
-  return { className, skill, title: TITLES[skill] ?? skill, reason, mode, difficulty, confidence };
-}
+const PROFILE_KEY = "lla-learning-profile";
 
 export function getLearningProfile(): LearningProfile {
-  if (typeof window === "undefined") return emptyLearningProfile();
-  try { return normalizeProfile(JSON.parse(localStorage.getItem(LEARNING_BRAIN_KEY) ?? "null")); } catch { return emptyLearningProfile(); }
+  if (typeof window === "undefined") {
+    return emptyLearningProfile();
+  }
+
+  try {
+    const raw = window.localStorage.getItem(PROFILE_KEY);
+    return raw ? normalizeProfile(JSON.parse(raw)) : emptyLearningProfile();
+  } catch {
+    return emptyLearningProfile();
+  }
 }
 
-export function saveLearningProfile(profile: LearningProfile): void {
+function saveLearningProfile(profile: LearningProfile) {
   if (typeof window === "undefined") return;
-  try { localStorage.setItem(LEARNING_BRAIN_KEY, JSON.stringify(normalizeProfile(profile))); } catch {}
+
+  try {
+    window.localStorage.setItem(
+      PROFILE_KEY,
+      JSON.stringify(profile),
+    );
+  } catch {
+    // Ignore storage failures.
+  }
 }
 
-export function recordAttempt(className: LearningClass, skill: string, correct: boolean, elapsedMs = 0, signal?: LearningSignal): LearningProfile {
-  const next = recordLearningSignal(getLearningProfile(), className, skill, correct, elapsedMs, signal);
+export function recordAttempt(
+  className: LearningClass,
+  skill: string,
+  correct: boolean,
+  elapsedMs = 0,
+  signal?: LearningSignal,
+): LearningProfile {
+  const next = recordLearningSignal(
+    getLearningProfile(),
+    className,
+    skill,
+    correct,
+    elapsedMs,
+    signal,
+  );
+
   saveLearningProfile(next);
   return next;
 }

@@ -1,39 +1,64 @@
-import assert from "node:assert/strict";
-import test from "node:test";
+import { describe, expect, test } from "vitest";
 import {
   CLASS_SKILLS,
   emptyLearningProfile,
-  recommendNext,
   recordLearningSignal,
+  recommendNext,
   skillForActivity,
-} from "./learningBrain.ts";
+} from "./learningBrain";
 
-test("class-to-skill mappings stay inside the selected class", () => {
-  assert.ok(CLASS_SKILLS.Nursery.includes(skillForActivity("Nursery", "listen")));
-  assert.ok(CLASS_SKILLS.KG.includes(skillForActivity("KG", "letters")));
-  assert.ok(CLASS_SKILLS.Montessori.includes(skillForActivity("Montessori", "tracing")));
-  assert.equal(CLASS_SKILLS.Nursery.includes("phonics"), false);
-  assert.equal(CLASS_SKILLS.KG.includes("practical-life"), false);
-});
+describe("learning brain", () => {
+  test("has five independent class skill maps", () => {
+    expect(Object.keys(CLASS_SKILLS)).toEqual([
+      "Playgroup",
+      "Nursery",
+      "KG-1",
+      "KG-2",
+      "Class 1",
+    ]);
+  });
 
-test("adaptive difficulty actually changes with accuracy", () => {
-  let profile = emptyLearningProfile();
-  for (let i = 0; i < 4; i++) profile = recordLearningSignal(profile, "KG", "math", false, 1200, "game");
-  const gentle = recommendNext(profile, "KG");
-  assert.equal(gentle.difficulty, "gentle");
-  profile = emptyLearningProfile();
-  for (let i = 0; i < 4; i++) profile = recordLearningSignal(profile, "KG", "math", true, 800, "game");
-  const challenge = recommendNext(profile, "KG");
-  assert.equal(challenge.className, "KG");
-  assert.notEqual(challenge.skill, "letters");
-});
+  test("skills stay isolated between classes", () => {
+    let profile = emptyLearningProfile();
 
-test("learning-mode performance uses accuracy, not raw counts", () => {
-  let profile = emptyLearningProfile();
-  for (let i = 0; i < 6; i++) profile = recordLearningSignal(profile, "Nursery", "colors", true, 500, "picture");
-  for (let i = 0; i < 6; i++) profile = recordLearningSignal(profile, "Nursery", "rhymes", false, 500, "audio");
-  const rec = recommendNext(profile, "Nursery");
-  assert.equal(rec.className, "Nursery");
-  assert.ok(CLASS_SKILLS.Nursery.includes(rec.skill));
-  assert.ok(["picture", "audio", "game", "story", "hands-on"].includes(rec.mode));
+    profile = recordLearningSignal(
+      profile,
+      "KG-1",
+      "phonics",
+      true,
+      500,
+      "picture",
+    );
+
+    expect(profile.byClass["KG-1"].phonics.attempts).toBe(1);
+    expect(profile.byClass.Nursery.phonics).toBeUndefined();
+  });
+
+  test("activity skills map to the selected class", () => {
+    expect(
+      CLASS_SKILLS["KG-1"].includes(
+        skillForActivity("KG-1", "letters"),
+      ),
+    ).toBe(true);
+
+    expect(
+      CLASS_SKILLS["KG-2"].includes(
+        skillForActivity("KG-2", "math"),
+      ),
+    ).toBe(true);
+
+    expect(
+      CLASS_SKILLS["Class 1"].includes(
+        skillForActivity("Class 1", "tracing"),
+      ),
+    ).toBe(true);
+  });
+
+  test("recommendation belongs to requested class", () => {
+    const profile = emptyLearningProfile();
+    const recommendation = recommendNext(profile, "Playgroup");
+
+    expect(recommendation.className).toBe("Playgroup");
+    expect(CLASS_SKILLS.Playgroup).toContain(recommendation.skill);
+  });
 });

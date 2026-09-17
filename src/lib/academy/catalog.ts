@@ -1,3 +1,5 @@
+export const ACADEMY_ART = "/images/academy.png";
+export const MASCOT_ART = "/images/mascot.png";
 /** Bundled Little Learners Academy media. Paths are local and offline-safe. */
 
 export type LearningClass = "Playgroup" | "Nursery" | "KG-1" | "KG-2" | "Class 1";
@@ -156,7 +158,7 @@ export const STORY_BOOKS = [
   {
     id: "cvc-cat",
     title: "The Cat and the Hat",
-    className: "KG" as LearningClass,
+    className: "KG-1",
     pages: [
       { art: "/offline/preschool/stories/story-9.svg", text: "A cat sat on a mat. C-A-T, cat!" },
       { art: "/offline/preschool/stories/story-10.svg", text: "The cat found a hat. H-A-T, hat!" },
@@ -168,7 +170,7 @@ export const STORY_BOOKS = [
   {
     id: "star-night",
     title: "Counting the Stars",
-    className: "KG" as LearningClass,
+    className: "KG-2",
     pages: [
       { art: "/offline/preschool/stories/story-13.svg", text: "Mira looked up. One star, two stars, three stars." },
       { art: "/offline/preschool/stories/story-14.svg", text: "She counted to ten, then started again." },
@@ -180,7 +182,7 @@ export const STORY_BOOKS = [
   {
     id: "calm-shelf",
     title: "The Calm Shelf",
-    className: "Montessori" as LearningClass,
+    className: "Class 1",
     pages: [
       { art: "/offline/preschool/stories/story-17.svg", text: "Noor chose one tray and carried it carefully." },
       { art: "/offline/preschool/stories/story-18.svg", text: "She poured water from pitcher to pitcher." },
@@ -192,46 +194,61 @@ export const STORY_BOOKS = [
 ];
 
 export const CLASS_AUDIO: Record<LearningClass, Array<{ id: string; title: string; src: string }>> = {
+  Playgroup: [
+    { id: "pg-abc", title: "ABC Sounds", src: "/offline/preschool/audio/nursery/abc-sounds.wav" },
+    { id: "pg-colors", title: "Colors", src: "/offline/preschool/audio/nursery/colors.wav" },
+  ],
   Nursery: [
-    { id: "abc-sounds", title: "ABC Sounds", src: "/offline/preschool/audio/nursery/abc-sounds.wav" },
-    { id: "colors", title: "Colors", src: "/offline/preschool/audio/nursery/colors.wav" },
-    { id: "count-1-10", title: "Count 1–10", src: "/offline/preschool/audio/nursery/count-1-10.wav" },
-    { id: "manners", title: "Manners", src: "/offline/preschool/audio/nursery/manners.wav" },
+    { id: "nursery-abc", title: "ABC Sounds", src: "/offline/preschool/audio/nursery/abc-sounds.wav" },
+    { id: "nursery-count", title: "Count 1–10", src: "/offline/preschool/audio/nursery/count-1-10.wav" },
+    { id: "nursery-colors", title: "Colors", src: "/offline/preschool/audio/nursery/colors.wav" },
+    { id: "nursery-manners", title: "Good Manners", src: "/offline/preschool/audio/nursery/manners.wav" },
   ],
-  KG: [
-    { id: "reading", title: "Reading", src: "/offline/preschool/audio/kg/reading.wav" },
-    { id: "phonics", title: "Phonics", src: "/offline/preschool/audio/kg/phonics.wav" },
-    { id: "counting", title: "Counting", src: "/offline/preschool/audio/kg/counting.wav" },
-    { id: "cvc-words", title: "CVC Words", src: "/offline/preschool/audio/kg/cvc-words.wav" },
+  "KG-1": [
+    { id: "kg1-phonics", title: "Phonics Practice", src: "/offline/preschool/audio/kg/phonics.wav" },
+    { id: "kg1-words", title: "CVC Words", src: "/offline/preschool/audio/kg/cvc-words.wav" },
+    { id: "kg1-reading", title: "Reading Practice", src: "/offline/preschool/audio/kg/reading.wav" },
   ],
-  Montessori: [
-    { id: "language", title: "Language", src: "/offline/preschool/audio/montessori/language.wav" },
-    { id: "math", title: "Mathematics", src: "/offline/preschool/audio/montessori/math.wav" },
-    { id: "practical-life", title: "Practical Life", src: "/offline/preschool/audio/montessori/practical-life.wav" },
-    { id: "sensorial", title: "Sensorial", src: "/offline/preschool/audio/montessori/sensorial.wav" },
+  "KG-2": [
+    { id: "kg2-phonics", title: "Advanced Phonics", src: "/offline/preschool/audio/kg/phonics.wav" },
+    { id: "kg2-words", title: "CVC Words", src: "/offline/preschool/audio/kg/cvc-words.wav" },
+    { id: "kg2-reading", title: "Reading Practice", src: "/offline/preschool/audio/kg/reading.wav" },
+    { id: "kg2-counting", title: "Counting Practice", src: "/offline/preschool/audio/kg/counting.wav" },
+  ],
+  "Class 1": [
+    { id: "class1-language", title: "Language Practice", src: "/offline/preschool/audio/montessori/language.wav" },
+    { id: "class1-math", title: "Mathematics Practice", src: "/offline/preschool/audio/montessori/math.wav" },
+    { id: "class1-practical", title: "Practical Life", src: "/offline/preschool/audio/montessori/practical-life.wav" },
+    { id: "class1-sensorial", title: "Sensorial Learning", src: "/offline/preschool/audio/montessori/sensorial.wav" },
   ],
 };
 
 export const WORKSHEETS: Record<LearningClass, Array<{ id: string; title: string; src: string }>> = {
+  Playgroup: [
+    { id: "pg-letters", title: "ABC Tracing", src: "/offline/preschool/worksheets/nursery/abc-trace.svg" },
+    { id: "pg-colors", title: "Colors & Shapes", src: "/offline/preschool/worksheets/nursery/colors-shapes.svg" },
+  ],
   Nursery: [
-    { id: "abc-trace", title: "ABC Trace", src: "/offline/preschool/worksheets/nursery/abc-trace.svg" },
-    { id: "colors-shapes", title: "Colors & Shapes", src: "/offline/preschool/worksheets/nursery/colors-shapes.svg" },
-    { id: "count-1-10", title: "Count 1–10", src: "/offline/preschool/worksheets/nursery/count-1-10.svg" },
+    { id: "nursery-letters", title: "ABC Tracing", src: "/offline/preschool/worksheets/nursery/abc-trace.svg" },
+    { id: "nursery-numbers", title: "Count 1–10", src: "/offline/preschool/worksheets/nursery/count-1-10.svg" },
+    { id: "nursery-colors", title: "Colors & Shapes", src: "/offline/preschool/worksheets/nursery/colors-shapes.svg" },
   ],
-  KG: [
-    { id: "phonics-cvc", title: "Phonics CVC", src: "/offline/preschool/worksheets/kg/phonics-cvc.svg" },
-    { id: "patterns-shapes", title: "Patterns & Shapes", src: "/offline/preschool/worksheets/kg/patterns-shapes.svg" },
-    { id: "math-practice", title: "Math Practice", src: "/offline/preschool/worksheets/kg/math-practice.svg" },
+  "KG-1": [
+    { id: "kg1-phonics", title: "Phonics & CVC", src: "/offline/preschool/worksheets/kg/phonics-cvc.svg" },
+    { id: "kg1-math", title: "Math Practice", src: "/offline/preschool/worksheets/kg/math-practice.svg" },
+    { id: "kg1-patterns", title: "Patterns & Shapes", src: "/offline/preschool/worksheets/kg/patterns-shapes.svg" },
   ],
-  Montessori: [
-    { id: "practical-life", title: "Practical Life", src: "/offline/preschool/worksheets/montessori/practical-life.svg" },
-    { id: "montessori-numbers", title: "Number Rods", src: "/offline/preschool/worksheets/montessori/montessori-numbers.svg" },
-    { id: "sensorial-sorting", title: "Sensorial Sorting", src: "/offline/preschool/worksheets/montessori/sensorial-sorting.svg" },
+  "KG-2": [
+    { id: "kg2-phonics", title: "Phonics & CVC", src: "/offline/preschool/worksheets/kg/phonics-cvc.svg" },
+    { id: "kg2-math", title: "Advanced Math", src: "/offline/preschool/worksheets/kg/math-practice.svg" },
+    { id: "kg2-patterns", title: "Patterns & Shapes", src: "/offline/preschool/worksheets/kg/patterns-shapes.svg" },
+  ],
+  "Class 1": [
+    { id: "class1-language", title: "Language Practice", src: "/offline/preschool/worksheets/montessori/practical-life.svg" },
+    { id: "class1-math", title: "Mathematics Practice", src: "/offline/preschool/worksheets/montessori/montessori-numbers.svg" },
+    { id: "class1-sensorial", title: "Sorting & Sensorial", src: "/offline/preschool/worksheets/montessori/sensorial-sorting.svg" },
   ],
 };
-
-export const ACADEMY_ART = "/offline/preschool/academy-magic-ai.png";
-export const MASCOT_ART = "/offline/preschool/animals/panda-7.svg";
 
 export const LEARNING_PATHWAYS: LearningClass[] = ["Playgroup", "Nursery", "KG-1", "KG-2", "Class 1"];
 
