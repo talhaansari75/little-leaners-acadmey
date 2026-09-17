@@ -1,6 +1,6 @@
 /** Bundled Little Learners Academy media. Paths are local and offline-safe. */
 
-export type LearningClass = "Nursery" | "KG" | "Montessori";
+export type LearningClass = "Playgroup" | "Nursery" | "KG-1" | "KG-2" | "Class 1";
 
 export type AnimalCard = {
   id: string;
@@ -233,7 +233,7 @@ export const WORKSHEETS: Record<LearningClass, Array<{ id: string; title: string
 export const ACADEMY_ART = "/offline/preschool/academy-magic-ai.png";
 export const MASCOT_ART = "/offline/preschool/animals/panda-7.svg";
 
-export const LEARNING_PATHWAYS: LearningClass[] = ["Nursery", "KG", "Montessori"];
+export const LEARNING_PATHWAYS: LearningClass[] = ["Playgroup", "Nursery", "KG-1", "KG-2", "Class 1"];
 
 export function animalArt(id: string): string | undefined {
   return ANIMAL_LIBRARY.find((a) => a.id === id)?.src;

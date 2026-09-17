@@ -3,7 +3,13 @@ node_modules/
 .github_repo
 .env
 .env.*
+<<<<<<< HEAD
 
 .vercel/
 dist/
 node_modules/
+=======
+.vercel
+node_modules
+dist
+>>>>>>> origin/main

@@ -1,4 +1,4 @@
-export type LearningClass = "Nursery" | "KG" | "Montessori";
+export type LearningClass = "Playgroup" | "Nursery" | "KG-1" | "KG-2" | "Class 1";
 export type LearningSignal = "picture" | "audio" | "game" | "story" | "hands-on";
 
 export type SkillStat = {
