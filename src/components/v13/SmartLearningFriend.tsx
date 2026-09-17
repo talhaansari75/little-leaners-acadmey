@@ -5,40 +5,32 @@ import { getLearningProfile, recommendNext, type LearningClass, type Recommendat
 
 const CLASS_COPY: Record<LearningClass, { emoji: string; line: string }> = {
   Playgroup: { emoji: "🧸", line: "play, pictures and happy first steps" },
-
+  Nursery: { emoji: "🌱", line: "letters, numbers, colors and rhymes" },
   "KG-1": { emoji: "🔵", line: "phonics, words and early reading" },
   "KG-2": { emoji: "🟣", line: "stronger reading, spelling and maths" },
   "Class 1": { emoji: "⭐", line: "reading, writing, maths and discovery" },
-
-  KG: { emoji: "🔵", line: "curious practice with growing challenges" },
-  Montessori: { emoji: "🌱", line: "calm, hands-on discovery" },
 };
 
 export function SmartLearningFriend({ className }: { className?: string }) {
   const [profileVersion, setProfileVersion] = useState(0);
   const [klass, setKlass] = useState<LearningClass>(() => {
     try {
-      const value = localStorage.getItem("lla-class");
-      return value === "KG" || value === "Montessori" ? value : "Nursery";
-    } catch { return "Nursery"; }
+      const value = getSelectedClass();
+      return value ?? "Nursery";
+    } catch {
+      return "Nursery";
+    }
   });
   useEffect(() => {
-    const onStorage = () => {
-      try {
-        const value = localStorage.getItem("lla-class");
-        if (LEARNING_CLASSES.includes(value as LearningClass)) setKlass(value as LearningClass);
-      } catch {}
+    const onClassChange = () => {
+      const value = getSelectedClass();
+      if (value) setKlass(value);
       setProfileVersion((v) => v + 1);
     };
-    addEventListener("storage", onStorage);
-    const timer = window.setInterval(() => {
-      try {
-        const value = localStorage.getItem("lla-class");
-        if (LEARNING_CLASSES.includes(value as LearningClass)) setKlass(value as LearningClass);
-      } catch {}
-      setProfileVersion((v) => v + 1);
-    }, 1200);
-    return () => { removeEventListener("storage", onStorage); clearInterval(timer); };
+    addEventListener("lla-class-change", onClassChange);
+    return () => {
+      removeEventListener("lla-class-change", onClassChange);
+    };
   }, []);
   const recommendation: Recommendation = useMemo(() => recommendNext(getLearningProfile(), klass), [klass, profileVersion]);
   const copy = CLASS_COPY[klass];
