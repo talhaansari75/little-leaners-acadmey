@@ -1,15 +1,8 @@
 node_modules/
-.project_id
-.github_repo
-.env
-.env.*
-<<<<<<< HEAD
-
 .vercel/
 dist/
-node_modules/
-=======
-.vercel
-node_modules
-dist
->>>>>>> origin/main
+.env
+.env.*
+!.env.example
+.DS_Store
+*.log
