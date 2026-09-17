@@ -116,7 +116,7 @@ var HEADERS = { TSS_SHELL: "X-TSS_SHELL" };
 * the dev styles URL for route-scoped CSS collection.
 */
 async function getStartManifest(matchedRoutes) {
-	const { tsrStartManifest } = await import("../_tanstack-start-manifest_v-RMQE3C2T.mjs");
+	const { tsrStartManifest } = await import("../_tanstack-start-manifest_v-B-BPyJGl.mjs");
 	const startManifest = tsrStartManifest();
 	let routes = startManifest.routes;
 	routes[rootRouteId];
@@ -138,163 +138,163 @@ async function getStartManifest(matchedRoutes) {
 var manifest = {
 	"0328babf9660aaa036016c133766138b68d9d0f900cb36a43cfcc81496f73b70": {
 		functionName: "startWildChallenge_createServerFn_handler",
-		importer: () => import("./wildWhispersCloud-LY6QmJGH.mjs")
+		importer: () => import("./wildWhispersCloud-BdHy7NrK.mjs")
 	},
 	"05bb3f90a6df201c3b09534d8e0fc44c18be09c7e497530b564ec724860913c1": {
 		functionName: "generateCreatorIdeas_createServerFn_handler",
-		importer: () => import("./creatorIdeas-D76vPdJY.mjs")
+		importer: () => import("./creatorIdeas-CFRPb4ex.mjs")
 	},
 	"08b32a5b08cabef43341ce3a0393eab95860097817416874dd9ac873c8e912d8": {
 		functionName: "getPushConfig_createServerFn_handler",
-		importer: () => import("./push-CosYAMRL.mjs")
+		importer: () => import("./push-Ct5_rtHM.mjs")
 	},
 	"214e532389d4fd7ac3cf461df51fff915809883bdd8511b99ca25efe6e2ab785": {
 		functionName: "recordGameplayAction_createServerFn_handler",
-		importer: () => import("./gameplay-Bis5AdCm.mjs")
+		importer: () => import("./gameplay-LQc4EEoV.mjs")
 	},
 	"2203e48f7602778cc77be4e403a6a8e45240de39af38f6d276347092d28ea440": {
 		functionName: "answerWildChallenge_createServerFn_handler",
-		importer: () => import("./wildWhispersCloud-LY6QmJGH.mjs")
+		importer: () => import("./wildWhispersCloud-BdHy7NrK.mjs")
 	},
 	"2c1eb34d1747c85c3d16be4a8636f912a529c75181983bae486088f7e804c7ae": {
 		functionName: "listCreatorCommunity_createServerFn_handler",
-		importer: () => import("./community-wdFtGvfd.mjs")
+		importer: () => import("./community-BV2FVnKp.mjs")
 	},
 	"2fcbaf9992b048b4a9641146bb0a1ab015eaacaa981e3cef2df4f6ea6d6c62e2": {
 		functionName: "publishCreatorPuzzle_createServerFn_handler",
-		importer: () => import("./cloud-DYe74okO.mjs")
+		importer: () => import("./cloud-BplJMPC0.mjs")
 	},
 	"386132aadfcf0d2dd473368107b506023d01c0217383a58a7358f4f1a586b5d3": {
 		functionName: "submitScore_createServerFn_handler",
-		importer: () => import("./leaderboard-BtnEWU5e.mjs")
+		importer: () => import("./leaderboard-KkKnF3NY.mjs")
 	},
 	"403e31a54a9929edc37b91d05a6133aff673762c683d5ce96d16f6b4f985050f": {
 		functionName: "bossCombatAction_createServerFn_handler",
-		importer: () => import("./gameplay-Bis5AdCm.mjs")
+		importer: () => import("./gameplay-LQc4EEoV.mjs")
 	},
 	"4821dc6e1cde3e66d023ae86f3ff84317a9d0a30a67a55d491f75ad19ecc0cf4": {
 		functionName: "moderateCreatorPuzzle_createServerFn_handler",
-		importer: () => import("./community-wdFtGvfd.mjs")
+		importer: () => import("./community-BV2FVnKp.mjs")
 	},
 	"4fffa5a0f63ea41e3ee685646e66e22669d938d88b5e688dbcd2825af9159c32": {
 		functionName: "createCheckoutSession_createServerFn_handler",
-		importer: () => import("./server-DcTiBG_s.mjs")
+		importer: () => import("./server-CE2V3f-j.mjs")
 	},
 	"581036f0ddac4f83c74303356201bde69336ff04faae772693ddc0b401a4ba0e": {
 		functionName: "startGameplaySession_createServerFn_handler",
-		importer: () => import("./gameplay-Bis5AdCm.mjs")
+		importer: () => import("./gameplay-LQc4EEoV.mjs")
 	},
 	"5d21986f1c0a9295dd8f4b064e16a8fc28368c3eff1b4beaea29cffc1442ec44": {
 		functionName: "pushCloudSave_createServerFn_handler",
-		importer: () => import("./cloud-NpqIQW7p.mjs")
+		importer: () => import("./cloud-BgDtSIj4.mjs")
 	},
 	"605d10bea64093ac377846d67f1811a2ce1286719d2ee61be6bb04960c9bd8b7": {
 		functionName: "loadCloudSave_createServerFn_handler",
-		importer: () => import("./cloud-NpqIQW7p.mjs")
+		importer: () => import("./cloud-BgDtSIj4.mjs")
 	},
 	"60a8743cc7963260bb7bfac40b759c7a41b2ad34317f722a0a7156f1020aa795": {
 		functionName: "savePushSubscription_createServerFn_handler",
-		importer: () => import("./push-CosYAMRL.mjs")
+		importer: () => import("./push-Ct5_rtHM.mjs")
 	},
 	"654744ea20b062d2b60f2f278bae3afff117b661a98239f16be07de3cbbc8a19": {
 		functionName: "askSmartHint_createServerFn_handler",
-		importer: () => import("./ai-DdrwkPEs.mjs")
+		importer: () => import("./ai-BT-UJDmw.mjs")
 	},
 	"67149de935c30b8a832e9370dbbd95a9cdb67c895d0139455cc3801e197a2bc8": {
 		functionName: "submitCreatorForReview_createServerFn_handler",
-		importer: () => import("./community-wdFtGvfd.mjs")
+		importer: () => import("./community-BV2FVnKp.mjs")
 	},
 	"686333f9fe67899be5e4be9c3f38c555f92744235274bc367fe0245589b6fc12": {
 		functionName: "claimSeasonTierServer_createServerFn_handler",
-		importer: () => import("./serverRewards-u4MB-TJD.mjs")
+		importer: () => import("./serverRewards-ChgJ1eBm.mjs")
 	},
 	"69bb05f6452eb114df02fca9b55c22197ca185b117bc2d0c035c84e5b74db4c1": {
 		functionName: "savePreschoolProgress_createServerFn_handler",
-		importer: () => import("./server-ACQJk5jk.mjs")
+		importer: () => import("./server-C6uOxkmR.mjs")
 	},
 	"6f946c4b3878bb182fab248ddf22fb25f68bd588653acd9fa65d6b32bc5cafae": {
 		functionName: "reviewCreatorPuzzle_createServerFn_handler",
-		importer: () => import("./community-wdFtGvfd.mjs")
+		importer: () => import("./community-BV2FVnKp.mjs")
 	},
 	"745803ee6870b98c25bb612258c2b3215e6e5970b367075a611042f805886df6": {
 		functionName: "getPreschoolProgress_createServerFn_handler",
-		importer: () => import("./server-ACQJk5jk.mjs")
+		importer: () => import("./server-C6uOxkmR.mjs")
 	},
 	"7761324f2c4e6e34bb46d73aabe8f79fcb19cfdcce72bfe959eafd043f87179e": {
 		functionName: "saveWildWhispersSettings_createServerFn_handler",
-		importer: () => import("./wildWhispersCloud-LY6QmJGH.mjs")
+		importer: () => import("./wildWhispersCloud-BdHy7NrK.mjs")
 	},
 	"7ae21670f29b43c4b05cda9c5c6f331d95cf456f0895a4826a9327833e181260": {
 		functionName: "claimAchievementServer_createServerFn_handler",
-		importer: () => import("./serverRewards-u4MB-TJD.mjs")
+		importer: () => import("./serverRewards-ChgJ1eBm.mjs")
 	},
 	"8791a086e1c78691cc5308a94779250d350215fe138b257f1849f5bcdbb4ac19": {
 		functionName: "getMultiplayerRoom_createServerFn_handler",
-		importer: () => import("./multiplayer-6g-iySri.mjs")
+		importer: () => import("./multiplayer-BmL2ZSlP.mjs")
 	},
 	"8e4309aecef59284eab42dbc5b72ae7a718dad8d24fd17bbe3811a78adf5749a": {
 		functionName: "joinMultiplayerRoom_createServerFn_handler",
-		importer: () => import("./multiplayer-6g-iySri.mjs")
+		importer: () => import("./multiplayer-BmL2ZSlP.mjs")
 	},
 	"991382a8b9b94b821719d4689f497ab4ae6539243f9e3e2e9a844d4d39e9641c": {
 		functionName: "claimMissionServer_createServerFn_handler",
-		importer: () => import("./serverRewards-u4MB-TJD.mjs")
+		importer: () => import("./serverRewards-ChgJ1eBm.mjs")
 	},
 	"a529758e2663cf4082de79d1fe57edd20a44ee9b3cd6924baf895bc007150042": {
 		functionName: "getMyEntitlements_createServerFn_handler",
-		importer: () => import("./server-DcTiBG_s.mjs")
+		importer: () => import("./server-CE2V3f-j.mjs")
 	},
 	"adf009bd7fca1657bec39f10ee8e2477aab4c64658c15d7a46bbabd378f0526f": {
 		functionName: "listMyCreatorPuzzles_createServerFn_handler",
-		importer: () => import("./cloud-DYe74okO.mjs")
+		importer: () => import("./cloud-BplJMPC0.mjs")
 	},
 	"bbfde54225dc5379dc6f998dc9488ae59460377cdf96575a81edf78aadd14a8e": {
 		functionName: "writeAdminNote_createServerFn_handler",
-		importer: () => import("./server-CAqIob3E.mjs")
+		importer: () => import("./server-B6yqBbHt.mjs")
 	},
 	"c1d68e648bc087ed6bc39d33acec72f03d184b5f9a16e8ecbf0c757755d98d6f": {
 		functionName: "removePushSubscription_createServerFn_handler",
-		importer: () => import("./push-CosYAMRL.mjs")
+		importer: () => import("./push-Ct5_rtHM.mjs")
 	},
 	"cd09e5b6c0789d2b1cfcd03514df492467c7b0106c65aa45b71bfb259de1dae1": {
 		functionName: "createMultiplayerRoom_createServerFn_handler",
-		importer: () => import("./multiplayer-6g-iySri.mjs")
+		importer: () => import("./multiplayer-BmL2ZSlP.mjs")
 	},
 	"d38b308059b70858a9ce92cfceeaa8a429c738b32064fb7cdc0b6429e186b301": {
 		functionName: "recordVerifiedPurchase_createServerFn_handler",
-		importer: () => import("./server-DcTiBG_s.mjs")
+		importer: () => import("./server-CE2V3f-j.mjs")
 	},
 	"d3ab841e529e3cf0bd7975521fcd65744b8d750609f24fd7cc8415e46578552e": {
 		functionName: "verifyGameplayCompletion_createServerFn_handler",
-		importer: () => import("./gameplay-Bis5AdCm.mjs")
+		importer: () => import("./gameplay-LQc4EEoV.mjs")
 	},
 	"da7c811256b020c57ac9eb1f7f3cc8354790bb23df3df0e1b611c40f89c82d3f": {
 		functionName: "getLeaderboard_createServerFn_handler",
-		importer: () => import("./leaderboard-BtnEWU5e.mjs")
+		importer: () => import("./leaderboard-KkKnF3NY.mjs")
 	},
 	"dc6a5ac3b5925cbe7409cef2efa22a0ded7ffd9d5e2556b40074f0ec48438c85": {
 		functionName: "loadWildWhispersCloud_createServerFn_handler",
-		importer: () => import("./wildWhispersCloud-LY6QmJGH.mjs")
+		importer: () => import("./wildWhispersCloud-BdHy7NrK.mjs")
 	},
 	"df8e182953a1453434fc96e92b9eb2990c822c06cd70838a29ccffcf929d5f91": {
 		functionName: "getAdminSnapshot_createServerFn_handler",
-		importer: () => import("./server-CAqIob3E.mjs")
+		importer: () => import("./server-B6yqBbHt.mjs")
 	},
 	"e201e4b1ab6c9d61fd78aacea19e6952286bf36c09959c57d9131b0180866b0b": {
 		functionName: "getDailyBoard_createServerFn_handler",
-		importer: () => import("./leaderboard-BtnEWU5e.mjs")
+		importer: () => import("./leaderboard-KkKnF3NY.mjs")
 	},
 	"e595fb0c1f64001fbf0c680adcac401918332ca64da5f83bfc9edc5a8b9ba42c": {
 		functionName: "submitDaily_createServerFn_handler",
-		importer: () => import("./leaderboard-BtnEWU5e.mjs")
+		importer: () => import("./leaderboard-KkKnF3NY.mjs")
 	},
 	"e9e6ac6cc851f2f412a9132465e703eec6b80defe607249b8d462594edb381a7": {
 		functionName: "auditPuzzleWords_createServerFn_handler",
-		importer: () => import("./v36_puzzleAudit-Bc0IZePV.mjs")
+		importer: () => import("./v36_puzzleAudit-Ckk_R-Oz.mjs")
 	},
 	"fd192289e010307ddc29c0d3356f5cf89a2c58c0870229aede772f099b006e42": {
 		functionName: "startBossSession_createServerFn_handler",
-		importer: () => import("./gameplay-Bis5AdCm.mjs")
+		importer: () => import("./gameplay-LQc4EEoV.mjs")
 	}
 };
 async function getServerFnById(id, access) {
@@ -1564,9 +1564,9 @@ var getBaseManifest = getProdBaseManifest;
 var createEarlyHintsForRequest = createEarlyHintsCollector;
 async function loadEntries() {
 	const [routerEntry, startEntry, pluginAdapters] = await Promise.all([
-		import("./router-BjcrEgJr.mjs").then((n) => n.t),
-		import("./start-BRont_2I.mjs"),
-		import("./empty-plugin-adapters-CykxgOdX.mjs")
+		import("./router-CWxEX7H0.mjs").then((n) => n.t),
+		import("./start-Dilxh8wN.mjs"),
+		import("./empty-plugin-adapters-DFHTEB3e.mjs")
 	]);
 	return {
 		routerEntry,

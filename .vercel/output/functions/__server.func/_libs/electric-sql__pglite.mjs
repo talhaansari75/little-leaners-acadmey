@@ -1,7 +1,7 @@
 import { r as __exportAll } from "../_runtime.mjs";
 import * as s$1 from "fs";
 import * as o$2 from "path";
-//#region ../../node_modules/@electric-sql/pglite/dist/chunk-QY3QWFKW.js
+//#region ../node_modules/@electric-sql/pglite/dist/chunk-QY3QWFKW.js
 var p$3 = Object.create;
 var i = Object.defineProperty;
 var c$2 = Object.getOwnPropertyDescriptor;
@@ -54,7 +54,7 @@ var u$1 = d$1(() => {
 	"use strict";
 });
 //#endregion
-//#region ../../node_modules/@electric-sql/pglite/dist/chunk-NNS5RQRF.js
+//#region ../node_modules/@electric-sql/pglite/dist/chunk-NNS5RQRF.js
 u$1();
 var d = Object.defineProperty;
 var f$2 = (t, e) => {
@@ -147,7 +147,7 @@ function u(t, e) {
 	}
 }
 //#endregion
-//#region ../../node_modules/@electric-sql/pglite/dist/chunk-DDJLRBDX.js
+//#region ../node_modules/@electric-sql/pglite/dist/chunk-DDJLRBDX.js
 var Y$1 = D$4((Xr, M) => {
 	"use strict";
 	u$1();
@@ -4124,7 +4124,7 @@ var Wr = (e, r) => {
 	return o;
 };
 //#endregion
-//#region ../../node_modules/@electric-sql/pglite/dist/fs/nodefs.js
+//#region ../node_modules/@electric-sql/pglite/dist/fs/nodefs.js
 var nodefs_exports = /* @__PURE__ */ __exportAll({ NodeFS: () => m$2 });
 u$1();
 var m$2 = class extends Ye$2 {
@@ -4145,7 +4145,7 @@ var m$2 = class extends Ye$2 {
 	}
 };
 //#endregion
-//#region ../../node_modules/@electric-sql/pglite/dist/fs/opfs-ahp.js
+//#region ../node_modules/@electric-sql/pglite/dist/fs/opfs-ahp.js
 var opfs_ahp_exports = /* @__PURE__ */ __exportAll({ OpfsAhpFS: () => L$1 });
 u$1();
 var $$2 = "state.txt";
@@ -4532,7 +4532,7 @@ var p$1 = class extends Error {
 	}
 };
 //#endregion
-//#region ../../node_modules/@electric-sql/pglite/dist/chunk-2BOC2OMW.js
+//#region ../node_modules/@electric-sql/pglite/dist/chunk-2BOC2OMW.js
 var yn = {};
 F$2(yn, {
 	ABSTIME: () => Et$1,
@@ -5489,7 +5489,7 @@ A = /* @__PURE__ */ new WeakMap(), B = /* @__PURE__ */ new WeakMap(), D$1 = /* @
 	return l.severity = a.S, l.code = a.C, l.detail = a.D, l.hint = a.H, l.position = a.P, l.internalPosition = a.p, l.internalQuery = a.q, l.where = a.W, l.schema = a.s, l.table = a.t, l.column = a.c, l.dataType = a.d, l.constraint = a.n, l.file = a.F, l.line = a.L, l.routine = a.R, l;
 };
 //#endregion
-//#region ../../node_modules/@electric-sql/pglite/dist/chunk-F4GETNPB.js
+//#region ../node_modules/@electric-sql/pglite/dist/chunk-F4GETNPB.js
 u$1();
 var o = {
 	part: "part",
@@ -5535,7 +5535,7 @@ function g(t, ...r) {
 	};
 }
 //#endregion
-//#region ../../node_modules/@electric-sql/pglite/dist/chunk-JDT7TZ73.js
+//#region ../node_modules/@electric-sql/pglite/dist/chunk-JDT7TZ73.js
 u$1();
 u$1();
 function E(h) {
@@ -5709,7 +5709,7 @@ P = /* @__PURE__ */ new WeakMap(), p = /* @__PURE__ */ new WeakMap(), t = /* @__
 	this.debug > 0 && console.log(...s);
 };
 //#endregion
-//#region ../../node_modules/@electric-sql/pglite/dist/chunk-RYDTTX3G.js
+//#region ../node_modules/@electric-sql/pglite/dist/chunk-RYDTTX3G.js
 u$1();
 async function v(s, e, r, n) {
 	if (!r || r.length === 0) return e;
@@ -5724,7 +5724,7 @@ async function v(s, e, r, n) {
 	return (await n.query(`SELECT format($1, ${r.map((d, l) => `$${l + 2}`).join(", ")}) as query`, [i, ...r], { paramTypes: [25, ...a] })).rows[0].query;
 }
 //#endregion
-//#region ../../node_modules/@electric-sql/pglite/dist/index.js
+//#region ../node_modules/@electric-sql/pglite/dist/index.js
 var dist_exports = /* @__PURE__ */ __exportAll({
 	IdbFs: () => ve,
 	MemoryFS: () => Ee,
