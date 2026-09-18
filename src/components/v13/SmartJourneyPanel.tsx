@@ -23,9 +23,7 @@ function localProfile(): ReturnType<typeof getLearningProfile> { return getLearn
 export function SmartJourneyPanel({ className, onSpeak }: { className?: string; onSpeak: (text: string) => void }) {
   const [tick, setTick] = useState(0);
   const [tab, setTab] = useState<"adventure" | "skills" | "style" | "offline">("adventure");
-  const [klass, setKlass] = useState<LearningClass>(() => {
-    try { const value = localStorage.getItem("lla-class"); return value === "KG" || value === "Montessori" ? value : "Nursery"; } catch { return "Nursery"; }
-  });
+  const [klass, setKlass] = useState<LearningClass>(() => getSelectedClass() ?? "Nursery");
   const profile = useMemo(() => { void tick; return localProfile(); }, [tick]);
   const recommendation = useMemo(() => recommendNext(profile, klass), [profile, klass]);
   const skills = CLASS_SKILLS[klass];

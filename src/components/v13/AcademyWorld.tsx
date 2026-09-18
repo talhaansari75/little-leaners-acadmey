@@ -86,8 +86,8 @@ export function AcademyWorld({ xp, completed, available, onSpeak, onMissionCompl
   Playgroup:["pg-colors","pg-abc","pg-numbers","pg-shapes"],
   Nursery:["colors","letters","numbers","rhymes"],
   "KG-1":["kg1-phonics","kg1-math","kg1-patterns"],
-  "KG-2":["kg2-reading","kg2-words","kg2-math","kg2-patterns"],
-  "Class 1":["class1-writing","class1-math","class1-science","class1-sensorial"]
+  "KG-2":["kg2-phonics","kg2-words","kg2-reading","kg2-counting"],
+  "Class 1":["class1-writing","class1-math","class1-practical","class1-sensorial"]
 }; openActivity(ids[klass][i]); }} className={`academy-room ${i < roomCount ? "" : "is-locked"}`}><span>{["🌈", "🔤", "🔢", "🎵"][i]}</span><b>{room}</b>{i >= roomCount && <small>🔒 {100 * (i + 1)} XP</small>}</button>)}</div>
 
       <div className="academy-section-title"><span>✨</span><b>Magic Rooms</b><small>Creative discoveries</small></div>
