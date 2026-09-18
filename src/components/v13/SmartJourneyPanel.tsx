@@ -71,7 +71,33 @@ export function SmartJourneyPanel({ className, onSpeak }: { className?: string; 
   },
 };
 
-const id=map[klass][recommendation.skill]; if(id) window.dispatchEvent(new CustomEvent("lla-open-activity", { detail: { id, difficulty: recommendation.difficulty } })); onSpeak(`${challenge}. ${recommendation.title}. ${recommendation.reason}`); }}><Gamepad2 className="size-4"/> Start</button></div><div className="smart-mini-stats"><span><Target className="size-3.5"/> {explored}/{skills.length} skills explored</span><span><CheckCircle2 className="size-3.5"/> {recommendation.confidence}% guidance</span></div></div>}
+const id=map[klass][recommendation.skill]; if(id) window.dispatchEvent(new CustomEvent("lla-open-activity", { detail: { id, difficulty: recommendation.difficulty } })); onSpeak(`${challenge}. ${recommendation.title}. ${recommendation.reason}`); }}><Gamepad2 className="size-4"/> Start</button></div><div className="smart-mini-stats"><span><Target className="size-3.5"/> {explored}/{skills.length} skills explored</span><span><CheckCircle2 className="size-3.5"/> {recommendation.confidence}% guidance</span></div>
+<div className="mt-3 rounded-2xl bg-white/80 p-3">
+  <div className="mb-2 flex items-center justify-between">
+    <b className="text-sm">🗺️ Your Learning Path</b>
+    <span className="text-xs text-muted">{Math.min(5, Math.floor((Object.values(stat).reduce((n,s)=>n+s.attempts,0))/2)+1)}/5 levels</span>
+  </div>
+  <div className="grid grid-cols-5 gap-1.5">
+    {[1,2,3,4,5].map(level => {
+      const attempts=Object.values(stat).reduce((n,s)=>n+s.attempts,0);
+      const unlocked=level===1 || attempts >= (level-1)*2;
+      return <button
+        key={level}
+        type="button"
+        onClick={()=>{
+          if(unlocked) onSpeak(`${klass} Level ${level}. Keep learning!`);
+          else onSpeak(`Level ${level} unlocks after more practice.`);
+        }}
+        className={`rounded-xl p-2 text-center text-xs font-black ${unlocked?"bg-primary text-white":"bg-slate-100 text-slate-400"}`}
+      >
+        <span className="block text-base">{unlocked?"⭐":"🔒"}</span>
+        L{level}
+      </button>;
+    })}
+  </div>
+  <p className="mt-2 text-[10px] text-muted">Each level opens through practice. Your progress stays separate for {klass}.</p>
+</div>
+</div>}
     {tab === "skills" && <div className="smart-skill-map"><div className="smart-class-picker">{LEARNING_CLASSES.map((name) => <button key={name} type="button" onClick={() => changeClass(name)} className={klass === name ? "is-active" : ""}>{CLASS_EMOJI[name]} {name}</button>)}</div><div className="smart-skill-grid">{skills.map((skill) => { const s = stat[skill]; const accuracy = s?.attempts ? Math.round((s.correct / s.attempts) * 100) : 0; const state = !s?.attempts ? "New" : accuracy >= 88 ? "Strong" : accuracy >= 65 ? "Growing" : "Practice"; return <div key={skill} className={`smart-skill ${state.toLowerCase()}`}><div><b>{skill.replaceAll("-", " ")}</b><span>{state}</span></div><div className="smart-skill-bar"><i style={{ width: `${s?.attempts ? Math.max(8, accuracy) : 6}%` }}/></div></div>; })}</div><p className="smart-note"><Map className="size-4"/> The map uses only this class’s learning signals, so pathways stay separate.</p></div>}
     {tab === "style" && <LearningStyle profile={profile} klass={klass}/>} 
     {tab === "offline" && <div className="smart-offline"><div className="smart-offline-hero"><WifiOff className="size-6"/><div><b>Offline Smart Mode</b><p>Recommendations, progress and challenge selection stay on this device.</p></div></div><div className="smart-offline-grid"><span>🧠 Local brain</span><span>🎮 Adaptive games</span><span>📊 Local progress</span><span>🔊 Bundled audio</span><span>🖼️ Local artwork</span><span>📝 Local worksheets</span></div><p className="smart-note"><Radio className="size-4"/> Cloud sync and account features can wait until a connection is available.</p></div>}

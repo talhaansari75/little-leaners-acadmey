@@ -80,6 +80,7 @@ export function HomeScreen() {
       <header className="flex items-center justify-between gap-3">
         <div><p className="text-xs uppercase tracking-[0.2em] text-accent">{save.playerName}</p><h1 className="font-display text-2xl text-fg">{t("app.title")}</h1></div>
         <button type="button" className="inline-flex h-11 w-11 items-center justify-center rounded-xl panel" onClick={() => useGame.getState().go("profile")} aria-label={t("cta.profile")}><User className="size-5" /></button>
+      <button type="button" className="inline-flex h-11 w-11 items-center justify-center rounded-xl panel" onClick={() => useGame.getState().go("settings")} aria-label="Settings"><Settings className="size-5" /></button>
       </header>
       <HudChips />
       <button type="button" className="journey-continue btn-primary animate-pop" onClick={() => useGame.getState().go("preschool")}>

@@ -197,20 +197,200 @@ function ParentPanel({profile,saveProfile,premium,buying,buyPremium,offlinePack,
   </section>;
 }
 
-function ActivityScreen({activity,difficulty="steady",onBack,onComplete}:{activity:Activity;difficulty?:"gentle"|"steady"|"challenge";onBack:()=>void;onComplete:()=>void}){const [answer,setAnswer]=useState<string|null>(null);const [round,setRound]=useState(0);const data=useMemo(()=>{switch(activity.kind){case"letters":return{prompt:"Which letter starts Apple?",choices:["A","B","C","D"],correct:"A",helper:"A is for Apple!",art:WORD_CARDS.find(w=>w.id==="apple")?.src};case"numbers":return{prompt:"How many apples?",choices:["3","4","5","6"],correct:"4",helper:"Four apples!",art:WORD_CARDS.find(w=>w.id==="apple")?.src};case"colors":return{prompt:"What color is the sky?",choices:COLORS,correct:"Blue",helper:"Blue like the sky!"};case"shapes":return{prompt:"Which shape has 3 sides?",choices:SHAPES,correct:"Triangle",helper:"Triangle has three sides!"};case"sorting":return{prompt:"Which one is BIG?",choices:["Elephant","Ant","Mouse","Ladybug"],correct:"Elephant",helper:"The elephant is big!",art:animalArt("elephant")};case"body":return{prompt:"What do we use to see?",choices:BODY,correct:"Eyes 👀",helper:"We see with our eyes!"};case"vehicles":return{prompt:"Which picture is a car?",choices:["Car","Cat","Tree","Moon"],correct:"Car",helper:"A car is a vehicle.",art:WORD_CARDS.find(w=>w.id==="car")?.src};case"math":return{prompt:"What is 2 + 1?",choices:["2","3","4","5"],correct:"3",helper:"Two plus one makes three!"};case"opposites":return{prompt:"What is the opposite of BIG?",choices:["Small","Fast","Up","Hot"],correct:"Small",helper:"Big ↔ Small"};case"patterns":return{prompt:"What comes next? 🔴 🔵 🔴 🔵 ?",choices:["🔴 Red","🟢 Green","🟡 Yellow","🟣 Purple"],correct:"🔴 Red",helper:"The pattern repeats red, blue."};case"listen":return{prompt:"Which animal did you hear?",choices:["Lion","Frog","Bee","Duck"],correct:"Lion",helper:"That was a lion.",art:animalArt("lion"),listenSrc:CLASS_AUDIO.Nursery[0]?.src,listenText:"Lion"};case"puzzle":return{prompt:"Which picture matches the cat?",choices:["Cat","Fish","Apple","Car"],correct:"Cat",helper:"Same animal!",art:WORD_CARDS.find(w=>w.id==="cat")?.src};default:return{prompt:"What comes next in the story?",choices:["Park","Moon","Sea","Home"],correct:"Park",helper:"Great storytelling!"}}},[activity.kind]);
- const difficultyHint = difficulty === "gentle" ? "Gentle step" : difficulty === "challenge" ? "Challenge step" : "Steady step";
- const tuned = useMemo(() => {
-   if (difficulty === "challenge" && activity.kind === "numbers") return { ...data, prompt: "How many stars? ⭐⭐⭐⭐⭐⭐", choices: ["5","6","7","8"], correct: "6", helper: "Six stars! 🚀" };
-   if (difficulty === "challenge" && activity.kind === "math") return { ...data, prompt: "What is 4 + 3?", choices: ["6","7","8","9"], correct: "7", helper: "Four plus three makes seven! 🚀" };
-   if (difficulty === "challenge" && activity.kind === "patterns") return { ...data, prompt: "What comes next? 🔴 🔵 🟢 🔴 🔵 ?", choices: ["🟢 Green","🔴 Red","🟡 Yellow","🟣 Purple"], correct: "🟢 Green", helper: "The pattern repeats red, blue, green." };
-   if (difficulty === "gentle") {
-     const rest = data.choices.filter((c) => c !== data.correct).slice(0, 1);
-     return { ...data, choices: [data.correct, ...rest] };
+function ActivityScreen({activity,difficulty="steady",onBack,onComplete}:{activity:Activity;difficulty?:"gentle"|"steady"|"challenge";onBack:()=>void;onComplete:()=>void}) {
+ const [answer,setAnswer]=useState<string|null>(null);
+ const [round,setRound]=useState(0);
+
+ type Question={prompt:string;choices:string[];correct:string;helper:string;art?:string;listenSrc?:string;listenText?:string};
+
+ const questionBank:Record<Kind,Question[]> = {
+   letters:[
+     {prompt:"Which letter starts Apple? 🍎",choices:["A","B","C","D"],correct:"A",helper:"A is for Apple!"},
+     {prompt:"Which letter starts Ball? ⚽",choices:["A","B","C","D"],correct:"B",helper:"B is for Ball!"},
+     {prompt:"Which letter starts Cat? 🐱",choices:["C","D","M","T"],correct:"C",helper:"C is for Cat!"},
+     {prompt:"Which letter starts Dog? 🐶",choices:["A","D","G","P"],correct:"D",helper:"D is for Dog!"},
+     {prompt:"Which letter starts Sun? ☀️",choices:["S","M","T","R"],correct:"S",helper:"S is for Sun!"},
+     {prompt:"Which letter starts Fish? 🐟",choices:["F","P","B","L"],correct:"F",helper:"F is for Fish!"},
+     {prompt:"Which letter starts Moon? 🌙",choices:["N","M","S","W"],correct:"M",helper:"M is for Moon!"},
+     {prompt:"Which letter starts Tree? 🌳",choices:["T","C","P","D"],correct:"T",helper:"T is for Tree!"},
+   ],
+   numbers:[
+     {prompt:"How many apples? 🍎🍎",choices:["1","2","3","4"],correct:"2",helper:"There are two apples!"},
+     {prompt:"How many stars? ⭐⭐⭐",choices:["2","3","4","5"],correct:"3",helper:"There are three stars!"},
+     {prompt:"How many ducks? 🦆🦆🦆🦆",choices:["3","4","5","6"],correct:"4",helper:"There are four ducks!"},
+     {prompt:"What comes after 4?",choices:["3","5","6","7"],correct:"5",helper:"5 comes after 4!"},
+     {prompt:"What comes after 7?",choices:["6","8","9","10"],correct:"8",helper:"8 comes after 7!"},
+     {prompt:"How many fingers on one hand? ✋",choices:["4","5","6","10"],correct:"5",helper:"One hand has five fingers!"},
+   ],
+   colors:[
+     {prompt:"What color is the sky? ☁️",choices:["Blue","Red","Green","Pink"],correct:"Blue",helper:"The sky is usually blue!"},
+     {prompt:"What color is grass? 🌱",choices:["Green","Purple","Orange","Black"],correct:"Green",helper:"Grass is green!"},
+     {prompt:"What color is a banana? 🍌",choices:["Yellow","Blue","Brown","Pink"],correct:"Yellow",helper:"A banana is yellow!"},
+     {prompt:"What color is an apple? 🍎",choices:["Red","Blue","Purple","White"],correct:"Red",helper:"A red apple!"},
+     {prompt:"What color is an orange? 🍊",choices:["Orange","Green","Blue","Black"],correct:"Orange",helper:"Orange is orange!"},
+     {prompt:"Which is a warm color?",choices:["Red","Blue","Green","Purple"],correct:"Red",helper:"Red is a warm color!"},
+   ],
+   shapes:[
+     {prompt:"Which shape has 3 sides?",choices:["Circle","Triangle","Square","Star"],correct:"Triangle",helper:"A triangle has three sides!"},
+     {prompt:"Which shape is round?",choices:["Circle","Square","Triangle","Rectangle"],correct:"Circle",helper:"A circle is round!"},
+     {prompt:"Which shape has 4 equal sides?",choices:["Circle","Triangle","Square","Oval"],correct:"Square",helper:"A square has four equal sides!"},
+     {prompt:"Which shape looks like a door?",choices:["Rectangle","Circle","Triangle","Star"],correct:"Rectangle",helper:"A rectangle can look like a door!"},
+     {prompt:"Which shape has 5 points?",choices:["Star","Circle","Square","Oval"],correct:"Star",helper:"A star has points!"},
+   ],
+   sorting:[
+     {prompt:"Which one is BIG?",choices:["Elephant","Ant","Mouse","Ladybug"],correct:"Elephant",helper:"The elephant is big!"},
+     {prompt:"Which one is SMALL?",choices:["Elephant","Ant","Giraffe","Bus"],correct:"Ant",helper:"The ant is small!"},
+     {prompt:"Which belongs in the kitchen?",choices:["Spoon","Shoe","Ball","Book"],correct:"Spoon",helper:"We use a spoon in the kitchen!"},
+     {prompt:"Which is a fruit?",choices:["Apple","Chair","Car","Shoe"],correct:"Apple",helper:"An apple is a fruit!"},
+     {prompt:"Which is a vehicle?",choices:["Bus","Banana","Pencil","Flower"],correct:"Bus",helper:"A bus is a vehicle!"},
+   ],
+   body:[
+     {prompt:"What do we use to see?",choices:["Eyes 👀","Ears 👂","Hands ✋","Feet 🦶"],correct:"Eyes 👀",helper:"We see with our eyes!"},
+     {prompt:"What do we use to hear?",choices:["Eyes 👀","Ears 👂","Nose 👃","Hands ✋"],correct:"Ears 👂",helper:"We hear with our ears!"},
+     {prompt:"What do we use to smell?",choices:["Nose 👃","Eyes 👀","Feet 🦶","Hands ✋"],correct:"Nose 👃",helper:"We smell with our nose!"},
+     {prompt:"What do we use to walk?",choices:["Feet 🦶","Ears 👂","Eyes 👀","Teeth 🦷"],correct:"Feet 🦶",helper:"We walk with our feet!"},
+   ],
+   vehicles:[
+     {prompt:"Which picture is a car?",choices:["Car","Cat","Tree","Moon"],correct:"Car",helper:"A car is a vehicle."},
+     {prompt:"Which one flies?",choices:["Airplane","Bus","Boat","Bicycle"],correct:"Airplane",helper:"An airplane flies!"},
+     {prompt:"Which one travels on water?",choices:["Boat","Car","Bus","Train"],correct:"Boat",helper:"A boat travels on water!"},
+     {prompt:"Which one travels on tracks?",choices:["Train","Car","Boat","Bicycle"],correct:"Train",helper:"A train travels on tracks!"},
+     {prompt:"Which vehicle has two wheels?",choices:["Bicycle","Bus","Train","Boat"],correct:"Bicycle",helper:"A bicycle has two wheels!"},
+   ],
+   math:[
+     {prompt:"What is 2 + 1?",choices:["2","3","4","5"],correct:"3",helper:"Two plus one makes three!"},
+     {prompt:"What is 2 + 2?",choices:["3","4","5","6"],correct:"4",helper:"Two plus two makes four!"},
+     {prompt:"What is 3 + 2?",choices:["4","5","6","7"],correct:"5",helper:"Three plus two makes five!"},
+     {prompt:"What is 5 - 2?",choices:["2","3","4","5"],correct:"3",helper:"Five minus two makes three!"},
+     {prompt:"What is 4 + 3?",choices:["6","7","8","9"],correct:"7",helper:"Four plus three makes seven!"},
+     {prompt:"What comes after 9?",choices:["8","10","11","12"],correct:"10",helper:"10 comes after 9!"},
+   ],
+   opposites:[
+     {prompt:"What is the opposite of BIG?",choices:["Small","Fast","Up","Hot"],correct:"Small",helper:"Big ↔ Small"},
+     {prompt:"What is the opposite of HOT?",choices:["Cold","Tall","Fast","Happy"],correct:"Cold",helper:"Hot ↔ Cold"},
+     {prompt:"What is the opposite of UP?",choices:["Down","Left","Big","Fast"],correct:"Down",helper:"Up ↔ Down"},
+     {prompt:"What is the opposite of FAST?",choices:["Slow","Hot","High","Small"],correct:"Slow",helper:"Fast ↔ Slow"},
+   ],
+   patterns:[
+     {prompt:"What comes next? 🔴 🔵 🔴 🔵 ?",choices:["🔴 Red","🟢 Green","🟡 Yellow","🟣 Purple"],correct:"🔴 Red",helper:"The pattern repeats red, blue."},
+     {prompt:"What comes next? ⭐ 🌙 ⭐ 🌙 ?",choices:["⭐ Star","☀️ Sun","🌈 Rainbow","❤️ Heart"],correct:"⭐ Star",helper:"Star, moon, star, moon!"},
+     {prompt:"What comes next? 🟢 🟢 🔵 🟢 🟢 ?",choices:["🔵 Blue","🟢 Green","🔴 Red","🟡 Yellow"],correct:"🔵 Blue",helper:"Two green, one blue!"},
+     {prompt:"What comes next? 🟡 🔴 🟡 🔴 ?",choices:["🟡 Yellow","🔵 Blue","🟢 Green","🟣 Purple"],correct:"🟡 Yellow",helper:"Yellow, red, yellow, red!"},
+   ],
+   listen:[
+     {prompt:"Which animal says Moo? 🐮",choices:["Cow","Lion","Duck","Bee"],correct:"Cow",helper:"A cow says moo!",listenText:"Cow"},
+     {prompt:"Which animal says Quack? 🦆",choices:["Duck","Cat","Dog","Lion"],correct:"Duck",helper:"A duck says quack!",listenText:"Duck"},
+     {prompt:"Which animal says Woof? 🐶",choices:["Dog","Cat","Cow","Bee"],correct:"Dog",helper:"A dog says woof!",listenText:"Dog"},
+     {prompt:"Which animal says Meow? 🐱",choices:["Cat","Duck","Cow","Lion"],correct:"Cat",helper:"A cat says meow!",listenText:"Cat"},
+   ],
+   puzzle:[
+     {prompt:"Which picture matches the cat? 🐱",choices:["Cat","Fish","Apple","Car"],correct:"Cat",helper:"Same animal!"},
+     {prompt:"Which belongs with a shoe?",choices:["Sock","Apple","Fish","Moon"],correct:"Sock",helper:"A sock goes with a shoe!"},
+     {prompt:"Which belongs with a cup?",choices:["Saucer","Bicycle","Tree","Hat"],correct:"Saucer",helper:"A cup can sit on a saucer!"},
+     {prompt:"Which one is different?",choices:["Apple","Banana","Orange","Chair"],correct:"Chair",helper:"The chair is not a fruit!"},
+   ],
+   story:[
+     {prompt:"What comes next in the story?",choices:["Park","Moon","Sea","Home"],correct:"Park",helper:"Great storytelling!"},
+     {prompt:"A little bird finds a nest. Where should it rest?",choices:["Nest","Road","Shoe","Spoon"],correct:"Nest",helper:"The nest is a safe place for the bird!"},
+     {prompt:"Sara is thirsty. What should she drink?",choices:["Water","Book","Ball","Shoe"],correct:"Water",helper:"Water helps us when we are thirsty!"},
+     {prompt:"The sun goes down. What happens next?",choices:["Night","Morning","Lunch","School"],correct:"Night",helper:"After sunset comes night!"},
+   ],
+   tracing:[],
+   coloring:[],
+   rhymes:[],
+ };
+
+ const base = questionBank[activity.kind] ?? questionBank.story;
+ const tuned = useMemo(()=>{
+   const list = base.length ? base : questionBank.story;
+   const index = round % list.length;
+   let q = list[index];
+   if(difficulty==="challenge" && activity.kind==="numbers"){
+     q={prompt:"How many stars? ⭐⭐⭐⭐⭐⭐",choices:["5","6","7","8"],correct:"6",helper:"Six stars! 🚀"};
    }
-   return data;
- }, [data, difficulty, activity.kind]);
- const choose=(v:string)=>{setAnswer(v);const className = getSelectedClass();
-if (!className) return;recordAttempt(className, skillForActivity(className, activity.kind), v===tuned.correct, 0, activity.kind === "listen" ? "audio" : activity.kind === "story" ? "story" : activity.kind === "tracing" || activity.kind === "sorting" ? "hands-on" : activity.kind === "letters" || activity.kind === "colors" || activity.kind === "shapes" ? "picture" : "game");if(v===tuned.correct)onComplete()};const special=["tracing","coloring","rhymes"].includes(activity.kind);return <Screen title={activity.title} onBack={onBack}><div className="grid gap-3">{special?<SpecialActivity kind={activity.kind} onComplete={onComplete}/>:<><section className="panel rounded-3xl p-5 text-center"><div className="mx-auto mb-3 inline-flex rounded-2xl bg-surface-2 p-3 text-primary">{activity.icon}</div><p className="text-sm text-muted">Question {round+1} • {difficultyHint}</p>{tuned.art && <img src={tuned.art} alt="" className="mx-auto my-3 h-28 w-28 object-contain" />}<h2 className="mt-2 font-display text-2xl text-fg">{tuned.prompt}</h2><button className="hud-chip mx-auto mt-3" onClick={()=>{ if ((tuned as {listenSrc?:string}).listenSrc) playBundledAudio((tuned as {listenSrc?:string}).listenSrc!); speak((tuned as {listenText?:string}).listenText ?? data.prompt); }}><Volume2 className="size-4"/> Listen</button></section><div className="grid grid-cols-2 gap-2">{tuned.choices.map(c=><button key={c} type="button" onClick={()=>choose(c)} className={`panel min-h-20 rounded-2xl p-3 text-lg font-bold text-fg ${answer===c?(c===tuned.correct?"ring-2 ring-accent":"ring-2 ring-warning"):""}`}>{c}</button>)}</div>{answer&&<section className="panel rounded-2xl p-4 text-center"><p className="text-lg font-bold text-fg">{answer===tuned.correct?"Great job!":"Try again"}</p><p className="mt-1 text-sm text-muted">{tuned.helper}</p><button className="btn-primary mt-3" onClick={()=>{setAnswer(null);setRound(r=>r+1)}}>Next</button></section>}</>}</div></Screen>}
+   if(difficulty==="challenge" && activity.kind==="math"){
+     q={prompt:"What is 6 + 4?",choices:["8","9","10","11"],correct:"10",helper:"Six plus four makes ten! 🚀"};
+   }
+   if(difficulty==="challenge" && activity.kind==="patterns"){
+     q={prompt:"What comes next? 🔴 🔵 🟢 🔴 🔵 ?",choices:["🟢 Green","🔴 Red","🟡 Yellow","🟣 Purple"],correct:"🟢 Green",helper:"The pattern repeats red, blue, green."};
+   }
+   return q;
+ },[round,activity.kind,difficulty]);
+
+ const choose=(v:string)=>{
+   setAnswer(v);
+   const className=getSelectedClass();
+   if(className){
+     recordAttempt(
+       className,
+       skillForActivity(className,activity.kind),
+       v===tuned.correct,
+       0,
+       activity.kind==="listen"?"audio":
+       activity.kind==="story"?"story":
+       activity.kind==="tracing"||activity.kind==="sorting"?"hands-on":
+       activity.kind==="letters"||activity.kind==="colors"||activity.kind==="shapes"?"picture":"game"
+     );
+   }
+   if(v===tuned.correct) onComplete();
+ };
+
+ const special=["tracing","coloring","rhymes"].includes(activity.kind);
+
+ if(special){
+   return <Screen title={activity.title} onBack={onBack}>
+     <SpecialActivity kind={activity.kind} onComplete={onComplete}/>
+   </Screen>;
+ }
+
+ const total=base.length || 1;
+ const finished=round>=total-1 && answer===tuned.correct;
+
+ return <Screen title={activity.title} onBack={onBack}>
+   <div className="grid gap-3">
+     <section className="panel rounded-3xl p-5 text-center">
+       <div className="mx-auto mb-3 inline-flex rounded-2xl bg-surface-2 p-3 text-primary">{activity.icon}</div>
+       <p className="text-sm text-muted">Question {round+1} of {total} • {difficulty}</p>
+       <h2 className="mt-2 font-display text-2xl text-fg">{tuned.prompt}</h2>
+       {tuned.listenText&&<button className="hud-chip mx-auto mt-3" onClick={()=>speak(tuned.listenText!)}>
+         <Volume2 className="size-4"/> Listen
+       </button>}
+     </section>
+
+     <div className="grid grid-cols-2 gap-2">
+       {tuned.choices.map(c=>
+         <button
+           key={c}
+           type="button"
+           onClick={()=>choose(c)}
+           className={`panel min-h-20 rounded-2xl p-3 text-lg font-bold text-fg ${answer===c?(c===tuned.correct?"ring-2 ring-accent":"ring-2 ring-warning"):""}`}
+         >{c}</button>
+       )}
+     </div>
+
+     {answer&&(
+       <section className="panel rounded-2xl p-4 text-center">
+         <p className="text-lg font-bold text-fg">{answer===tuned.correct?"Great job!":"Try again"}</p>
+         <p className="mt-1 text-sm text-muted">{tuned.helper}</p>
+
+         {answer===tuned.correct&&(
+           <button
+             className="btn-primary mt-3"
+             onClick={()=>{
+               setAnswer(null);
+               if(!finished) setRound(r=>r+1);
+               else onBack();
+             }}
+           >
+             {finished?"Finish ✓":"Next →"}
+           </button>
+         )}
+       </section>
+     )}
+   </div>
+ </Screen>;
+}
+
 function SpecialActivity({kind,onComplete}:{kind:Kind;onComplete:()=>void}){
  const [done,setDone]=useState(false); const finish=()=>{if(!done){setDone(true);onComplete()}};
  const [colour,setColour]=useState("#ff6fae"); const [strokes,setStrokes]=useState<{x:number;y:number}[][]>([]); const [drawing,setDrawing]=useState(false);
