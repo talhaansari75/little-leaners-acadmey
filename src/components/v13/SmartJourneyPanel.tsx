@@ -67,7 +67,7 @@ export function SmartJourneyPanel({ className, onSpeak }: { className?: string; 
     reading: "class1-writing",
     writing: "class1-writing",
     mathematics: "class1-math",
-    science: "class1-science",
+    science: "class1-nature",
   },
 };
 

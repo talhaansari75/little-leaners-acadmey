@@ -469,8 +469,8 @@ function SchoolBusRoom({
     "Class 1": [
       { label: "Writing", id: "class1-writing" },
       { label: "Mathematics", id: "class1-math" },
-      { label: "Science", id: "class1-science" },
-      { label: "Reading", id: "kg-reading" },
+      { label: "Nature", id: "class1-nature" },
+      { label: "Practical Life", id: "class1-practical" },
     ],
   };
   return (

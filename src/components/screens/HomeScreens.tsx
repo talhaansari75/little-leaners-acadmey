@@ -63,7 +63,7 @@ export function SplashScreen() {
       </button>
 
       <div className="academy-opening-bottom" aria-hidden="true">
-        <span>Nursery</span><span>KG</span><span>Montessori</span>
+        <span>Playgroup</span><span>Nursery</span><span>KG-1</span><span>KG-2</span><span>Class 1</span>
       </div>
       <div className="academy-opening-loader" aria-hidden="true"><span /></div>
     </main>
