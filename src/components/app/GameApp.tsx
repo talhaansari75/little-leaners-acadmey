@@ -141,6 +141,20 @@ export function GameApp() {
     );
   }
 
+  const selectedClass = getSelectedClass();
+
+  if (!selectedClass) {
+    return (
+      <div className="relative h-dvh overflow-hidden">
+        <ClassSelectionScreen
+          onSelected={() => {
+            useGame.getState().go("preschool");
+          }}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="relative h-dvh overflow-hidden">
       <V9Status />
