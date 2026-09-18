@@ -107,7 +107,7 @@ export function HomeScreen() {
         <TileButton icon={<PawPrint className="size-5" />} label="Wild Whispers" onClick={() => useGame.getState().go("wildWhispers")} />
         <TileButton icon={<Gift className="size-5" />} label={t("cta.spin")} onClick={() => useGame.getState().go("spin")} />
         <TileButton icon={<BookOpen className="size-5" />} label={t("cta.story")} onClick={() => useGame.getState().go("story")} />
-        <TileButton icon={<Settings className="size-5" />} label={t("cta.more")} onClick={() => useGame.getState().go("more")} />
+        <TileButton icon={<Settings className="size-5" />} label="Settings" onClick={() => useGame.getState().go("settings")} />
       </div>
       <DailyRewardPopup />
       <p className="sr-only">{playerLevel(save.xp)} {WORD_COUNT}</p>

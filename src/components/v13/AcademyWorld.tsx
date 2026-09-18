@@ -83,11 +83,11 @@ export function AcademyWorld({ xp, completed, available, onSpeak, onMissionCompl
 
       <div className="academy-section-title"><span>🏫</span><b>Explore Academy</b><small>Tap a room to visit</small></div>
       <div className="mt-2 grid grid-cols-2 gap-2">{data.rooms.map((room, i) => <button key={room} type="button" disabled={i >= roomCount} onClick={() => { const ids: Record<AcademyClass,string[]> = {
-  Playgroup:["pg-colors","pg-abc","pg-numbers","rhymes"],
+  Playgroup:["pg-colors","pg-abc","pg-numbers","pg-shapes"],
   Nursery:["colors","letters","numbers","rhymes"],
-  "KG-1":["kg-phonics","kg-math","kg-reading","kg-patterns"],
-  "KG-2":["kg-reading","kg-phonics","kg-math","kg-patterns"],
-  "Class 1":["class1-writing","class1-math","class1-science","class1-language"]
+  "KG-1":["kg1-phonics","kg1-math","kg1-patterns"],
+  "KG-2":["kg2-reading","kg2-words","kg2-math","kg2-patterns"],
+  "Class 1":["class1-writing","class1-math","class1-science","class1-sensorial"]
 }; openActivity(ids[klass][i]); }} className={`academy-room ${i < roomCount ? "" : "is-locked"}`}><span>{["🌈", "🔤", "🔢", "🎵"][i]}</span><b>{room}</b>{i >= roomCount && <small>🔒 {100 * (i + 1)} XP</small>}</button>)}</div>
 
       <div className="academy-section-title"><span>✨</span><b>Magic Rooms</b><small>Creative discoveries</small></div>

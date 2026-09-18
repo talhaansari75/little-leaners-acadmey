@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { BookOpen, Brain, Calculator, CheckCircle2, Globe2, Heart, PawPrint, Play, Sparkles, Star, Volume2 } from "lucide-react";
+import { getSelectedClass, setSelectedClass, LEARNING_CLASSES, type LearningClass } from "@/lib/academy/classSelection";
 
 type Props = { age:number; xp:number; completed:number; premium:boolean; onSpeak:(text:string)=>void };
 
@@ -81,7 +82,7 @@ export function AdvancedPreschoolHub({age,xp,completed,premium,onSpeak}:Props){
 
 
 function ClassPathway({age,xp,onSpeak}:{age:number;xp:number;onSpeak:(text:string)=>void}){
- const [klass,setKlass]=useState<"Nursery"|"KG"|"Montessori">(()=>{try{const v=localStorage.getItem("lla-class");return v==="KG"||v==="Montessori"?v:"Nursery"}catch{return "Nursery"}});
+ const [klass,setKlass]=useState<LearningClass>(()=>getSelectedClass() ?? "Nursery");
  const [subject,setSubject]=useState("Language");
  const [done,setDone]=useState<string[]>(()=>{try{return JSON.parse(localStorage.getItem("mw-class-skills")||"[]") as string[]}catch{return []}});
  const curriculum={
@@ -91,11 +92,16 @@ function ClassPathway({age,xp,onSpeak}:{age:number;xp:number;onSpeak:(text:strin
  } as const;
  const subjects=["Language","Math","Creative","Life"] as const;
  const tasks=curriculum[klass][subject as keyof typeof curriculum.Nursery] || [];
- const select=(next:"Nursery"|"KG"|"Montessori")=>{setKlass(next);setSubject("Language");try{localStorage.setItem("lla-class",next)}catch{};window.dispatchEvent(new Event("lla-class-change"));onSpeak(`${next} curriculum selected.`)};
+ const select=(next:LearningClass)=>{
+  setKlass(next);
+  setSubject("Language");
+  setSelectedClass(next);
+  onSpeak(`${next} curriculum selected.`);
+};
  const toggle=(task:string)=>{const key=`${klass}:${subject}:${task}`;const next=done.includes(key)?done.filter(x=>x!==key):[...done,key];setDone(next);try{localStorage.setItem("mw-class-skills",JSON.stringify(next))}catch{};onSpeak(`${task}. Great learning!`)};
  const total=Object.values(curriculum[klass]).flat().length;
  const mastered=Object.entries(curriculum[klass]).flatMap(([sub,ts])=>ts.map(t=>`${klass}:${sub}:${t}`)).filter(k=>done.includes(k)).length;
- return <section className="panel rounded-3xl p-4"><div className="text-center"><div className="text-5xl">🎓</div><h3 className="font-display text-2xl text-fg">Class Curriculum</h3><p className="mt-1 text-xs font-black text-primary">Three Learning Pathways</p><p className="text-xs text-muted">Age {age} • {xp} XP • {mastered}/{total} class skills practiced</p></div><div className="mt-3 grid grid-cols-3 gap-2">{(["Nursery","KG","Montessori"] as const).map(c=><button key={c} onClick={()=>select(c)} className={`rounded-2xl p-3 text-xs font-black ${klass===c?"bg-primary text-white":"bg-white text-slate-700"}`}>{c}</button>)}</div><div className="mt-3 grid grid-cols-4 gap-2">{subjects.map(s=><button key={s} onClick={()=>setSubject(s)} className={`rounded-2xl p-2 text-[11px] font-black ${subject===s?"bg-slate-900 text-white":"bg-white text-slate-700"}`}>{s}</button>)}</div><div className="mt-3 grid gap-2">{tasks.map((task,i)=>{const key=`${klass}:${subject}:${task}`;const isDone=done.includes(key);return <button key={task} onClick={()=>toggle(task)} className={`rounded-2xl p-4 text-left shadow-sm ${isDone?"bg-emerald-50":"bg-white"}`}><span className="mr-2">{isDone?"✅":"○"}</span><b>{i+1}. {task}</b></button>})}</div><p className="mt-3 rounded-2xl bg-slate-50 p-3 text-xs text-muted">This pathway has its own curriculum and progress. Nursery, KG and Montessori are tracked separately.</p></section>
+ return <section className="panel rounded-3xl p-4"><div className="text-center"><div className="text-5xl">🎓</div><h3 className="font-display text-2xl text-fg">Class Curriculum</h3><p className="mt-1 text-xs font-black text-primary">Three Learning Pathways</p><p className="text-xs text-muted">Age {age} • {xp} XP • {mastered}/{total} class skills practiced</p></div><div className="mt-3 grid grid-cols-3 gap-2">{LEARNING_CLASSES.map(c=><button key={c} onClick={()=>select(c)} className={`rounded-2xl p-3 text-xs font-black ${klass===c?"bg-primary text-white":"bg-white text-slate-700"}`}>{c}</button>)}</div><div className="mt-3 grid grid-cols-4 gap-2">{subjects.map(s=><button key={s} onClick={()=>setSubject(s)} className={`rounded-2xl p-2 text-[11px] font-black ${subject===s?"bg-slate-900 text-white":"bg-white text-slate-700"}`}>{s}</button>)}</div><div className="mt-3 grid gap-2">{tasks.map((task,i)=>{const key=`${klass}:${subject}:${task}`;const isDone=done.includes(key);return <button key={task} onClick={()=>toggle(task)} className={`rounded-2xl p-4 text-left shadow-sm ${isDone?"bg-emerald-50":"bg-white"}`}><span className="mr-2">{isDone?"✅":"○"}</span><b>{i+1}. {task}</b></button>})}</div><p className="mt-3 rounded-2xl bg-slate-50 p-3 text-xs text-muted">This pathway has its own curriculum and progress. Nursery, KG and Montessori are tracked separately.</p></section>
 }
 function MontessoriWorld({age,onSpeak}:{age:number;onSpeak:(text:string)=>void}){
  const [area,setArea]=useState("Practical Life");
