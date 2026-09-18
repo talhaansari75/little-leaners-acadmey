@@ -1,0 +1,41 @@
+     1	
+     2	import { getPrisma } from "@/lib/db";
+     3	import { audit } from "@/lib/server/v3/audit";
+     4	import { consumeRateLimit } from "@/lib/server/v3/rateLimit";
+     5	const roomId=()=>crypto.randomUUID();
+     6	
+     7	export async function createRoom(userId:string,displayName:string,mode:string,maxPlayers=4){
+     8	  const limited=await consumeRateLimit(userId,"room_create",10,60);
+     9	  if(!limited.allowed)throw new Error("rate_limited");
+    10	  const id=roomId();
+    11	  await getPrisma().$transaction(async tx=>{
+    12	    await tx.multiplayerRoom.create({data:{roomId:id,hostUserId:userId,mode:mode.slice(0,40),maxPlayers:Math.max(2,Math.min(8,maxPlayers)),members:{create:{userId,displayName:displayName.slice(0,40),role:"host"}}}});
+    13	  });
+    14	  await audit(userId,"room.created",{roomId:id,mode});
+    15	  return id;
+    16	}
+    17	
+    18	export async function joinRoom(userId:string,displayName:string,id:string){
+    19	  const db=getPrisma();
+    20	  for(let attempt=0;attempt<3;attempt++){
+    21	    try{
+    22	      return await db.$transaction(async tx=>{
+    23	        const room=await tx.multiplayerRoom.findUnique({where:{roomId:id},include:{_count:{select:{members:true}}}});
+    24	        if(!room||room.status!=="open")throw new Error("room_unavailable");
+    25	        if(room._count.members>=room.maxPlayers)throw new Error("room_full");
+    26	        await tx.multiplayerMember.upsert({where:{roomId_userId:{roomId:id,userId}},create:{roomId:id,userId,displayName:displayName.slice(0,40)},update:{lastSeenAt:new Date()}});
+    27	        return tx.multiplayerRoom.findUnique({where:{roomId:id},include:{members:{orderBy:{joinedAt:"asc"}}}}).then(formatRoom);
+    28	      },{isolationLevel:"Serializable",maxWait:5000,timeout:10000});
+    29	    }catch(error){
+    30	      if ((error as { code?: string })?.code === "P2034" && attempt < 2) continue;
+    31	      throw error;
+    32	    }
+    33	  }
+    34	  throw new Error("room_join_conflict");
+    35	}
+    36	export async function getRoom(id:string){return formatRoom(await getPrisma().multiplayerRoom.findUnique({where:{roomId:id},include:{members:{orderBy:{joinedAt:"asc"}}}}))}
+    37	type RoomWithMembers = { roomId:string; hostUserId:string; mode:string; stateJson:unknown; status:string; maxPlayers:number; members:Array<{ userId:string; displayName:string; role:string; }>; };
+    38	function formatRoom(room: RoomWithMembers | null){
+    39	  if(!room)return null;
+    40	  return {roomId:room.roomId,hostUserId:room.hostUserId,mode:room.mode,state:room.stateJson,status:room.status,maxPlayers:room.maxPlayers,members:room.members.map(m=>({userId:m.userId,displayName:m.displayName,role:m.role}))};
+    41	}

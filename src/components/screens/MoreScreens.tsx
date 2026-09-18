@@ -5,7 +5,7 @@ import { CHAPTERS, WORD_OF_DAY } from "@/lib/game/story";
 import { CATEGORIES, CATEGORY_IDS, ALL_WORDS, categoryOf } from "@/lib/game/words";
 import { getDailyBoard, getLeaderboard } from "@/lib/server/leaderboard";
 import { todayKey } from "@/lib/game/levels";
-import { BookOpen, BarChart3, Languages, Map, Scale, Sparkles, Swords, Trophy, User, Wrench, Home, Hammer, MessageCircle, Flag, ScrollText, Users, CalendarDays, Activity, ShieldCheck, CreditCard, Globe2, HardDrive, PenTool, Crown, CalendarRange, LineChart, Accessibility, Smartphone, Bell, BrainCircuit, Gauge, Route, Mic, WandSparkles, Eye, ClipboardCheck, PackageCheck, FileCheck2, Archive } from "lucide-react";
+import { PawPrint, BookOpen, BarChart3, Languages, Map, Scale, Sparkles, Swords, Trophy, User, Wrench, Home, Hammer, MessageCircle, Flag, ScrollText, Users, CalendarDays, Activity, ShieldCheck, CreditCard, Globe2, HardDrive, PenTool, Crown, CalendarRange, LineChart, Accessibility, Smartphone, Bell, BrainCircuit, Gauge, Route, Mic, WandSparkles, Eye, ClipboardCheck, PackageCheck, FileCheck2, Archive } from "lucide-react";
 
 export function MoreScreen() {
   const t = useT();
@@ -320,7 +320,7 @@ export function LeaderboardScreen() {
       try {
         if (board === "daily") {
           const data = await getDailyBoard({ data: todayKey() });
-          if (live) setRows(data.map((r) => ({ display_name: r.display_name, score: r.score })));
+          if (live) setRows(data.map((r: { display_name: string; score: number }) => ({ display_name: r.display_name, score: r.score })));
         } else {
           const data = await getLeaderboard({ data: board });
           if (live) setRows(data);

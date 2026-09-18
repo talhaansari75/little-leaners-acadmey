@@ -1,0 +1,164 @@
+     1	import type { Dir, GameMode, LevelSpec } from "./types.ts";
+     2	import { DIRS_4, DIRS_8, MAX_LEVEL } from "./constants.ts";
+     3	import { hashSeed } from "./rng.ts";
+     4	import { generatePuzzle, pickCategory } from "./generator.ts";
+     5	import { CATEGORY_IDS } from "./words.ts";
+     6	import { mulberry32 } from "./rng.ts";
+     7	import type { LangCode } from "./types.ts";
+     8	
+     9	export const WORLDS = [
+    10	  { id: "meadow", name: "Green Meadows", from: 1, to: 333, blurb: "Where the first words awaken." },
+    11	  { id: "crystal", name: "Crystal Caves", from: 334, to: 666, blurb: "Echoes beneath the earth." },
+    12	  { id: "desert", name: "Ancient Desert", from: 667, to: 999, blurb: "The atlas buried in gold." },
+    13	  { id: "frozen", name: "Frozen Kingdom", from: 1000, to: 1333, blurb: "Break the silence of the ice." },
+    14	  { id: "shadow", name: "Shadow Forest", from: 1334, to: 1666, blurb: "Where hidden words move." },
+    15	  { id: "sky", name: "Sky Islands", from: 1667, to: 2000, blurb: "The final archive above the clouds." },
+    16	] as const;
+    17	
+    18	export function worldOf(level: number) {
+    19	  return WORLDS.find((w) => level >= w.from && level <= w.to) ?? WORLDS[0]!;
+    20	}
+    21	
+    22	export function isBoss(level: number) {
+    23	  // Guardian battles are reserved for the six narrative World Gates.
+    24	  // Regular 25-level milestones remain progression milestones, not bosses.
+    25	  return level > 0 && WORLDS.some((w) => level === w.to);
+    26	}
+    27	
+    28	export function specFor(level: number): LevelSpec {
+    29	  const n = Math.max(1, Math.min(MAX_LEVEL, level));
+    30	  const tier = Math.floor((n - 1) / 250);
+    31	  const size = Math.min(20, 8 + Math.floor(n / 220) * 2);
+    32	  const wordCount = Math.min(24, 5 + Math.floor(n / 110));
+    33	  const minLen = Math.min(6, 3 + Math.floor(n / 700));
+    34	  const maxLen = Math.min(size, 6 + Math.floor(n / 140));
+    35	  const directions: Dir[] = tier === 0 ? DIRS_4.slice() : DIRS_8.slice();
+    36	  const reverseWeight = Math.min(0.75, 0.12 + n / 3000);
+    37	  const baseTime = Math.max(35, 12 + size * 2.2 + wordCount * 3.5);
+    38	  const timeLimit = isBoss(n) ? Math.round(baseTime * 0.75) : undefined;
+    39	  return { size, wordCount, directions, minLen, maxLen, reverseWeight, timeLimit };
+    40	}
+    41	
+    42	export function modeMods(mode: GameMode, spec: LevelSpec): LevelSpec {
+    43	  const next = { ...spec, directions: spec.directions.slice() };
+    44	  if (mode === "blitz") {
+    45	    next.timeLimit = Math.max(35, Math.floor((spec.timeLimit ?? 75) * 0.55));
+    46	  } else if (mode === "timed") {
+    47	    next.timeLimit = spec.timeLimit ?? 20 * spec.size;
+    48	  } else if (mode === "boss") {
+    49	    next.wordCount += 2;
+    50	    next.timeLimit = spec.timeLimit ?? 120;
+    51	  } else if (mode === "zen" || mode === "endless") {
+    52	    next.timeLimit = undefined;
+    53	  } else if (mode === "small_grid") {
+    54	    next.size = Math.max(8, spec.size - 2);
+    55	    next.wordCount = Math.max(5, spec.wordCount - 1);
+    56	    next.maxLen = Math.min(next.maxLen, next.size - 1);
+    57	  } else if (mode === "giant_grid") {
+    58	    next.size = Math.min(20, spec.size + 4);
+    59	    next.wordCount = Math.min(24, spec.wordCount + 3);
+    60	    next.maxLen = Math.min(next.size, next.maxLen + 2);
+    61	  } else if (mode === "diagonal") {
+    62	    next.directions = DIRS_8.filter(([dr, dc]) => Math.abs(dr) === 1 && Math.abs(dc) === 1) as Dir[];
+    63	  } else if (mode === "orthogonal") {
+    64	    next.directions = DIRS_4.slice() as Dir[];
+    65	  } else if (mode === "rush" || mode === "speedrun") {
+    66	    next.timeLimit = Math.max(25, Math.floor((spec.timeLimit ?? 90) * 0.6));
+    67	  } else if (mode === "nightmare" || mode === "chaos") {
+    68	    next.wordCount = Math.min(24, spec.wordCount + 3);
+    69	    next.timeLimit = Math.max(25, Math.floor((spec.timeLimit ?? 100) * 0.55));
+    70	  } else if (mode === "marathon") {
+    71	    next.wordCount = Math.min(24, spec.wordCount + 5);
+    72	    next.timeLimit = spec.timeLimit ? Math.floor(spec.timeLimit * 2) : undefined;
+    73	  } else if (mode === "focus") {
+    74	    next.timeLimit = spec.timeLimit ? Math.floor(spec.timeLimit * 1.5) : undefined;
+    75	  } else if (mode === "hardcore" || mode === "precision") {
+    76	    next.timeLimit = spec.timeLimit ? Math.floor(spec.timeLimit * 0.8) : undefined;
+    77	  } else if (mode === "random_rules") {
+    78	    const roll = Math.abs(levelHash(mode, spec.size, spec.wordCount)) % 4;
+    79	    if (roll === 0) next.directions = DIRS_4.slice() as Dir[];
+    80	    if (roll === 1) next.directions = DIRS_8.filter(([dr, dc]) => Math.abs(dr) === Math.abs(dc)) as Dir[];
+    81	    if (roll === 2) next.timeLimit = Math.max(25, Math.floor((spec.timeLimit ?? 90) * 0.65));
+    82	    if (roll === 3) next.wordCount = Math.min(24, spec.wordCount + 4);
+    83	  }
+    84	  return next;
+    85	}
+    86	
+    87	export function puzzleForLevel(level: number, mode: GameMode = "classic", language: LangCode = "en") {
+    88	  const spec = modeMods(mode, specFor(level));
+    89	  const seed = hashSeed("mwsj", level, mode);
+    90	  const rng = mulberry32(seed);
+    91	  const category = CATEGORY_IDS[level % CATEGORY_IDS.length]!;
+    92	  const dirs = weightedDirs(spec, rng);
+    93	  const world = worldOf(level);
+    94	  return generatePuzzle({
+    95	    seed,
+    96	    size: spec.size,
+    97	    wordCount: spec.wordCount,
+    98	    minLen: spec.minLen,
+    99	    maxLen: spec.maxLen,
+   100	    dirs,
+   101	    category: pickCategory(rng, category),
+   102	    title: isBoss(level) ? `Boss ${level}` : `${world.name} ${level}`,
+   103	    language,
+   104	    script: ["ur", "sd", "ps"].includes(language) ? "urdu" : "latin",
+   105	  });
+   106	}
+   107	
+   108	export function puzzleForDaily(dayKey: string, language: LangCode = "en", dailyChallengeId?: string) {
+   109	  const seed = hashSeed("daily", dayKey);
+   110	  const spec = specFor(250);
+   111	  return generatePuzzle({
+   112	    seed,
+   113	    size: 12,
+   114	    wordCount: 10,
+   115	    minLen: 4,
+   116	    maxLen: 9,
+   117	    dirs: DIRS_8,
+   118	    category: pickCategory(mulberry32(seed)),
+   119	    title: `Daily ${dayKey}`,
+   120	    dailyChallengeId,
+   121	    language,
+   122	    script: ["ur", "sd", "ps"].includes(language) ? "urdu" : "latin",
+   123	  });
+   124	}
+   125	
+   126	export function puzzleEndless(round: number, seedBase: number, language: LangCode = "en") {
+   127	  const seed = hashSeed("endless", seedBase, round);
+   128	  const size = 8 + (round % 5) * 2;
+   129	  return generatePuzzle({
+   130	    seed,
+   131	    size: Math.min(16, size),
+   132	    wordCount: 5 + (round % 8),
+   133	    minLen: 3,
+   134	    maxLen: Math.min(10, size - 1),
+   135	    dirs: round % 2 === 0 ? DIRS_4 : DIRS_8,
+   136	    category: pickCategory(mulberry32(seed)),
+   137	    title: `Endless ${round + 1}`,
+   138	    language,
+   139	    script: ["ur", "sd", "ps"].includes(language) ? "urdu" : "latin",
+   140	  });
+   141	}
+   142	
+   143	function levelHash(a: string, b: number, c: number) {
+   144	  return hashSeed("mode", a, b, c);
+   145	}
+   146	
+   147	function weightedDirs(spec: LevelSpec, rng: () => number): Dir[] {
+   148	  const dirs = spec.directions.slice() as Dir[];
+   149	  if (spec.reverseWeight <= 0) return dirs;
+   150	  // Reverse directions already included in DIRS_8; this biases placement later.
+   151	  void rng;
+   152	  return dirs;
+   153	}
+   154	
+   155	export function todayKey(d = new Date()) {
+   156	  const y = d.getFullYear();
+   157	  const m = String(d.getMonth() + 1).padStart(2, "0");
+   158	  const day = String(d.getDate()).padStart(2, "0");
+   159	  return `${y}-${m}-${day}`;
+   160	}
+   161	
+   162	export function targetTimeMs(level: number, wordCount: number, size: number) {
+   163	  return Math.max(60_000, Math.min(120_000, (8 + size * 1.6 + wordCount * 4) * 1000));
+   164	}

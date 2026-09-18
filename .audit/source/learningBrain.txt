@@ -1,0 +1,388 @@
+     1	import {
+     2	  LEARNING_CLASSES,
+     3	  type LearningClass,
+     4	} from "@/lib/academy/classSelection";
+     5	
+     6	export { LEARNING_CLASSES };
+     7	export type { LearningClass };
+     8	
+     9	export type LearningSignal =
+    10	  | "game"
+    11	  | "picture"
+    12	  | "audio"
+    13	  | "story"
+    14	  | "hands-on";
+    15	
+    16	export type SkillStat = {
+    17	  attempts: number;
+    18	  correct: number;
+    19	  totalTimeMs: number;
+    20	  lastAttemptAt: number;
+    21	  signal?: LearningSignal;
+    22	};
+    23	
+    24	export type LearningProfile = {
+    25	  byClass: Record<LearningClass, Record<string, SkillStat>>;
+    26	  lastClass: LearningClass;
+    27	  updatedAt: number;
+    28	};
+    29	
+    30	export type Recommendation = {
+    31	  className: LearningClass;
+    32	  skill: string;
+    33	  difficulty: "gentle" | "steady" | "challenge";
+    34	  mode: LearningSignal;
+    35	  title: string;
+    36	  reason: string;
+    37	  confidence: number;
+    38	};
+    39	
+    40	const CLASS_SKILL_MAP: Record<LearningClass, Record<string, string>> = {
+    41	  Montessori: {
+    42	    letters: "writing",
+    43	    numbers: "mathematics",
+    44	    math: "mathematics",
+    45	    patterns: "mathematics",
+    46	    story: "reading",
+    47	    listen: "science",
+    48	    animals: "animals",
+    49	    vehicles: "science",
+    50	    puzzle: "general-knowledge",
+    51	    tracing: "writing",
+    52	  },
+    53	  Nursery: {
+    54	    letters: "letters",
+    55	    numbers: "numbers",
+    56	    colors: "colors",
+    57	    shapes: "shapes",
+    58	    body: "letters",
+    59	    rhymes: "rhymes",
+    60	    listen: "animals",
+    61	    animals: "animals",
+    62	    vehicles: "animals",
+    63	    puzzle: "numbers",
+    64	  },
+    65	  KG: {
+    66	    letters: "phonics",
+    67	    numbers: "counting",
+    68	    math: "addition",
+    69	    patterns: "patterns",
+    70	    story: "reading",
+    71	    listen: "science",
+    72	    vehicles: "science",
+    73	    puzzle: "words",
+    74	    spelling: "spelling",
+    75	  },
+    76	};
+    77	export const CLASS_SKILLS: Record<LearningClass, string[]> = {
+    78	  Montessori: [
+    79	    "alphabets",
+    80	    "colors",
+    81	    "shapes",
+    82	    "numbers",
+    83	    "animals",
+    84	    "rhymes",
+    85	    "writing",
+    86	    "mathematics",
+    87	    "science",
+    88	    "general-knowledge",
+    89	  ],
+    90	  Nursery: [
+    91	    "letters",
+    92	    "numbers",
+    93	    "colors",
+    94	    "shapes",
+    95	    "animals",
+    96	    "rhymes",
+    97	  ],
+    98	  KG: [
+    99	    "phonics",
+   100	    "words",
+   101	    "counting",
+   102	    "reading",
+   103	    "patterns",
+   104	    "science",
+   105	    "spelling",
+   106	    "addition",
+   107	    "subtraction",
+   108	  ],
+   109	};
+   110	
+   111	const EMPTY_STAT = (): SkillStat => ({
+   112	  attempts: 0,
+   113	  correct: 0,
+   114	  totalTimeMs: 0,
+   115	  lastAttemptAt: 0,
+   116	});
+   117	
+   118	export function emptyLearningProfile(): LearningProfile {
+   119	  const byClass = {} as Record<LearningClass, Record<string, SkillStat>>;
+   120	
+   121	  for (const name of LEARNING_CLASSES) {
+   122	    byClass[name] = {};
+   123	  }
+   124	
+   125	  return {
+   126	    byClass,
+   127	    lastClass: "Nursery",
+   128	    updatedAt: 0,
+   129	  };
+   130	}
+   131	
+   132	export function normalizeProfile(input: unknown): LearningProfile {
+   133	  const fallback = emptyLearningProfile();
+   134	
+   135	  if (!input || typeof input !== "object") {
+   136	    return fallback;
+   137	  }
+   138	
+   139	  const source = input as Partial<LearningProfile>;
+   140	
+   141	  for (const className of LEARNING_CLASSES) {
+   142	    const sourceStats =
+   143	      source.byClass &&
+   144	      typeof source.byClass === "object" &&
+   145	      source.byClass[className] &&
+   146	      typeof source.byClass[className] === "object"
+   147	        ? source.byClass[className]
+   148	        : {};
+   149	
+   150	    fallback.byClass[className] = {};
+   151	
+   152	    for (const skill of CLASS_SKILLS[className]) {
+   153	      const raw = (sourceStats as Record<string, unknown>)[skill];
+   154	
+   155	      if (raw && typeof raw === "object") {
+   156	        const stat = raw as Partial<SkillStat>;
+   157	
+   158	        fallback.byClass[className][skill] = {
+   159	          attempts: Number(stat.attempts) || 0,
+   160	          correct: Number(stat.correct) || 0,
+   161	          totalTimeMs: Number(stat.totalTimeMs) || 0,
+   162	          lastAttemptAt: Number(stat.lastAttemptAt) || 0,
+   163	          signal:
+   164	            stat.signal === "game" ||
+   165	            stat.signal === "picture" ||
+   166	            stat.signal === "audio" ||
+   167	            stat.signal === "story" ||
+   168	            stat.signal === "hands-on"
+   169	              ? stat.signal
+   170	              : undefined,
+   171	        };
+   172	      }
+   173	    }
+   174	  }
+   175	
+   176	  if (
+   177	    typeof source.lastClass === "string" &&
+   178	    LEARNING_CLASSES.includes(source.lastClass as LearningClass)
+   179	  ) {
+   180	    fallback.lastClass = source.lastClass as LearningClass;
+   181	  }
+   182	
+   183	  fallback.updatedAt = Number(source.updatedAt) || 0;
+   184	
+   185	  return fallback;
+   186	}
+   187	
+   188	export function skillForActivity(
+   189	  className: LearningClass,
+   190	  activityKind: string,
+   191	): string {
+   192	  const maps: Record<LearningClass, Record<string, string>> = {
+   193	    Montessori: {
+   194	      letters: "alphabets",
+   195	      numbers: "numbers",
+   196	      colors: "colors",
+   197	      shapes: "shapes",
+   198	      body: "alphabets",
+   199	      rhymes: "rhymes",
+   200	      listen: "animals",
+   201	      animals: "animals",
+   202	      vehicles: "animals",
+   203	      puzzle: "general-knowledge",
+   204	      tracing: "writing",
+   205	      math: "mathematics",
+   206	      patterns: "mathematics",
+   207	      story: "reading",
+   208	    },
+   209	    Nursery: {
+   210	      letters: "letters",
+   211	      numbers: "numbers",
+   212	      colors: "colors",
+   213	      shapes: "shapes",
+   214	      body: "letters",
+   215	      rhymes: "rhymes",
+   216	      listen: "animals",
+   217	      animals: "animals",
+   218	      vehicles: "animals",
+   219	      puzzle: "numbers",
+   220	      tracing: "letters",
+   221	      math: "numbers",
+   222	      patterns: "shapes",
+   223	      story: "rhymes",
+   224	    },
+   225	    KG: {
+   226	      letters: "phonics",
+   227	      numbers: "counting",
+   228	      math: "addition",
+   229	      patterns: "patterns",
+   230	      story: "reading",
+   231	      listen: "science",
+   232	      animals: "science",
+   233	      vehicles: "science",
+   234	      puzzle: "words",
+   235	      tracing: "writing",
+   236	      spelling: "spelling",
+   237	    },
+   238	  };
+   239	
+   240	  return (
+   241	    maps[className][activityKind] ??
+   242	    CLASS_SKILLS[className][0]
+   243	  );
+   244	}
+   245	
+   246	export function recommendNext(
+   247	  profile: LearningProfile,
+   248	  className: LearningClass = profile.lastClass,
+   249	  now = Date.now(),
+   250	): Recommendation {
+   251	  const normalized = normalizeProfile(profile);
+   252	  const skills = CLASS_SKILLS[className];
+   253	  const stats = normalized.skills;
+   254	
+   255	  let bestSkill = skills[0];
+   256	  let lowestScore = Number.POSITIVE_INFINITY;
+   257	
+   258	  for (const skill of skills) {
+   259	    const stat = stats[skill];
+   260	
+   261	    if (!stat || stat.attempts === 0) {
+   262	      bestSkill = skill;
+   263	      break;
+   264	    }
+   265	
+   266	    const accuracy = stat.correct / Math.max(1, stat.attempts);
+   267	    const recentPenalty =
+   268	      stat.lastAttemptAt > 0 &&
+   269	      now - stat.lastAttemptAt < 24 * 60 * 60 * 1000
+   270	        ? 0.1
+   271	        : 0;
+   272	
+   273	    const score = accuracy - recentPenalty;
+   274	
+   275	    if (score < lowestScore) {
+   276	      lowestScore = score;
+   277	      bestSkill = skill;
+   278	    }
+   279	  }
+   280	
+   281	  const stat = stats[bestSkill];
+   282	  const accuracy = stat?.attempts
+   283	    ? stat.correct / stat.attempts
+   284	    : 0;
+   285	
+   286	  const difficulty =
+   287	    !stat || stat.attempts < 2
+   288	      ? "gentle"
+   289	      : accuracy >= 0.85
+   290	        ? "challenge"
+   291	        : accuracy < 0.6
+   292	          ? "gentle"
+   293	          : "steady";
+   294	
+   295	  const mode: LearningSignal =
+   296	    stat?.signal ??
+   297	    (className === "Montessori"
+   298	      ? "picture"
+   299	      : className === "Nursery"
+   300	        ? "game"
+   301	        : "hands-on");
+   302	
+   303	  return {
+   304	    className,
+   305	    skill: bestSkill,
+   306	    difficulty,
+   307	    mode,
+   308	    title: `${bestSkill.replaceAll("-", " ")} practice`,
+   309	    reason:
+   310	      !stat || stat.attempts === 0
+   311	        ? "This is a fresh skill for this class."
+   312	        : accuracy < 0.6
+   313	          ? "A little more practice will help this skill grow."
+   314	          : accuracy >= 0.85
+   315	            ? "This skill is going well, so a small challenge is ready."
+   316	            : "Keep building this skill with another practice round.",
+   317	    confidence: stat?.attempts
+   318	      ? Math.min(99, 60 + Math.min(35, stat.attempts * 5))
+   319	      : 60,
+   320	  };
+   321	}
+   322	
+   323	const PROFILE_KEY = "lla-learning-profile";
+   324	
+   325	export function getLearningProfile(): LearningProfile {
+   326	  if (typeof window === "undefined") {
+   327	    return emptyLearningProfile();
+   328	  }
+   329	
+   330	  try {
+   331	    const raw = window.localStorage.getItem(PROFILE_KEY);
+   332	    return raw ? normalizeProfile(JSON.parse(raw)) : emptyLearningProfile();
+   333	  } catch {
+   334	    return emptyLearningProfile();
+   335	  }
+   336	}
+   337	
+   338	function saveLearningProfile(profile: LearningProfile) {
+   339	  if (typeof window === "undefined") return;
+   340	
+   341	  try {
+   342	    window.localStorage.setItem(
+   343	      PROFILE_KEY,
+   344	      JSON.stringify(profile),
+   345	    );
+   346	  } catch {
+   347	    // Ignore storage failures.
+   348	  }
+   349	}
+   350	
+   351	export function recordAttempt(
+   352	  profile: LearningProfile,
+   353	  skill: string,
+   354	  correct: boolean,
+   355	  signal?: LearningSignal,
+   356	  now = Date.now(),
+   357	): LearningProfile {
+   358	  const current = profile.skills[skill] ?? {
+   359	    attempts: 0,
+   360	    correct: 0,
+   361	    lastAttemptAt: 0,
+   362	    signal,
+   363	  };
+   364	
+   365	  return {
+   366	    ...profile,
+   367	    skills: {
+   368	      ...profile.skills,
+   369	      [skill]: {
+   370	        ...current,
+   371	        attempts: current.attempts + 1,
+   372	        correct: current.correct + (correct ? 1 : 0),
+   373	        lastAttemptAt: now,
+   374	        ...(signal ? { signal } : {}),
+   375	      },
+   376	    },
+   377	  };
+   378	}
+   379	
+   380	export function recordLearningSignal(
+   381	  profile: LearningProfile,
+   382	  skill: string,
+   383	  signal: LearningSignal,
+   384	  correct = false,
+   385	  now = Date.now(),
+   386	): LearningProfile {
+   387	  return recordAttempt(profile, skill, correct, signal, now);
+   388	}

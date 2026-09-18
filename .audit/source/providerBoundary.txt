@@ -1,0 +1,58 @@
+     1	import { createHmac, timingSafeEqual } from "node:crypto";
+     2	export type VerifiedPurchase = { provider:string; externalId:string; productId:string; amountMinor:number; currency:string; raw:unknown; userId:string; expiresAt?:string|null; status?:"verified"|"refunded"|"inactive"; eventKind?:"purchase"|"subscription_update"|"subscription_delete"|"refund" };
+     3	export interface PaymentProvider { verifyWebhook(rawBody:string,signature:string|undefined):Promise<VerifiedPurchase|null>; }
+     4	function paymentIntentOrRefundExternalId(obj:any, fallback:string){ return String(obj?.payment_intent??fallback).slice(0,128); }
+     5	
+     6	export class StripePaymentProvider implements PaymentProvider {
+     7	  constructor(private readonly secret:string, private readonly provider="stripe", private readonly apiKey=process.env.STRIPE_SECRET_KEY?.trim()) {}
+     8	  async verifyWebhook(rawBody:string, signature:string|undefined){
+     9	    if(!signature||!this.secret)return null;
+    10	    const parts=signature.split(",");
+    11	    const timestamp=parts.find((x)=>x.startsWith("t="))?.slice(2);
+    12	    const signatures=parts.filter((x)=>x.startsWith("v1=")).map((x)=>x.slice(3));
+    13	    if(!timestamp||!signatures.length)return null;
+    14	    const age=Math.abs(Date.now()/1000-Number(timestamp));
+    15	    if(!Number.isFinite(age)||age>300)return null;
+    16	    const expected=createHmac("sha256",this.secret).update(`${timestamp}.${rawBody}`).digest("hex");
+    17	    const valid=signatures.some((candidate)=>{try{return timingSafeEqual(Buffer.from(expected),Buffer.from(candidate));}catch{return false;}});
+    18	    if(!valid)return null;
+    19	    let event:any; try{event=JSON.parse(rawBody);}catch{return null;}
+    20	    const type=String(event?.type??"");
+    21	    const obj=event?.data?.object;
+    22	    const isCheckout=type==="checkout.session.completed";
+    23	    const isSubUpdate=type==="customer.subscription.updated";
+    24	    const isSubDelete=type==="customer.subscription.deleted";
+    25	    const isChargeRefunded=type==="charge.refunded";
+    26	    const isRefundCreated=type==="refund.created";
+    27	    if(!isCheckout&&!isSubUpdate&&!isSubDelete&&!isChargeRefunded&&!isRefundCreated)return null;
+    28	    let metadata=obj?.metadata ?? {};
+    29	    if (isChargeRefunded || isRefundCreated) {
+    30	      const paymentIntentId=String(obj?.payment_intent??"");
+    31	      if (paymentIntentId && this.apiKey) {
+    32	        try {
+    33	          const r=await fetch(`https://api.stripe.com/v1/payment_intents/${encodeURIComponent(paymentIntentId)}`,{headers:{Authorization:`Bearer ${this.apiKey}`}});
+    34	          if (r.ok) { const pi:any=await r.json(); metadata={...(pi?.metadata??{}),...(metadata??{})}; }
+    35	        } catch { /* webhook remains safe; route can ignore an unresolvable refund */ }
+    36	      }
+    37	    }
+    38	    const userId=String(metadata.userId??obj?.client_reference_id??"");
+    39	    const productId=String(metadata.productId??(isCheckout ? "" : "premium"));
+    40	    const externalId=String(obj?.id??"");
+    41	    if(!userId||!productId||!externalId)return null;
+    42	    const amount=Number(obj?.amount_total??obj?.amount??0); const currency=String(obj?.currency??"USD").toUpperCase();
+    43	    const periodEnd=Number(obj?.current_period_end??0);
+    44	    const expiresAt=periodEnd>0 ? new Date(periodEnd*1000).toISOString() : null;
+    45	    if (isChargeRefunded || isRefundCreated) return {provider:this.provider,externalId:paymentIntentOrRefundExternalId(obj, externalId),productId:productId.slice(0,128),amountMinor:Math.max(0,Math.min(100000000,Math.floor(amount||0))),currency:currency.slice(0,8),raw:event,userId:userId.slice(0,128),expiresAt:null,status:"refunded" as const,eventKind:"refund" as const};
+    46	    if(isSubDelete) return {provider:this.provider,externalId:externalId.slice(0,128),productId:productId.slice(0,128),amountMinor:0,currency:currency.slice(0,8),raw:event,userId:userId.slice(0,128),expiresAt,status:"inactive" as const,eventKind:"subscription_delete" as const};
+    47	    if(isSubUpdate) {
+    48	      const active=["active","trialing"].includes(String(obj?.status??""));
+    49	      return {provider:this.provider,externalId:externalId.slice(0,128),productId:productId.slice(0,128),amountMinor:0,currency:currency.slice(0,8),raw:event,userId:userId.slice(0,128),expiresAt,status:(active?"verified":"inactive") as const,eventKind:"subscription_update" as const};
+    50	    }
+    51	    return {provider:this.provider,externalId:String(obj?.payment_intent??externalId).slice(0,128),productId:productId.slice(0,128),amountMinor:Math.max(0,Math.min(100000000,Math.floor(amount||0))),currency:currency.slice(0,8),raw:event,userId:userId.slice(0,128),expiresAt:null,status:"verified" as const,eventKind:"purchase" as const};
+    52	  }
+    53	}
+    54	
+    55	export class HmacPaymentProvider implements PaymentProvider {
+    56	  constructor(private readonly secret:string, private readonly provider:string){ }
+    57	  async verifyWebhook(rawBody:string,signature:string|undefined){if(!signature||!this.secret)return null;const expected=createHmac("sha256",this.secret).update(rawBody).digest("hex");try{if(!timingSafeEqual(Buffer.from(expected),Buffer.from(signature)))return null;}catch{return null;}let x:any;try{x=JSON.parse(rawBody)}catch{return null;}if(String(x.provider??this.provider)!==this.provider||!x.userId||!x.externalId||!x.productId)return null;return{provider:this.provider,externalId:String(x.externalId).slice(0,128),productId:String(x.productId).slice(0,128),amountMinor:Math.max(0,Math.min(100000000,Math.floor(Number(x.amountMinor)||0))),currency:String(x.currency??"USD").toUpperCase().slice(0,8),raw:x,userId:String(x.userId).slice(0,128),expiresAt:x.expiresAt??null,status:x.status==="refunded"?"refunded":"verified"};}
+    58	}

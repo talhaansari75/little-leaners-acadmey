@@ -1,0 +1,243 @@
+     1	export type ScreenId =
+     2	  | "splash"
+     3	  | "home"
+     4	  | "worlds"
+     5	  | "modes"
+     6	  | "play"
+     7	  | "shop"
+     8	  | "pets"
+     9	  | "profile"
+    10	  | "settings"
+    11	  | "achievements"
+    12	  | "stats"
+    13	  | "daily"
+    14	  | "spin"
+    15	  | "story"
+    16	  | "dictionary"
+    17	  | "leaderboard"
+    18	  | "inventory"
+    19	  | "skills"
+    20	  | "base"
+    21	  | "equipment"
+    22	  | "combat"
+    23	  | "worldMap"
+    24	  | "storyQuests"
+    25	  | "dialogue"
+    26	  | "npcs"
+    27	  | "missions"
+    28	  | "legal"
+    29	  | "more"
+    30	  | "social"
+    31	  | "liveOps"
+    32	  | "systems"
+    33	  | "multiplayer"
+    34	  | "admin"
+    35	  | "payments"
+    36	  | "content"
+    37	  | "saveSlots"
+    38	  | "creator"
+    39	  | "progression"
+    40	  | "seasonProgress"
+    41	  | "creatorCommunity"
+    42	  | "analytics"
+    43	  | "accessibility"
+    44	  | "pwa"
+    45	  | "pushSettings"
+    46	  | "coach"
+    47	  | "adaptive"
+    48	  | "journeyPlanner"
+    49	  | "voice"
+    50	  | "aiPuzzleLab"
+    51	  | "puzzleAudit"
+    52	  | "playablePreview"
+    53	  | "creatorPlaytest"
+    54	  | "publishReadiness"
+    55	  | "releasePackage"
+    56	  | "releaseVerifier"
+    57	  | "releaseArchive"
+    58	  | "wildWhispers"
+    59	  | "preschool";
+    60	
+    61	export type GameMode =
+    62	  | "classic" | "timed" | "survival" | "blitz" | "zen" | "daily" | "endless"
+    63	  | "fog" | "mirror" | "category" | "boss"
+    64	  | "rush" | "precision" | "hardcore" | "double_reward" | "no_hints"
+    65	  | "small_grid" | "giant_grid" | "reverse_only" | "diagonal"
+    66	  | "orthogonal" | "chaos" | "streak" | "treasure" | "nightmare"
+    67	  | "focus" | "speedrun" | "marathon" | "random_rules";
+    68	
+    69	export type LangCode =
+    70	  | "en"
+    71	  | "ur"
+    72	  | "ur-Latn"
+    73	  | "hi"
+    74	  | "ar"
+    75	  | "bn"
+    76	  | "pa"
+    77	  | "sd"
+    78	  | "ps"
+    79	  | "tr"
+    80	  | "es"
+    81	  | "fr"
+    82	  | "de"
+    83	  | "zh"
+    84	  | "ja";
+    85	
+    86	export type Dir = readonly [number, number];
+    87	
+    88	export type Placement = {
+    89	  word: string;
+    90	  row: number;
+    91	  col: number;
+    92	  dr: number;
+    93	  dc: number;
+    94	  cells: Array<[number, number]>;
+    95	};
+    96	
+    97	export type Puzzle = {
+    98	  id: string;
+    99	  seed: number;
+   100	  size: number;
+   101	  grid: string[][];
+   102	  words: string[];
+   103	  placements: Placement[];
+   104	  category: string;
+   105	  title: string;
+   106	  hint?: string;
+   107	  dailyChallengeId?: string;
+   108	};
+   109	
+   110	export type LevelSpec = {
+   111	  size: number;
+   112	  wordCount: number;
+   113	  directions: Dir[];
+   114	  minLen: number;
+   115	  maxLen: number;
+   116	  reverseWeight: number;
+   117	  timeLimit?: number;
+   118	};
+   119	
+   120	export type LevelResult = {
+   121	  stars: 1 | 2 | 3;
+   122	  timeMs: number;
+   123	  found: number;
+   124	  hints: number;
+   125	  perfect: boolean;
+   126	};
+   127	
+   128	export type CurrencyId = "coins" | "diamonds" | "stars" | "energy" | "xp";
+   129	
+   130	export type PetId =
+   131	  | "dog"
+   132	  | "cat"
+   133	  | "eagle"
+   134	  | "dragon"
+   135	  | "unicorn"
+   136	  | "wolf"
+   137	  | "fox"
+   138	  | "turtle"
+   139	  | "owl"
+   140	  | "dolphin";
+   141	
+   142	export type ClassId = "detective" | "scholar" | "explorer" | "warrior";
+   143	
+   144	export type ThemeId =
+   145	  | "midnight"
+   146	  | "parchment"
+   147	  | "ocean"
+   148	  | "forest"
+   149	  | "ember"
+   150	  | "orchid"
+   151	  | "arctic"
+   152	  | "sakura";
+   153	
+   154	export type PlayerSave = {
+   155	  version: number;
+   156	  playerName: string;
+   157	  avatarId: string;
+   158	  classId: ClassId;
+   159	  xp: number;
+   160	  coins: number;
+   161	  diamonds: number;
+   162	  stars: number;
+   163	  energy: number;
+   164	  energyAt: number;
+   165	  unlockedLevel: number;
+   166	  results: Record<string, LevelResult>;
+   167	  settings: GameSettings;
+   168	  ownedThemes: ThemeId[];
+   169	  ownedAvatars: string[];
+   170	  ownedPets: PetId[];
+   171	  petLevels: Partial<Record<PetId, number>>;
+   172	  petXp: Partial<Record<PetId, number>>;
+   173	  equippedPet: PetId | null;
+   174	  equippedTheme: ThemeId;
+   175	  achievements: string[];
+   176	  stats: PlayerStats;
+   177	  lastDaily: string | null;
+   178	  dailyStreak: number;
+   179	  behaviorProfile: import("./behavior").BehaviorProfile;
+   180	  lastSpin: string | null;
+   181	  lastLoginReward: string | null;
+   182	  skillPoints: number;
+   183	  skills: { speed: number; vision: number; luck: number };
+   184	  language: LangCode;
+   185	  storyChapter: number;
+   186	  inventory: string[];
+   187	  loginDays: number;
+   188	  baseBuildings: Record<import("./baseCrafting").BuildingId, number>;
+   189	  materials: Record<import("./baseCrafting").MaterialId, number>;
+   190	  equipment: import("./baseCrafting").Equipment[];
+   191	  equippedEquipment: Partial<Record<import("./baseCrafting").EquipmentSlot, string>>;
+   192	  claimedAchievements: string[];
+   193	  claimedMissions: string[];
+   194	  claimedSeasonTiers: string[];
+   195	  wildWhispers?: import("./wildWhispers").WildProgress;
+   196	};
+   197	
+   198	export type GameSettings = {
+   199	  sfx: boolean;
+   200	  music: boolean;
+   201	  masterVol: number;
+   202	  sfxVol: number;
+   203	  musicVol: number;
+   204	  haptics: boolean;
+   205	  reducedMotion: boolean;
+   206	  highContrast: boolean;
+   207	  largeText: boolean;
+   208	  colorBlind: boolean;
+   209	  showTimer: boolean;
+   210	  showDirections: boolean;
+   211	  confirmExit: boolean;
+   212	  autoHint: boolean;
+   213	  snapSelect: boolean;
+   214	  gridLines: boolean;
+   215	  tileStyle: "carved" | "ink" | "neon";
+   216	  shake: boolean;
+   217	  particles: boolean;
+   218	  parentalLock: boolean;
+   219	  analytics: boolean;
+   220	  personalization: boolean;
+   221	  cloudSync: boolean;
+   222	  rtlForce: boolean;
+   223	  screenReader: boolean;
+   224	  dyslexiaFriendly: boolean;
+   225	  focusMode: boolean;
+   226	  notificationReminders: boolean;
+   227	  notificationTime: string;
+   228	};
+   229	
+   230	export type PlayerStats = {
+   231	  gamesPlayed: number;
+   232	  gamesWon: number;
+   233	  wordsFound: number;
+   234	  hintsUsed: number;
+   235	  playTimeMs: number;
+   236	  bestStreak: number;
+   237	  currentStreak: number;
+   238	  perfectClears: number;
+   239	  coinsEarned: number;
+   240	  dailyCompleted: number;
+   241	  bossesDefeated: number;
+   242	  levelsCompleted: number;
+   243	};

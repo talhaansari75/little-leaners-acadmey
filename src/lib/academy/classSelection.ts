@@ -1,9 +1,9 @@
 export const LEARNING_CLASSES = [
-  "Playgroup",
+  "Montessori",
   "Nursery",
-  "KG-1",
-  "KG-2",
-  "Class 1",
+  "KG",
+  "KG",
+  "Montessori",
 ] as const;
 
 export type LearningClass = (typeof LEARNING_CLASSES)[number];

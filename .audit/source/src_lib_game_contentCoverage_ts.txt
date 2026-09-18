@@ -1,0 +1,57 @@
+     1	import { EXTENDED_WORDS } from "./extendedWords.ts";
+     2	import { ALL_WORDS } from "./words.ts";
+     3	import { buildCatalog } from "../content/levelCatalog.ts";
+     4	import { puzzleForLevel } from "./levels.ts";
+     5	import { validatePuzzleQuality } from "../v16/core/puzzleQuality.ts";
+     6	import { LANGS } from "./i18n.ts";
+     7	import { nativeWordCount } from "./languageWords.ts";
+     8	
+     9	export const TARGET_WORD_COUNT = 5000;
+    10	export const TARGET_LEVEL_COUNT = 1000;
+    11	
+    12	export type CoverageReport = {
+    13	  wordCount: number;
+    14	  levelCount: number;
+    15	  sampleLevels: number;
+    16	  validLevels: number;
+    17	  solvableLevels: number;
+    18	  uniqueLevels: number;
+    19	  averageQuality: number;
+    20	  meetsWordTarget: boolean;
+    21	  meetsLevelTarget: boolean;
+    22	  languageWordCounts: Record<string, number>;
+    23	  languagesWithNativeStarter: number;
+    24	};
+    25	
+    26	export function buildCoverageReport(sampleCount = 100): CoverageReport {
+    27	  const catalog = buildCatalog(2000);
+    28	  const sampleLevels = Math.min(sampleCount, catalog.length);
+    29	  let validLevels = 0;
+    30	  let solvableLevels = 0;
+    31	  let uniqueLevels = 0;
+    32	  let qualityTotal = 0;
+    33	
+    34	  for (let i = 1; i <= sampleLevels; i++) {
+    35	    const puzzle = puzzleForLevel(i);
+    36	    const quality = validatePuzzleQuality(puzzle, true);
+    37	    if (quality.valid) validLevels++;
+    38	    if (quality.solvable) solvableLevels++;
+    39	    if (quality.unique) uniqueLevels++;
+    40	    qualityTotal += quality.score;
+    41	  }
+    42	
+    43	  const combined = new Set([...ALL_WORDS, ...EXTENDED_WORDS]);
+    44	  return {
+    45	    wordCount: combined.size,
+    46	    levelCount: catalog.length,
+    47	    sampleLevels,
+    48	    validLevels,
+    49	    solvableLevels,
+    50	    uniqueLevels,
+    51	    averageQuality: sampleLevels ? Number((qualityTotal / sampleLevels).toFixed(2)) : 0,
+    52	    meetsWordTarget: combined.size >= TARGET_WORD_COUNT,
+    53	    meetsLevelTarget: catalog.length >= TARGET_LEVEL_COUNT,
+    54	    languageWordCounts: Object.fromEntries(LANGS.map((lang) => [lang, nativeWordCount(lang)])),
+    55	    languagesWithNativeStarter: LANGS.filter((lang) => nativeWordCount(lang) > 0).length,
+    56	  };
+    57	}

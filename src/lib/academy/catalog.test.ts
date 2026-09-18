@@ -9,11 +9,11 @@ import {
 describe("academy catalog", () => {
   test("has exactly five learning pathways", () => {
     expect(LEARNING_PATHWAYS).toEqual([
-      "Playgroup",
+      "Montessori",
       "Nursery",
-      "KG-1",
-      "KG-2",
-      "Class 1",
+      "KG",
+      "KG",
+      "Montessori",
     ]);
   });
 

@@ -1,0 +1,92 @@
+     1	import { LEARNING_CLASSES, getSelectedClass, setSelectedClass } from "@/lib/academy/classSelection";
+     2	import { useMemo, useState } from "react";
+     3	import { Brain, CheckCircle2, Gamepad2, Map, Radio, Sparkles, Target, WifiOff } from "lucide-react";
+     4	import { CLASS_SKILLS, getLearningProfile, recommendNext, type LearningClass, type LearningSignal } from "@/lib/intelligence/learningBrain";
+     5	
+     6	const CLASS_EMOJI: Record<LearningClass, string> = {
+     7	  Montessori: "🧸",
+     8	  Nursery: "🌱",
+     9	  KG: "📚",
+    10	};
+    11	const MODES: LearningSignal[] = ["picture", "audio", "game", "story", "hands-on"];
+    12	const MODE_LABEL: Record<LearningSignal, string> = { picture: "Picture", audio: "Audio", game: "Game", story: "Story", "hands-on": "Hands-on" };
+    13	const CHALLENGES: Record<string, string[]> = {
+    14	  letters: ["Find the letter", "Match letter to picture", "Letter sound hunt"], numbers: ["Count the objects", "Find the missing number", "Number order"], colors: ["Color hunt", "Match the colors", "Sort by color"], shapes: ["Shape safari", "Match the shape", "Build the pattern"], animals: ["Animal match", "Guess the animal", "Sound clue"], rhymes: ["Rhyme match", "Finish the rhyme", "Listen & choose"],
+    15	  phonics: ["Sound match", "Build a CVC word", "Beginning sound"], words: ["Word builder", "Picture to word", "Missing letter"], math: ["Count & add", "Number sequence", "Math story"], reading: ["Picture reading", "Choose the ending", "Story question"], patterns: ["Pattern detective", "What comes next?", "Sort the pattern"], science: ["Science match", "Predict what happens", "Nature discovery"],
+    16	  "practical-life": ["Put steps in order", "Daily routine", "Care for the classroom"], sensorial: ["Sound match", "Grade by size", "Color grading"], language: ["Object naming", "Sound match", "Letter tracing"], mathematics: ["Quantity match", "Number rods", "Count & compare"], sorting: ["Sort by size", "Classify objects", "Pattern sorting"], nature: ["Nature match", "Living or non-living?", "Outdoor discovery"],
+    17	};
+    18	
+    19	function localProfile(): ReturnType<typeof getLearningProfile> { return getLearningProfile(); }
+    20	
+    21	export function SmartJourneyPanel({ className, onSpeak }: { className?: string; onSpeak: (text: string) => void }) {
+    22	  const [tick, setTick] = useState(0);
+    23	  const [tab, setTab] = useState<"adventure" | "skills" | "style" | "offline">("adventure");
+    24	  const [klass, setKlass] = useState<LearningClass>(() => {
+    25	    try { const value = localStorage.getItem("lla-class"); return value === "KG" || value === "Montessori" ? value : "Nursery"; } catch { return "Nursery"; }
+    26	  });
+    27	  const profile = useMemo(() => { void tick; return localProfile(); }, [tick]);
+    28	  const recommendation = useMemo(() => recommendNext(profile, klass), [profile, klass]);
+    29	  const skills = CLASS_SKILLS[klass];
+    30	  const stat = profile.byClass[klass];
+    31	  const explored = skills.filter((s) => (stat[s]?.attempts ?? 0) > 0).length;
+    32	  const challenge = (CHALLENGES[recommendation.skill] ?? ["Try a new activity", "Match & discover", "Play a quick challenge"])[Math.min(2, Math.max(0, (stat[recommendation.skill]?.attempts ?? 0) % 3))];
+    33	  const mode = MODE_LABEL[recommendation.mode];
+    34	  const refresh = () => { setTick((v) => v + 1); onSpeak(`${klass} smart journey refreshed. Next activity: ${recommendation.title}.`); };
+    35	  const changeClass = (next: LearningClass) => { setKlass(next); setSelectedClass(next); setTick((v) => v + 1); onSpeak(`${next} smart journey selected.`); };
+    36	  return <section className={`smart-journey ${className ?? ""}`} aria-label="Smart Learning Journey">
+    37	    <div className="smart-journey-head"><div className="smart-journey-icon"><Brain className="size-5"/></div><div className="min-w-0 flex-1"><p>SMART LEARNING JOURNEY</p><h3>Your path can change as you learn ✨</h3><small>Local-first personalization • no internet needed</small></div><button type="button" className="smart-refresh" onClick={refresh} aria-label="Refresh smart plan"><Sparkles className="size-4"/></button></div>
+    38	    <div className="smart-tabs" role="tablist" aria-label="Smart journey sections">{([["adventure","🎯 Adventure"],["skills","🗺️ Skill Map"],["style","🎨 Learning Style"],["offline","📡 Offline"]] as const).map(([id,label]) => <button key={id} type="button" className={tab === id ? "is-active" : ""} onClick={() => setTab(id)} role="tab" aria-selected={tab === id}>{label}</button>)}</div>
+    39	    {tab === "adventure" && <div className="smart-adventure"><div className="smart-class-picker">{LEARNING_CLASSES.map((name) => <button key={name} type="button" onClick={() => changeClass(name)} className={klass === name ? "is-active" : ""}>{CLASS_EMOJI[name]} {name}</button>)}</div><div className="smart-daily"><div className="smart-daily-icon">{recommendation.mode === "audio" ? "🔊" : recommendation.mode === "story" ? "📖" : recommendation.mode === "hands-on" ? "👐" : "🎮"}</div><div className="min-w-0 flex-1"><span>Today’s smart challenge</span><b>{challenge}</b><small>{recommendation.title} • {recommendation.difficulty} • {mode}</small></div><button type="button" onClick={() => { const map: Record<LearningClass, Record<string,string>> = {
+    40	  Montessori: {
+    41	    "practical-life": "montessori-practical-life",
+    42	    sensorial: "montessori-sensorial",
+    43	    language: "montessori-language",
+    44	    mathematics: "montessori-math",
+    45	    sorting: "montessori-sorting",
+    46	    nature: "montessori-nature",
+    47	    reading: "montessori-reading",
+    48	    writing: "montessori-writing",
+    49	  },
+    50	  Nursery: {
+    51	    letters: "letters",
+    52	    numbers: "numbers",
+    53	    colors: "colors",
+    54	    shapes: "shapes",
+    55	    animals: "animals",
+    56	    rhymes: "rhymes",
+    57	  },
+    58	  KG: {
+    59	    phonics: "kg-phonics",
+    60	    words: "kg-reading",
+    61	    spelling: "kg-reading",
+    62	    math: "kg-math",
+    63	    counting: "kg-math",
+    64	    addition: "kg-math",
+    65	    subtraction: "kg-math",
+    66	    reading: "kg-reading",
+    67	    patterns: "kg-patterns",
+    68	    science: "kg-vehicles",
+    69	  },
+    70	}; const id=map[klass][recommendation.skill]; if(id) window.dispatchEvent(new CustomEvent("lla-open-activity", { detail: { id, difficulty: recommendation.difficulty } })); onSpeak(`${challenge}. ${recommendation.title}. ${recommendation.reason}`); }}><Gamepad2 className="size-4"/> Start</button></div><div className="smart-mini-stats"><span><Target className="size-3.5"/> {explored}/{skills.length} skills explored</span><span><CheckCircle2 className="size-3.5"/> {recommendation.confidence}% guidance</span></div></div>}
+    71	    {tab === "skills" && <div className="smart-skill-map"><div className="smart-class-picker">{LEARNING_CLASSES.map((name) => <button key={name} type="button" onClick={() => changeClass(name)} className={klass === name ? "is-active" : ""}>{CLASS_EMOJI[name]} {name}</button>)}</div><div className="smart-skill-grid">{skills.map((skill) => { const s = stat[skill]; const accuracy = s?.attempts ? Math.round((s.correct / s.attempts) * 100) : 0; const state = !s?.attempts ? "New" : accuracy >= 88 ? "Strong" : accuracy >= 65 ? "Growing" : "Practice"; return <div key={skill} className={`smart-skill ${state.toLowerCase()}`}><div><b>{skill.replaceAll("-", " ")}</b><span>{state}</span></div><div className="smart-skill-bar"><i style={{ width: `${s?.attempts ? Math.max(8, accuracy) : 6}%` }}/></div></div>; })}</div><p className="smart-note"><Map className="size-4"/> The map uses only this class’s learning signals, so pathways stay separate.</p></div>}
+    72	    {tab === "style" && <LearningStyle profile={profile} klass={klass}/>} 
+    73	    {tab === "offline" && <div className="smart-offline"><div className="smart-offline-hero"><WifiOff className="size-6"/><div><b>Offline Smart Mode</b><p>Recommendations, progress and challenge selection stay on this device.</p></div></div><div className="smart-offline-grid"><span>🧠 Local brain</span><span>🎮 Adaptive games</span><span>📊 Local progress</span><span>🔊 Bundled audio</span><span>🖼️ Local artwork</span><span>📝 Local worksheets</span></div><p className="smart-note"><Radio className="size-4"/> Cloud sync and account features can wait until a connection is available.</p></div>}
+    74	  </section>;
+    75	}
+    76	
+    77	function LearningStyle({ profile, klass }: { profile: ReturnType<typeof getLearningProfile>; klass: LearningClass }) {
+    78	  const rows = MODES.map((mode) => {
+    79	    let attempts = 0;
+    80	    let correct = 0;
+    81	    for (const stat of Object.values(profile.byClass[klass])) {
+    82	      const item = (stat as SkillStat & { signalStats?: Record<string, unknown> }).signalStats?.[mode];
+    83	      attempts += item?.attempts ?? 0;
+    84	      correct += item?.correct ?? 0;
+    85	    }
+    86	    return { mode, attempts, accuracy: attempts ? correct / attempts : 0 };
+    87	  }).sort((a,b) => (b.accuracy - a.accuracy) || (b.attempts - a.attempts));
+    88	  const observed = rows.filter(row => row.attempts >= 2);
+    89	  const top = observed[0];
+    90	  const emoji: Record<LearningSignal,string> = {picture:"🖼️",audio:"🔊",game:"🎮",story:"📖","hands-on":"👐"};
+    91	  return <div className="smart-style"><div className="smart-style-main"><span className="smart-style-emoji">{top ? emoji[top.mode] : "✨"}</span><div><span>Learning patterns</span><b>{top ? `${MODE_LABEL[top.mode]} is currently working well` : "Learning patterns are still forming"}</b><small>Based on repeated attempts and accuracy in this pathway; it is guidance, not a fixed label.</small></div></div><div className="smart-style-bars">{rows.map(row => <div key={row.mode}><span>{MODE_LABEL[row.mode]}</span><i><em style={{width:`${Math.round(row.accuracy*100)}%`}}/></i><b>{row.attempts ? `${Math.round(row.accuracy*100)}%` : "—"}</b></div>)}</div></div>;
+    92	}

@@ -15,7 +15,7 @@ export const Route = createRootRoute({
       {
         name: "description",
         content:
-          "Little Learners Academy — Learn • Play • Grow. A magical preschool world for Playgroup, Nursery, KG-1, KG-2 and Class 1.",
+          "Little Learners Academy — Learn • Play • Grow. A magical preschool world for Montessori, Nursery, KG, KG and Montessori.",
       },
     ],
     links: [

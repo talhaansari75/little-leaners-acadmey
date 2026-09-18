@@ -1,0 +1,46 @@
+     1	import { createServerFn } from "@tanstack/react-start";
+     2	import { authMiddleware } from "@/lib/auth/middleware";
+     3	import { createRoom, joinRoom, getRoom } from "@/lib/multiplayer/roomService";
+     4	const GAME_MODES = new Set(["classic","timed","survival","blitz","zen","daily","endless","fog","mirror","category","boss","rush","precision","hardcore","double_reward","no_hints","small_grid","giant_grid","reverse_only","diagonal","orthogonal","chaos","streak","treasure","nightmare","focus","speedrun","marathon","random_rules"]);
+     5	
+     6	const clean = (v: unknown, max: number) => String(v ?? "").trim().slice(0, max);
+     7	
+     8	export const createMultiplayerRoom = createServerFn({ method: "POST" })
+     9	  .middleware([authMiddleware])
+    10	  .validator((d: { displayName: string; mode?: string; maxPlayers?: number }) => ({
+    11	    displayName: clean(d.displayName || "Traveler", 40) || "Traveler",
+    12	    mode: (()=>{const m=clean(d.mode || "classic", 40);return GAME_MODES.has(m)?m:"classic"})(),
+    13	    maxPlayers: Math.max(2, Math.min(8, Math.floor(Number(d.maxPlayers) || 4))),
+    14	  }))
+    15	  .handler(async ({ context, data }) => {
+    16	    try {
+    17	      const id = await createRoom(context.userId, data.displayName, data.mode, data.maxPlayers);
+    18	      return { ok: true as const, room: await getRoom(id) };
+    19	    } catch (e) {
+    20	      return { ok: false as const, error: e instanceof Error ? e.message : "room_create_failed" };
+    21	    }
+    22	  });
+    23	
+    24	export const joinMultiplayerRoom = createServerFn({ method: "POST" })
+    25	  .middleware([authMiddleware])
+    26	  .validator((d: { roomId: string; displayName: string }) => ({
+    27	    roomId: clean(d.roomId, 80),
+    28	    displayName: clean(d.displayName || "Traveler", 40) || "Traveler",
+    29	  }))
+    30	  .handler(async ({ context, data }) => {
+    31	    if (!data.roomId) return { ok: false as const, error: "room_id_required" };
+    32	    try {
+    33	      return { ok: true as const, room: await joinRoom(context.userId, data.displayName, data.roomId) };
+    34	    } catch (e) {
+    35	      return { ok: false as const, error: e instanceof Error ? e.message : "room_join_failed" };
+    36	    }
+    37	  });
+    38	
+    39	export const getMultiplayerRoom = createServerFn({ method: "GET" })
+    40	  .middleware([authMiddleware])
+    41	  .validator((d: { roomId: string }) => ({ roomId: clean(d.roomId, 80) }))
+    42	  .handler(async ({ data }) => {
+    43	    if (!data.roomId) return { ok: false as const, error: "room_id_required" };
+    44	    const room = await getRoom(data.roomId);
+    45	    return room ? { ok: true as const, room } : { ok: false as const, error: "room_not_found" };
+    46	  });

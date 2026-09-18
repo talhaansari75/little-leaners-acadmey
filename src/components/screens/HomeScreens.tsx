@@ -83,7 +83,7 @@ export function HomeScreen() {
       </header>
       <HudChips />
       <button type="button" className="journey-continue btn-primary animate-pop" onClick={() => useGame.getState().go("preschool")}>
-        <span><span className="block text-xs uppercase tracking-[0.2em] opacity-80">Little Learners Academy</span><strong className="block text-lg">Enter Playgroup, Nursery, KG-1, KG-2 or Class 1</strong></span><span className="text-2xl">→</span>
+        <span><span className="block text-xs uppercase tracking-[0.2em] opacity-80">Little Learners Academy</span><strong className="block text-lg">Enter Montessori, Nursery or KG</strong></span><span className="text-2xl">→</span>
       </button>
       <JourneyHero />
       <AdBanner />

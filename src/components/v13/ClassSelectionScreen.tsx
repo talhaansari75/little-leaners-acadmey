@@ -15,25 +15,17 @@ const CLASS_INFO: Record<
   LearningClass,
   { emoji: string; subtitle: string }
 > = {
-  Playgroup: {
+  Montessori: {
     emoji: "🧸",
-    subtitle: "Play, colors, shapes and first discoveries",
+    subtitle: "Practical life, colors, shapes and first discoveries",
   },
   Nursery: {
     emoji: "🌱",
     subtitle: "Letters, numbers, colors and rhymes",
   },
-  "KG-1": {
+  KG: {
     emoji: "📚",
-    subtitle: "Phonics, words, reading and early maths",
-  },
-  "KG-2": {
-    emoji: "🚀",
-    subtitle: "Spelling, reading, maths and science",
-  },
-  "Class 1": {
-    emoji: "⭐",
-    subtitle: "Reading, writing, grammar, maths and science",
+    subtitle: "Phonics, words, reading, maths and science",
   },
 };
 

@@ -1,0 +1,39 @@
+     1	import { createServerFn } from "@tanstack/react-start";
+     2	import { getPrisma } from "@/lib/db";
+     3	import { authMiddleware } from "@/lib/auth/middleware";
+     4	import { generatePuzzle } from "@/lib/game/generator";
+     5	import { validatePuzzleQuality } from "@/lib/v16/core/puzzleQuality";
+     6	
+     7	const clean = (v: unknown, max: number) => String(v ?? "").trim().slice(0, max);
+     8	const words = (v: unknown) => Array.isArray(v)
+     9	  ? [...new Set(v.map(x => String(x).toUpperCase().replace(/[^A-Z]/g, "").slice(0, 14)).filter(x => x.length >= 3))].slice(0, 12)
+    10	  : [];
+    11	
+    12	// Creator publishing is now a review workflow. Creators can submit/update a puzzle,
+    13	// but only the moderation service can transition approved content to published.
+    14	export const publishCreatorPuzzle = createServerFn({ method: "POST" })
+    15	  .middleware([authMiddleware])
+    16	  .validator((d: { id: string; title: string; category: string; words: string[] }) => ({
+    17	    id: clean(d.id, 80), title: clean(d.title, 48) || "Untitled Journey",
+    18	    category: clean(d.category, 32) || "creator", words: words(d.words),
+    19	  }))
+    20	  .handler(async ({ context, data }) => {
+    21	    if (!data.id || data.words.length < 3) return { ok: false as const, error: "At least 3 valid words are required." };
+    22	    const puzzle = generatePuzzle({ seed: 7001 + data.words.length, size: 12, wordCount: data.words.length, minLen: 3, maxLen: 14, dirs: [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]], category: data.category, title: data.title });
+    23	    const quality = validatePuzzleQuality(puzzle, true);
+    24	    if (!quality.valid) return { ok: false as const, error: `Puzzle quality check failed: ${quality.errors.slice(0, 4).join(", ")}` };
+    25	    const db = getPrisma();
+    26	    const existing = await db.creatorPuzzle.findUnique({ where: { id: data.id } });
+    27	    if (existing && existing.userId !== context.userId) return { ok: false as const, error: "Puzzle belongs to another creator." };
+    28	    const row = await db.creatorPuzzle.upsert({
+    29	      where: { id: data.id },
+    30	      create: { id: data.id, userId: context.userId, title: data.title, category: data.category, wordsJson: data.words, status: "pending_review", version: 1 },
+    31	      update: { title: data.title, category: data.category, wordsJson: data.words, status: "pending_review", version: { increment: 1 } },
+    32	    });
+    33	    return { ok: true as const, id: row.id, status: row.status, message: "Submitted for moderation review." };
+    34	  });
+    35	
+    36	export const listMyCreatorPuzzles = createServerFn({ method: "GET" }).middleware([authMiddleware]).handler(async ({ context }) => {
+    37	  const rows = await getPrisma().creatorPuzzle.findMany({ where: { userId: context.userId }, orderBy: { updatedAt: "desc" }, take: 50 });
+    38	  return { ok: true as const, puzzles: rows.map(r => ({ ...r, words: r.wordsJson as string[], wordsJson: undefined })) };
+    39	});

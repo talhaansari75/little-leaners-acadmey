@@ -1,0 +1,154 @@
+src/components/screens/CloudSyncScreen.tsx(7,96): error TS18046: 'r' is of type 'unknown'.
+src/components/screens/CloudSyncScreen.tsx(7,132): error TS18046: 'r' is of type 'unknown'.
+src/components/screens/CloudSyncScreen.tsx(7,161): error TS18046: 'r' is of type 'unknown'.
+src/components/screens/CloudSyncScreen.tsx(7,176): error TS18046: 'r' is of type 'unknown'.
+src/components/screens/CloudSyncScreen.tsx(7,213): error TS18046: 'r' is of type 'unknown'.
+src/components/screens/CloudSyncScreen.tsx(7,261): error TS18046: 'r' is of type 'unknown'.
+src/components/screens/CloudSyncScreen.tsx(7,286): error TS18046: 'r' is of type 'unknown'.
+src/components/screens/MetaScreens.tsx(170,18): error TS18046: 'remote' is of type 'unknown'.
+src/components/screens/MetaScreens.tsx(171,22): error TS18046: 'remote' is of type 'unknown'.
+src/components/screens/MetaScreens.tsx(174,17): error TS18046: 'remote' is of type 'unknown'.
+src/components/screens/MetaScreens.tsx(174,39): error TS18046: 'remote' is of type 'unknown'.
+src/components/screens/MetaScreens.tsx(175,45): error TS18046: 'remote' is of type 'unknown'.
+src/components/v12/MultiplayerScreen.tsx(13,165): error TS18046: 'r' is of type 'unknown'.
+src/components/v12/MultiplayerScreen.tsx(13,181): error TS18046: 'r' is of type 'unknown'.
+src/components/v12/MultiplayerScreen.tsx(13,289): error TS18046: 'r' is of type 'unknown'.
+src/components/v12/MultiplayerScreen.tsx(15,161): error TS18046: 'r' is of type 'unknown'.
+src/components/v12/MultiplayerScreen.tsx(15,182): error TS18046: 'r' is of type 'unknown'.
+src/components/v12/MultiplayerScreen.tsx(15,290): error TS18046: 'r' is of type 'unknown'.
+src/components/v13/SmartJourneyPanel.tsx(82,29): error TS2304: Cannot find name 'SkillStat'.
+src/components/v26/CreatorCommunityScreen.tsx(12,582): error TS2339: Property 'version' does not exist on type 'Row'.
+src/components/v35/AIPuzzleLabScreen.tsx(17,211): error TS2339: Property 'error' does not exist on type '{ ok: true; source: "local"; words: string[]; note: "AI service is not configured; local curated vocabulary was used."; } | { ok: true; source: "local"; words: string[]; note: "AI service failed; local vocabulary was used instead."; } | { ...; } | { ...; }'.
+  Property 'error' does not exist on type '{ ok: true; source: "local"; words: string[]; note: "AI service is not configured; local curated vocabulary was used."; }'.
+src/lib/academy/catalog.test.ts(1,40): error TS2307: Cannot find module 'vitest' or its corresponding type declarations.
+src/lib/game/bossJourney.test.ts(28,28): error TS2345: Argument of type '{ enemy: { hp: number; maxHp: number; phase: number; id: string; name: string; title: string; level: number; attack: number; defense: number; reward: number; }; playerHp: number; maxPlayerHp: number; ... 5 more ...; petAbilityUsed: boolean; }' is not assignable to parameter of type 'CombatState'.
+  The types of 'enemy.phase' are incompatible between these types.
+    Type 'number' is not assignable to type '1 | 2 | 3'.
+src/lib/game/combat.ts(2,15): error TS2305: Module '"./types.ts"' has no exported member 'PetAbility'.
+src/lib/game/contentCoverage.ts(40,29): error TS2339: Property 'score' does not exist on type 'PuzzleQuality'.
+src/lib/game/dailyChallenges.test.ts(24,37): error TS2345: Argument of type '{ dailyChallengeId: string; id: string; seed: number; size: number; grid: string[][]; words: string[]; placements: { word: string; row: number; col: number; dr: number; dc: number; cells: number[][]; }[]; category: string; title: string; }' is not assignable to parameter of type 'Puzzle'.
+  Types of property 'placements' are incompatible.
+    Type '{ word: string; row: number; col: number; dr: number; dc: number; cells: number[][]; }[]' is not assignable to type 'Placement[]'.
+      Type '{ word: string; row: number; col: number; dr: number; dc: number; cells: number[][]; }' is not assignable to type 'Placement'.
+        Types of property 'cells' are incompatible.
+          Type 'number[][]' is not assignable to type '[number, number][]'.
+            Type 'number[]' is not assignable to type '[number, number]'.
+              Target requires 2 element(s) but source may have fewer.
+src/lib/game/dailyChallenges.test.ts(25,38): error TS2345: Argument of type '{ dailyChallengeId: string; id: string; seed: number; size: number; grid: string[][]; words: string[]; placements: { word: string; row: number; col: number; dr: number; dc: number; cells: number[][]; }[]; category: string; title: string; }' is not assignable to parameter of type 'Puzzle'.
+  Types of property 'placements' are incompatible.
+    Type '{ word: string; row: number; col: number; dr: number; dc: number; cells: number[][]; }[]' is not assignable to type 'Placement[]'.
+      Type '{ word: string; row: number; col: number; dr: number; dc: number; cells: number[][]; }' is not assignable to type 'Placement'.
+        Types of property 'cells' are incompatible.
+          Type 'number[][]' is not assignable to type '[number, number][]'.
+            Type 'number[]' is not assignable to type '[number, number]'.
+              Target requires 2 element(s) but source may have fewer.
+src/lib/game/engagement.test.ts(15,76): error TS2739: Type '{}' is missing the following properties from type 'Record<BuildingId, number>': camp, workshop, forge, library, treasury
+src/lib/game/engagement.test.ts(15,95): error TS2739: Type '{}' is missing the following properties from type 'Record<MaterialId, number>': wood, stone, crystal, iron, gold
+src/lib/game/engagement.test.ts(18,31): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{}'.
+  No index signature with a parameter of type 'string' was found on type '{}'.
+src/lib/game/engagement.test.ts(20,3): error TS2739: Type '{ version: number; playerName: string; avatarId: string; classId: "detective"; xp: number; coins: number; diamonds: number; stars: number; energy: number; energyAt: number; unlockedLevel: number; ... 26 more ...; claimedSeasonTiers: never[]; }' is missing the following properties from type 'PlayerSave': dailyStreak, behaviorProfile
+src/lib/game/journeyWorlds.test.ts(26,34): error TS2739: Type '{}' is missing the following properties from type 'Record<BuildingId, number>': camp, workshop, forge, library, treasury
+src/lib/game/journeyWorlds.test.ts(26,53): error TS2739: Type '{}' is missing the following properties from type 'Record<MaterialId, number>': wood, stone, crystal, iron, gold
+src/lib/game/levels.ts(120,5): error TS2353: Object literal may only specify known properties, and 'dailyChallengeId' does not exist in type '{ seed: number; size: number; wordCount: number; minLen: number; maxLen: number; dirs: readonly Dir[]; category?: string | undefined; title?: string | undefined; script?: "urdu" | "latin" | undefined; language?: LangCode | undefined; }'.
+src/lib/game/wildWhispersCloud.ts(46,35): error TS7006: Parameter 'tx' implicitly has an 'any' type.
+src/lib/game/wildWhispersCloud.ts(73,35): error TS7006: Parameter 'tx' implicitly has an 'any' type.
+src/lib/game/wildWhispersCloud.ts(110,35): error TS7006: Parameter 'tx' implicitly has an 'any' type.
+src/lib/intelligence/learningBrain.test.ts(1,40): error TS2307: Cannot find module 'vitest' or its corresponding type declarations.
+src/lib/intelligence/learningBrain.test.ts(30,7): error TS2554: Expected 3-5 arguments, but got 6.
+src/lib/intelligence/learningBrain.ts(253,28): error TS2339: Property 'skills' does not exist on type 'LearningProfile'.
+src/lib/intelligence/learningBrain.ts(358,27): error TS2339: Property 'skills' does not exist on type 'LearningProfile'.
+src/lib/intelligence/learningBrain.ts(367,5): error TS2353: Object literal may only specify known properties, and 'skills' does not exist in type 'LearningProfile'.
+src/lib/intelligence/learningBrain.ts(368,18): error TS2339: Property 'skills' does not exist on type 'LearningProfile'.
+src/lib/multiplayer/roomService.ts(11,40): error TS7006: Parameter 'tx' implicitly has an 'any' type.
+src/lib/multiplayer/roomService.ts(22,42): error TS7006: Parameter 'tx' implicitly has an 'any' type.
+src/lib/payments/providerBoundary.ts(49,203): error TS1355: A 'const' assertions can only be applied to references to enum members, or string, number, boolean, array, or object literals.
+src/lib/payments/providerBoundary.ts(57,9): error TS2416: Property 'verifyWebhook' in type 'HmacPaymentProvider' is not assignable to the same property in base type 'PaymentProvider'.
+  Type '(rawBody: string, signature: string | undefined) => Promise<{ provider: string; externalId: string; productId: string; amountMinor: number; currency: string; raw: any; userId: string; expiresAt: any; status: string; } | null>' is not assignable to type '(rawBody: string, signature: string | undefined) => Promise<VerifiedPurchase | null>'.
+    Type 'Promise<{ provider: string; externalId: string; productId: string; amountMinor: number; currency: string; raw: any; userId: string; expiresAt: any; status: string; } | null>' is not assignable to type 'Promise<VerifiedPurchase | null>'.
+      Type '{ provider: string; externalId: string; productId: string; amountMinor: number; currency: string; raw: any; userId: string; expiresAt: any; status: string; } | null' is not assignable to type 'VerifiedPurchase | null'.
+        Type '{ provider: string; externalId: string; productId: string; amountMinor: number; currency: string; raw: any; userId: string; expiresAt: any; status: string; }' is not assignable to type 'VerifiedPurchase'.
+          Types of property 'status' are incompatible.
+            Type 'string' is not assignable to type '"verified" | "refunded" | "inactive" | undefined'.
+src/lib/platform/multiplayer/score.ts(3,135): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{}'.
+  No index signature with a parameter of type 'string' was found on type '{}'.
+src/lib/prisma.ts(348,10): error TS7023: 'clientFromSql' implicitly has return type 'any' because it does not have a return type annotation and is referenced directly or indirectly in one of its return expressions.
+src/lib/prisma.ts(392,13): error TS2456: Type alias 'PrismaClient' circularly references itself.
+src/lib/server/cloud.ts(8,12): error TS2345: Argument of type '({ context }: ServerFnCtx<Register, "GET", readonly [FunctionMiddlewareAfterServer<{}, unknown, undefined, { userId: string; }, { bearerToken: string | undefined; }, undefined, undefined>], undefined>) => Promise<...>' is not assignable to parameter of type 'ServerFn<Register, "GET", readonly [FunctionMiddlewareAfterServer<{}, unknown, undefined, { userId: string; }, { bearerToken: string | undefined; }, undefined, undefined>], undefined, Promise<...>, true>'.
+  Type 'Promise<{ ok: true; save: unknown; version: any; revision: number; updatedAt: any; error?: undefined; } | { ok: false; error: "Corrupt cloud save"; save?: undefined; version?: undefined; revision?: undefined; updatedAt?: undefined; }>' is not assignable to type 'Promise<ValidateSerializableMapped<{ ok: true; save: unknown; version: any; revision: number; updatedAt: any; error?: undefined; }, RegisteredSerializableInput<Register>> | ValidateSerializableMapped<...>>'.
+    Type '{ ok: true; save: unknown; version: any; revision: number; updatedAt: any; error?: undefined; } | { ok: false; error: "Corrupt cloud save"; save?: undefined; version?: undefined; revision?: undefined; updatedAt?: undefined; }' is not assignable to type 'ValidateSerializableMapped<{ ok: true; save: unknown; version: any; revision: number; updatedAt: any; error?: undefined; }, RegisteredSerializableInput<Register>> | ValidateSerializableMapped<...>'.
+      Type '{ ok: true; save: unknown; version: any; revision: number; updatedAt: any; error?: undefined; }' is not assignable to type 'ValidateSerializableMapped<{ ok: true; save: unknown; version: any; revision: number; updatedAt: any; error?: undefined; }, RegisteredSerializableInput<Register>> | ValidateSerializableMapped<...>'.
+        Type '{ ok: true; save: unknown; version: any; revision: number; updatedAt: any; error?: undefined; }' is not assignable to type 'ValidateSerializableMapped<{ ok: true; save: unknown; version: any; revision: number; updatedAt: any; error?: undefined; }, RegisteredSerializableInput<Register>>'.
+          Types of property 'save' are incompatible.
+            Type 'unknown' is not assignable to type 'SerializationError<"Type may not be serializable">'.
+src/lib/server/cloud.ts(55,35): error TS7006: Parameter 'tx' implicitly has an 'any' type.
+src/lib/server/gameplay.ts(64,37): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{}'.
+  No index signature with a parameter of type 'string' was found on type '{}'.
+src/lib/server/gameplay.ts(77,33): error TS7006: Parameter 'tx' implicitly has an 'any' type.
+src/lib/server/gameplay.ts(83,31): error TS7006: Parameter 'session' implicitly has an 'any' type.
+src/lib/server/gameplay.ts(132,34): error TS7006: Parameter 'tx' implicitly has an 'any' type.
+src/lib/server/gameplay.ts(205,33): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{}'.
+  No index signature with a parameter of type 'string' was found on type '{}'.
+src/lib/server/gameplay.ts(207,34): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ readonly first: 10; readonly letter: 20; readonly word: 50; }'.
+  No index signature with a parameter of type 'string' was found on type '{ readonly first: 10; readonly letter: 20; readonly word: 50; }'.
+src/lib/server/gameplay.ts(216,131): error TS2322: Type 'string | undefined' is not assignable to type '"word" | "first" | "letter" | undefined'.
+  Type 'string' is not assignable to type '"word" | "first" | "letter" | undefined'.
+src/lib/server/gameplay.ts(235,34): error TS7006: Parameter 'tx' implicitly has an 'any' type.
+src/lib/server/gameplay.ts(239,95): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{}'.
+src/lib/server/gameplay.ts(241,29): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{}'.
+  No index signature with a parameter of type 'string' was found on type '{}'.
+src/lib/server/gameplay.ts(242,63): error TS2339: Property 'speed' does not exist on type '{}'.
+src/lib/server/gameplay.ts(255,34): error TS7006: Parameter 'tx' implicitly has an 'any' type.
+src/lib/server/gameplay.ts(295,48): error TS7006: Parameter 'tx' implicitly has an 'any' type.
+src/lib/server/gameplay.ts(372,39): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{}'.
+  No index signature with a parameter of type 'string' was found on type '{}'.
+src/lib/server/gameplay.ts(385,117): error TS2304: Cannot find name 'journeyWorldForLevel'.
+src/lib/server/gameplay.ts(408,37): error TS7006: Parameter 'tx' implicitly has an 'any' type.
+src/lib/server/leaderboard.ts(5,313): error TS7006: Parameter 'rows' implicitly has an 'any' type.
+src/lib/server/leaderboard.ts(5,328): error TS7006: Parameter 'r' implicitly has an 'any' type.
+src/lib/server/multiplayer.ts(15,12): error TS2345: Argument of type '({ context, data }: ServerFnCtx<Register, "POST", readonly [FunctionMiddlewareAfterServer<{}, unknown, undefined, { userId: string; }, { bearerToken: string | undefined; }, undefined, undefined>], (d: { ...; }) => { ...; }>) => Promise<...>' is not assignable to parameter of type 'ServerFn<Register, "POST", readonly [FunctionMiddlewareAfterServer<{}, unknown, undefined, { userId: string; }, { bearerToken: string | undefined; }, undefined, undefined>], (d: { ...; }) => { ...; }, Promise<...>, true>'.
+  Type 'Promise<{ ok: true; room: { roomId: string; hostUserId: string; mode: string; state: unknown; status: string; maxPlayers: number; members: { userId: string; displayName: string; role: string; }[]; } | null; error?: undefined; } | { ...; }>' is not assignable to type 'Promise<ValidateSerializableMapped<{ ok: true; room: { roomId: string; hostUserId: string; mode: string; state: unknown; status: string; maxPlayers: number; members: { userId: string; displayName: string; role: string; }[]; } | null; error?: undefined; }, RegisteredSerializableInput<...>> | ValidateSerializableMappe...'.
+    Type '{ ok: true; room: { roomId: string; hostUserId: string; mode: string; state: unknown; status: string; maxPlayers: number; members: { userId: string; displayName: string; role: string; }[]; } | null; error?: undefined; } | { ...; }' is not assignable to type 'ValidateSerializableMapped<{ ok: true; room: { roomId: string; hostUserId: string; mode: string; state: unknown; status: string; maxPlayers: number; members: { userId: string; displayName: string; role: string; }[]; } | null; error?: undefined; }, RegisteredSerializableInput<...>> | ValidateSerializableMapped<...>'.
+      Type '{ ok: true; room: { roomId: string; hostUserId: string; mode: string; state: unknown; status: string; maxPlayers: number; members: { userId: string; displayName: string; role: string; }[]; } | null; error?: undefined; }' is not assignable to type 'ValidateSerializableMapped<{ ok: true; room: { roomId: string; hostUserId: string; mode: string; state: unknown; status: string; maxPlayers: number; members: { userId: string; displayName: string; role: string; }[]; } | null; error?: undefined; }, RegisteredSerializableInput<...>> | ValidateSerializableMapped<...>'.
+        Type '{ ok: true; room: { roomId: string; hostUserId: string; mode: string; state: unknown; status: string; maxPlayers: number; members: { userId: string; displayName: string; role: string; }[]; } | null; error?: undefined; }' is not assignable to type 'ValidateSerializableMapped<{ ok: true; room: { roomId: string; hostUserId: string; mode: string; state: unknown; status: string; maxPlayers: number; members: { userId: string; displayName: string; role: string; }[]; } | null; error?: undefined; }, RegisteredSerializableInput<...>>'.
+          Types of property 'room' are incompatible.
+            Type '{ roomId: string; hostUserId: string; mode: string; state: unknown; status: string; maxPlayers: number; members: { userId: string; displayName: string; role: string; }[]; } | null' is not assignable to type 'ValidateSerializableMapped<{ roomId: string; hostUserId: string; mode: string; state: unknown; status: string; maxPlayers: number; members: { userId: string; displayName: string; role: string; }[]; }, RegisteredSerializableInput<Register>> | null'.
+              Type '{ roomId: string; hostUserId: string; mode: string; state: unknown; status: string; maxPlayers: number; members: { userId: string; displayName: string; role: string; }[]; }' is not assignable to type 'ValidateSerializableMapped<{ roomId: string; hostUserId: string; mode: string; state: unknown; status: string; maxPlayers: number; members: { userId: string; displayName: string; role: string; }[]; }, RegisteredSerializableInput<Register>>'.
+                Types of property 'state' are incompatible.
+                  Type 'unknown' is not assignable to type 'SerializationError<"Type may not be serializable">'.
+src/lib/server/multiplayer.ts(42,12): error TS2345: Argument of type '({ data }: ServerFnCtx<Register, "GET", readonly [FunctionMiddlewareAfterServer<{}, unknown, undefined, { userId: string; }, { bearerToken: string | undefined; }, undefined, undefined>], (d: { ...; }) => { ...; }>) => Promise<...>' is not assignable to parameter of type 'ServerFn<Register, "GET", readonly [FunctionMiddlewareAfterServer<{}, unknown, undefined, { userId: string; }, { bearerToken: string | undefined; }, undefined, undefined>], (d: { ...; }) => { ...; }, Promise<...>, true>'.
+  Type 'Promise<{ ok: false; error: "room_id_required"; room?: undefined; } | { ok: true; room: { roomId: string; hostUserId: string; mode: string; state: unknown; status: string; maxPlayers: number; members: { userId: string; displayName: string; role: string; }[]; }; error?: undefined; } | { ...; }>' is not assignable to type 'Promise<ValidateSerializableMapped<{ ok: false; error: "room_id_required"; room?: undefined; }, RegisteredSerializableInput<Register>> | ValidateSerializableMapped<...> | ValidateSerializableMapped<...>>'.
+    Type '{ ok: false; error: "room_id_required"; room?: undefined; } | { ok: true; room: { roomId: string; hostUserId: string; mode: string; state: unknown; status: string; maxPlayers: number; members: { userId: string; displayName: string; role: string; }[]; }; error?: undefined; } | { ...; }' is not assignable to type 'ValidateSerializableMapped<{ ok: false; error: "room_id_required"; room?: undefined; }, RegisteredSerializableInput<Register>> | ValidateSerializableMapped<...> | ValidateSerializableMapped<...>'.
+      Type '{ ok: true; room: { roomId: string; hostUserId: string; mode: string; state: unknown; status: string; maxPlayers: number; members: { userId: string; displayName: string; role: string; }[]; }; error?: undefined; }' is not assignable to type 'ValidateSerializableMapped<{ ok: false; error: "room_id_required"; room?: undefined; }, RegisteredSerializableInput<Register>> | ValidateSerializableMapped<...> | ValidateSerializableMapped<...>'.
+        Type '{ ok: true; room: { roomId: string; hostUserId: string; mode: string; state: unknown; status: string; maxPlayers: number; members: { userId: string; displayName: string; role: string; }[]; }; error?: undefined; }' is not assignable to type 'ValidateSerializableMapped<{ ok: true; room: { roomId: string; hostUserId: string; mode: string; state: unknown; status: string; maxPlayers: number; members: { userId: string; displayName: string; role: string; }[]; }; error?: undefined; }, RegisteredSerializableInput<...>>'.
+          The types of 'room.state' are incompatible between these types.
+            Type 'unknown' is not assignable to type 'SerializationError<"Type may not be serializable">'.
+src/lib/server/v3/platformFns.ts(19,128): error TS2345: Argument of type '({ data }: ServerFnCtx<Register, "GET", undefined, (id: string) => string>) => Promise<{ roomId: string; hostUserId: string; mode: string; state: unknown; status: string; maxPlayers: number; members: { ...; }[]; } | null>' is not assignable to parameter of type 'ServerFn<Register, "GET", undefined, (id: string) => string, Promise<{ roomId: string; hostUserId: string; mode: string; state: unknown; status: string; maxPlayers: number; members: { userId: string; displayName: string; role: string; }[]; } | null>, true>'.
+  Type 'Promise<{ roomId: string; hostUserId: string; mode: string; state: unknown; status: string; maxPlayers: number; members: { userId: string; displayName: string; role: string; }[]; } | null>' is not assignable to type 'Promise<ValidateSerializableMapped<{ roomId: string; hostUserId: string; mode: string; state: unknown; status: string; maxPlayers: number; members: { userId: string; displayName: string; role: string; }[]; }, RegisteredSerializableInput<Register>> | null>'.
+    Type '{ roomId: string; hostUserId: string; mode: string; state: unknown; status: string; maxPlayers: number; members: { userId: string; displayName: string; role: string; }[]; } | null' is not assignable to type 'ValidateSerializableMapped<{ roomId: string; hostUserId: string; mode: string; state: unknown; status: string; maxPlayers: number; members: { userId: string; displayName: string; role: string; }[]; }, RegisteredSerializableInput<Register>> | null'.
+      Type '{ roomId: string; hostUserId: string; mode: string; state: unknown; status: string; maxPlayers: number; members: { userId: string; displayName: string; role: string; }[]; }' is not assignable to type 'ValidateSerializableMapped<{ roomId: string; hostUserId: string; mode: string; state: unknown; status: string; maxPlayers: number; members: { userId: string; displayName: string; role: string; }[]; }, RegisteredSerializableInput<Register>>'.
+        Types of property 'state' are incompatible.
+          Type 'unknown' is not assignable to type 'SerializationError<"Type may not be serializable">'.
+src/lib/store.ts(130,76): error TS2339: Property 'getRandomValues' does not exist on type 'never'.
+src/lib/store.ts(151,26): error TS2304: Cannot find name 'get'.
+src/lib/store.ts(153,11): error TS2304: Cannot find name 'get'.
+src/lib/store.ts(153,28): error TS7006: Parameter 's' implicitly has an 'any' type.
+src/lib/store.ts(208,56): error TS2741: Property 'claimWorldChest' is missing in type '{ ready: false; save: PlayerSave; screen: "splash"; prevScreen: "home"; play: null; toast: null; overlay: null; lastReward: null; combat: null; dialogue: null; npcAffinity: {}; hydrate: () => void; ... 44 more ...; resetProgress: () => void; }' but required in type 'GameState'.
+src/lib/store.ts(591,168): error TS2538: Type 'null' cannot be used as an index type.
+src/lib/store.ts(592,168): error TS2538: Type 'null' cannot be used as an index type.
+src/lib/v13/payments/server.ts(4,356): error TS7006: Parameter 'rows' implicitly has an 'any' type.
+src/lib/v13/payments/server.ts(4,371): error TS7006: Parameter 'r' implicitly has an 'any' type.
+src/lib/v25/creator/cloud.ts(38,49): error TS7006: Parameter 'r' implicitly has an 'any' type.
+src/lib/v26/creator/community.ts(7,286): error TS7006: Parameter 'p' implicitly has an 'any' type.
+src/lib/v26/creator/community.ts(7,409): error TS7006: Parameter 's' implicitly has an 'any' type.
+src/lib/v26/creator/community.ts(7,411): error TS7006: Parameter 'r' implicitly has an 'any' type.
+src/lib/v26/progression/serverRewards.ts(12,81): error TS7006: Parameter 'tx' implicitly has an 'any' type.
+src/lib/v26/progression/serverRewards.ts(16,480): error TS2345: Argument of type 'Record<string, any>' is not assignable to parameter of type 'PlayerSave'.
+  Type 'Record<string, any>' is missing the following properties from type 'PlayerSave': version, playerName, avatarId, classId, and 36 more.
+src/lib/v39/publish/readiness.ts(24,14): error TS2339: Property 'ok' does not exist on type 'PuzzleAudit'.
+src/lib/v39/publish/readiness.ts(35,35): error TS2367: This comparison appears to be unintentional because the types '"draft" | "published"' and '"archived"' have no overlap.
+src/lib/v40_releasePackage.ts(45,71): error TS2367: This comparison appears to be unintentional because the types '"draft" | "published"' and '"archived"' have no overlap.
+src/routes/api/payments/webhook.ts(38,40): error TS7006: Parameter 'tx' implicitly has an 'any' type.
+src/routes/api/payments/webhook.ts(41,24): error TS2339: Property 'eventKind' does not exist on type '{ provider: string; externalId: string; productId: string; amountMinor: number; currency: string; raw: any; userId: string; expiresAt: any; status: string; }'.
+src/routes/api/payments/webhook.ts(52,24): error TS2339: Property 'eventKind' does not exist on type '{ provider: string; externalId: string; productId: string; amountMinor: number; currency: string; raw: any; userId: string; expiresAt: any; status: string; }'.
+src/routes/api/payments/webhook.ts(52,72): error TS2339: Property 'eventKind' does not exist on type '{ provider: string; externalId: string; productId: string; amountMinor: number; currency: string; raw: any; userId: string; expiresAt: any; status: string; }'.
+src/routes/api/payments/webhook.ts(53,37): error TS2339: Property 'eventKind' does not exist on type '{ provider: string; externalId: string; productId: string; amountMinor: number; currency: string; raw: any; userId: string; expiresAt: any; status: string; }'.

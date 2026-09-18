@@ -10,11 +10,11 @@ import {
 describe("learning brain", () => {
   test("has five independent class skill maps", () => {
     expect(Object.keys(CLASS_SKILLS)).toEqual([
-      "Playgroup",
+      "Montessori",
       "Nursery",
-      "KG-1",
-      "KG-2",
-      "Class 1",
+      "KG",
+      "KG",
+      "Montessori",
     ]);
   });
 
@@ -23,42 +23,42 @@ describe("learning brain", () => {
 
     profile = recordLearningSignal(
       profile,
-      "KG-1",
+      "KG",
       "phonics",
       true,
       500,
       "picture",
     );
 
-    expect(profile.byClass["KG-1"].phonics.attempts).toBe(1);
+    expect(profile.byClass["KG"].phonics.attempts).toBe(1);
     expect(profile.byClass.Nursery.phonics).toBeUndefined();
   });
 
   test("activity skills map to the selected class", () => {
     expect(
-      CLASS_SKILLS["KG-1"].includes(
-        skillForActivity("KG-1", "letters"),
+      CLASS_SKILLS["KG"].includes(
+        skillForActivity("KG", "letters"),
       ),
     ).toBe(true);
 
     expect(
-      CLASS_SKILLS["KG-2"].includes(
-        skillForActivity("KG-2", "math"),
+      CLASS_SKILLS["KG"].includes(
+        skillForActivity("KG", "math"),
       ),
     ).toBe(true);
 
     expect(
-      CLASS_SKILLS["Class 1"].includes(
-        skillForActivity("Class 1", "tracing"),
+      CLASS_SKILLS["Montessori"].includes(
+        skillForActivity("Montessori", "tracing"),
       ),
     ).toBe(true);
   });
 
   test("recommendation belongs to requested class", () => {
     const profile = emptyLearningProfile();
-    const recommendation = recommendNext(profile, "Playgroup");
+    const recommendation = recommendNext(profile, "Montessori");
 
-    expect(recommendation.className).toBe("Playgroup");
-    expect(CLASS_SKILLS.Playgroup).toContain(recommendation.skill);
+    expect(recommendation.className).toBe("Montessori");
+    expect(CLASS_SKILLS.Montessori).toContain(recommendation.skill);
   });
 });

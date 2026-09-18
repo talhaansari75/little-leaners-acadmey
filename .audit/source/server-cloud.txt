@@ -1,0 +1,100 @@
+     1	import { createServerFn } from "@tanstack/react-start";
+     2	import { getPrisma } from "@/lib/db";
+     3	import { authMiddleware } from "@/lib/auth/middleware";
+     4	import { defaultSave } from "@/lib/game/persist";
+     5	
+     6	export const loadCloudSave = createServerFn({ method: "GET" })
+     7	  .middleware([authMiddleware])
+     8	  .handler(async ({ context }) => {
+     9	    const row = await getPrisma().playerSave.findUnique({ where: { userId: context.userId } });
+    10	    if (!row) return { ok: true as const, save: null, version: 0, revision: 0, updatedAt: null };
+    11	    try {
+    12	      return {
+    13	        ok: true as const,
+    14	        save: JSON.parse(row.saveJson) as unknown,
+    15	        version: row.version,
+    16	        revision: Number(row.revision),
+    17	        updatedAt: row.updatedAt.toISOString(),
+    18	      };
+    19	    } catch {
+    20	      return { ok: false as const, error: "Corrupt cloud save" };
+    21	    }
+    22	  });
+    23	
+    24	export const pushCloudSave = createServerFn({ method: "POST" })
+    25	  .middleware([authMiddleware])
+    26	  .validator((d: { json: string; expectedRevision?: number }) => ({
+    27	    json: String(d.json ?? "").slice(0, 250000),
+    28	    expectedRevision: Number.isFinite(d.expectedRevision)
+    29	      ? Math.max(0, Math.floor(Number(d.expectedRevision)))
+    30	      : undefined,
+    31	  }))
+    32	  .handler(async ({ context, data }) => {
+    33	    let incoming: Record<string, unknown>;
+    34	    try {
+    35	      const parsed = JSON.parse(data.json);
+    36	      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error("save must be an object");
+    37	      incoming = parsed as Record<string, unknown>;
+    38	    } catch {
+    39	      return { ok: false as const, error: "Invalid save" };
+    40	    }
+    41	
+    42	    // Client saves are never authoritative for economy/progression. A first sync must
+    43	    // start from a clean progression state; subsequent syncs may update presentation
+    44	    // and local metadata, but server-owned progression fields are preserved.
+    45	    const serverOwned = [
+    46	      "xp", "coins", "diamonds", "stars", "energy", "energyAt", "unlockedLevel",
+    47	      "results", "achievements", "stats", "claimedAchievements",
+    48	      "claimedMissions", "claimedSeasonTiers", "skillPoints", "skills",
+    49	      "storyChapter", "materials", "inventory", "ownedThemes", "ownedAvatars",
+    50	      "ownedPets", "petLevels", "equippedPet", "equipment", "equippedEquipment",
+    51	      "loginDays", "lastDaily", "dailyStreak", "lastSpin", "lastLoginReward", "behaviorProfile", "wildWhispers", "_serverVerified"
+    52	    ] as const;
+    53	
+    54	    const db = getPrisma();
+    55	    return db.$transaction(async (tx) => {
+    56	      const row = await tx.playerSave.findUnique({ where: { userId: context.userId } });
+    57	      if (!row) {
+    58	        if (data.expectedRevision && data.expectedRevision !== 0) {
+    59	          return { ok: false as const, conflict: true as const, error: "Cloud save appeared while syncing" };
+    60	        }
+    61	        const baseline = defaultSave() as unknown as Record<string, unknown>;
+    62	        const suspicious = serverOwned.some((key) => {
+    63	          const value = incoming[key];
+    64	          if (value == null) return false;
+    65	          if (key === "_serverVerified") return value === true;
+    66	          const base = baseline[key];
+    67	          if (typeof value === "number" && typeof base === "number") return value !== base;
+    68	          if (key === "energyAt") return false;
+    69	          if (typeof value === "object") return JSON.stringify(value) !== JSON.stringify(base);
+    70	          return value !== base;
+    71	        });
+    72	        if (suspicious) {
+    73	          return { ok: false as const, error: "Initial cloud sync cannot establish server-owned progress. Start from a fresh server save." };
+    74	        }
+    75	        await tx.playerSave.create({
+    76	          data: { userId: context.userId, saveJson: data.json, version: 1, revision: 1n },
+    77	        });
+    78	        return { ok: true as const, revision: 1 };
+    79	      }
+    80	
+    81	      const current = Number(row.revision);
+    82	      if (data.expectedRevision !== undefined && data.expectedRevision !== current) {
+    83	        return { ok: false as const, conflict: true as const, error: "Remote save changed. Pull it before pushing." };
+    84	      }
+    85	      let existing: Record<string, unknown> = {};
+    86	      try { existing = JSON.parse(row.saveJson) as Record<string, unknown>; } catch {
+    87	        return { ok: false as const, error: "Corrupt cloud save" };
+    88	      }
+    89	      const merged = { ...incoming };
+    90	      for (const key of serverOwned) if (key in existing) merged[key] = existing[key];
+    91	      const mergedJson = JSON.stringify(merged);
+    92	      const updated = await tx.playerSave.updateMany({
+    93	        where: { userId: context.userId, revision: row.revision },
+    94	        data: { saveJson: mergedJson, version: { increment: 1 }, revision: { increment: 1n } },
+    95	      });
+    96	      if (updated.count !== 1) {
+    97	        return { ok: false as const, conflict: true as const, error: "Remote save changed. Pull it before pushing." };
+    98	      }
+    99	      return { ok: true as const, revision: current + 1 };
+   100	    });

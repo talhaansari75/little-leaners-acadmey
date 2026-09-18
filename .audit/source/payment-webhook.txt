@@ -1,0 +1,92 @@
+     1	import { createFileRoute } from "@tanstack/react-router";
+     2	import { HmacPaymentProvider, StripePaymentProvider } from "@/lib/payments/providerBoundary";
+     3	import { getPrisma } from "@/lib/db";
+     4	
+     5	
+     6	export const Route = createFileRoute("/api/payments/webhook")({
+     7	  server: {
+     8	    handlers: {
+     9	      POST: async ({ request }) => {
+    10	        const raw = await request.text();
+    11	        const providerName = process.env.PAYMENT_PROVIDER?.trim();
+    12	        const secret = process.env.PAYMENT_WEBHOOK_SECRET?.trim();
+    13	        if (!providerName || !secret) {
+    14	          return new Response(JSON.stringify({ ok: false, error: "Payment provider is not configured." }), {
+    15	            status: 503,
+    16	            headers: { "content-type": "application/json" },
+    17	          });
+    18	        }
+    19	        const signature = request.headers.get("stripe-signature") ?? request.headers.get("x-payment-signature") ?? request.headers.get("x-signature") ?? undefined;
+    20	        const verifier = providerName.toLowerCase() === "stripe"
+    21	          ? new StripePaymentProvider(secret, "stripe", process.env.STRIPE_SECRET_KEY?.trim())
+    22	          : new HmacPaymentProvider(secret, providerName);
+    23	        const verified = await verifier.verifyWebhook(
+    24	          raw,
+    25	          signature,
+    26	        );
+    27	        if (!verified) {
+    28	          return new Response(JSON.stringify({ ok: false, error: "Invalid webhook signature or payload." }), {
+    29	            status: 401,
+    30	            headers: { "content-type": "application/json" },
+    31	          });
+    32	        }
+    33	        const db = getPrisma();
+    34	        const eventId = String((verified.raw as { id?: unknown })?.id ?? verified.externalId).slice(0, 200);
+    35	        if (!eventId) return new Response(JSON.stringify({ ok: false, error: "Missing event id." }), { status: 400, headers: { "content-type": "application/json" } });
+    36	        const eventType = String((verified.raw as { type?: unknown })?.type ?? "unknown").slice(0, 160);
+    37	        try {
+    38	          await db.$transaction(async (tx) => {
+    39	            await tx.paymentEventV5.create({ data: { eventId, eventType, payloadJson: verified.raw, processedAt: Date.now() } });
+    40	
+    41	          if (verified.eventKind === "refund") {
+    42	            await tx.purchaseReceipt.updateMany({ where: { provider: verified.provider, externalId: verified.externalId }, data: { status: "refunded", rawJson: verified.raw } });
+    43	            // A refunded subscription charge must not cancel the subscription entitlement.
+    44	            // Stripe's subscription.updated/deleted events are the authoritative lifecycle.
+    45	            if (verified.productId === "premium") return;
+    46	            const remaining = await tx.purchaseReceipt.count({ where: { userId: verified.userId, productId: verified.productId, status: "verified" } });
+    47	            if (remaining === 0) {
+    48	              await tx.entitlement.updateMany({ where: { userId: verified.userId, productId: verified.productId }, data: { active: false, source: "refund", expiresAt: null } });
+    49	            }
+    50	            return;
+    51	          }
+    52	          if (verified.eventKind === "subscription_update" || verified.eventKind === "subscription_delete") {
+    53	            const active = verified.eventKind === "subscription_update" && verified.status === "verified";
+    54	            await tx.entitlement.upsert({
+    55	              where: { userId_productId: { userId: verified.userId, productId: verified.productId } },
+    56	              create: { userId: verified.userId, productId: verified.productId, active, source: active ? "purchase" : "refund", expiresAt: verified.expiresAt ? new Date(verified.expiresAt) : null },
+    57	              update: { active, source: active ? "purchase" : "refund", expiresAt: verified.expiresAt ? new Date(verified.expiresAt) : null },
+    58	            });
+    59	            return;
+    60	          }
+    61	          if (verified.status === "refunded") {
+    62	            await tx.purchaseReceipt.updateMany({ where: { provider: verified.provider, externalId: verified.externalId }, data: { status: "refunded", rawJson: verified.raw } });
+    63	            if (verified.productId !== "premium") {
+    64	              const remaining = await tx.purchaseReceipt.count({ where: { userId: verified.userId, productId: verified.productId, status: "verified" } });
+    65	              if (remaining === 0) await tx.entitlement.updateMany({ where: { userId: verified.userId, productId: verified.productId }, data: { active: false, source: "refund" } });
+    66	            }
+    67	            return;
+    68	          }
+    69	          const allowedCurrencies = ["USD","EUR","GBP","PKR"]; const currency = allowedCurrencies.includes(verified.currency) ? verified.currency : "USD";
+    70	          await tx.purchaseReceipt.upsert({
+    71	            where: { provider_externalId: { provider: verified.provider, externalId: verified.externalId } },
+    72	            create: { userId: verified.userId, provider: verified.provider, externalId: verified.externalId, productId: verified.productId, amountMinor: verified.amountMinor, currency, status: "verified", rawJson: verified.raw },
+    73	            update: { status: "verified", rawJson: verified.raw, userId: verified.userId, productId: verified.productId, amountMinor: verified.amountMinor, currency },
+    74	          });
+    75	          await tx.entitlement.upsert({
+    76	            where: { userId_productId: { userId: verified.userId, productId: verified.productId } },
+    77	            create: { userId: verified.userId, productId: verified.productId, active: true, source: "purchase", expiresAt: verified.expiresAt ? new Date(verified.expiresAt) : null },
+    78	            update: { active: true, source: "purchase", expiresAt: verified.expiresAt ? new Date(verified.expiresAt) : null },
+    79	          });
+    80	          });
+    81	        } catch (e) {
+    82	          if ((e as { code?: string })?.code === "P2002") return new Response(JSON.stringify({ ok: true, duplicate: true }), { status: 200, headers: { "content-type": "application/json" } });
+    83	          throw e;
+    84	        }
+    85	        return new Response(JSON.stringify({ ok: true }), {
+    86	          status: 200,
+    87	          headers: { "content-type": "application/json" },
+    88	        });
+    89	      },
+    90	    },
+    91	  },
+    92	});

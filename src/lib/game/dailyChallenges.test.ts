@@ -20,7 +20,7 @@ test("daily challenge bonuses are bounded and condition-aware", () => {
 
 
 test("ice and bomb daily variants force their signature mechanic", () => {
-  const base = { id: "daily", seed: 123, size: 6, grid: Array.from({length:6},()=>Array.from({length:6},()=>"A")), words: ["TREE"], placements: [{word:"TREE", row:0, col:0, dr:0, dc:1, cells:[[0,0],[0,1],[0,2],[0,3]]}], category:"nature", title:"Daily" };
+  const base = { id: "daily", seed: 123, size: 6, grid: Array.from({length:6},()=>Array.from({length:6},()=>"A")), words: ["TREE"], placements: [{word:"TREE", row:0, col:0, dr:0, dc:1, cells:[[0,0],[0,1],[0,2],[0,3]] as Array<[number, number]>}], category:"nature", title:"Daily" };
   const ice = specialTilesForPuzzle({ ...base, dailyChallengeId: "ice" });
   const bomb = specialTilesForPuzzle({ ...base, dailyChallengeId: "bomb" });
   assert.ok(ice.some((x) => x.kind === "ice"));

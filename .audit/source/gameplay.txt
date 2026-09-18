@@ -1,0 +1,415 @@
+     1	import { randomUUID } from "node:crypto";
+     2	import { createServerFn } from "@tanstack/react-start";
+     3	import { authMiddleware } from "@/lib/auth/middleware";
+     4	import { getPrisma } from "@/lib/db";
+     5	import { defaultSave } from "@/lib/game/persist";
+     6	import { puzzleForDaily, puzzleForLevel, specFor, modeMods, targetTimeMs, todayKey, isBoss } from "@/lib/game/levels";
+     7	import { rewardCoins, xpForClear } from "@/lib/game/core/progression";
+     8	import { HINT_COST } from "@/lib/game/constants";
+     9	import { starsFor } from "@/lib/game/economy";
+    10	import { modeRules } from "@/lib/game/core/modeRules";
+    11	import { MAX_ENERGY, ENERGY_REFILL_MS } from "@/lib/game/constants";
+    12	import type { GameMode, LangCode } from "@/lib/game/types";
+    13	import { dailyChallengeFor, dailyChallengeObjective, dailyChallengeRewardMultiplier } from "@/lib/game/dailyChallenges";
+    14	import { specialTilesForPuzzle, specialKindsAt, clipAtLocked } from "@/lib/game/specialTiles";
+    15	import { isJourneyBoss } from "@/lib/game/journeyWorlds";
+    16	import { startCombat, combatTurn, playerCombatPower, type CombatState } from "@/lib/game/combat";
+    17	import { petProfile, petPower, petEffect } from "@/lib/game/rpg";
+    18	import { petXpEarned } from "@/lib/game/engagement";
+    19	import { intelligenceAdaptivePlan } from "@/lib/intelligence/adaptiveDifficulty";
+    20	import { personalizedRewardMultiplier } from "@/lib/intelligence/rewardPersonalization";
+    21	import { observeCompletion } from "@/lib/game/behavior";
+    22	import { isWord } from "@/lib/game/words";
+    23	
+    24	const modes = new Set<GameMode>(["classic","timed","survival","blitz","zen","daily","endless","fog","mirror","category","boss","rush","precision","hardcore","double_reward","no_hints","small_grid","giant_grid","reverse_only","diagonal","orthogonal","chaos","streak","treasure","nightmare","focus","speedrun","marathon","random_rules"]);
+    25	const langs = new Set<LangCode>(["en","ur","ur-Latn","hi","ar","bn","pa","sd","ps","tr","es","fr","de","zh","ja"]);
+    26	const cleanWords = (v: unknown) => Array.isArray(v) ? [...new Set(v.map(x => String(x).toUpperCase().replace(/[^A-Z]/g, "")).filter(Boolean))].slice(0, 32) : [];
+    27	type Cell = [number, number];
+    28	type Action = { id?: string; type: "found" | "bonus" | "miss" | "hint" | "pause" | "resume"; word?: string; cells?: Cell[]; specialKinds?: string[]; at?: number; hintKind?: "first" | "letter" | "word" };
+    29	type SessionState = { kind:"level"|"daily"; level:number; day:string; mode:GameMode; language:LangCode; dailyChallengeId?: string; words:string[]; grid:string[][]; placements:Array<{word:string;cells:Cell[]}>; actions:Action[]; timeLimitMs:number; adaptiveTier?: "assist"|"steady"|"expert"; adaptiveBonusTarget?: number; startingReveals?: number };
+    30	const safeJson = (v: unknown): Record<string, unknown> => v && typeof v === "object" && !Array.isArray(v) ? v as Record<string, unknown> : {};
+    31	const sameCells = (a: Cell[], b: Cell[]) => JSON.stringify(a) === JSON.stringify(b) || JSON.stringify(a) === JSON.stringify([...b].reverse());
+    32	const canonicalCells = (cells: Cell[]) => {
+    33	  const forward = JSON.stringify(cells);
+    34	  const reverse = JSON.stringify([...cells].reverse());
+    35	  return forward <= reverse ? forward : reverse;
+    36	};
+    37	const bonusActionKey = (word: string, cells: Cell[]) => `${word.toUpperCase()}:${canonicalCells(cells)}`;
+    38	const isFree = (mode: GameMode) => modeRules(mode).free;
+    39	
+    40	export const startGameplaySession = createServerFn({ method: "POST" })
+    41	  .middleware([authMiddleware])
+    42	  .validator((d: { kind: "level" | "daily"; level: number; day?: string; mode: string; language: string; dailyChallengeId?: string }) => ({
+    43	    kind: d.kind === "daily" ? "daily" as const : "level" as const,
+    44	    level: Math.max(1, Math.min(2000, Math.floor(Number(d.level) || 1))),
+    45	    day: String(d.day ?? "").slice(0, 10),
+    46	    mode: modes.has(d.mode as GameMode) ? d.mode as GameMode : "classic" as GameMode,
+    47	    language: langs.has(d.language as LangCode) ? d.language as LangCode : "en" as LangCode,
+    48	    dailyChallengeId: d.dailyChallengeId ? String(d.dailyChallengeId).slice(0, 20) : undefined,
+    49	  }))
+    50	  .handler(async ({ context, data }) => {
+    51	    if (data.kind === "daily" && data.day !== todayKey()) return { ok:false as const, error:"Daily challenge is not for today." };
+    52	    if (data.kind === "daily" && data.dailyChallengeId !== dailyChallengeFor(data.day).id) return { ok:false as const, error:"Daily challenge variant mismatch." };
+    53	    const db = getPrisma();
+    54	    if (data.kind === "daily") {
+    55	      const claimed = await db.dailyResult.findUnique({ where: { userId_dayKey: { userId: context.userId, dayKey: data.day } }, select: { userId: true } });
+    56	      if (claimed) return { ok:false as const, error:"Today's daily challenge has already been claimed." };
+    57	    }
+    58	    const row = await db.playerSave.findUnique({ where:{userId:context.userId} });
+    59	    const save = row?.saveJson ? safeJson(JSON.parse(row.saveJson)) : safeJson(defaultSave());
+    60	    const unlocked = Number(save.unlockedLevel ?? 1);
+    61	    if (data.kind === "level" && data.level > unlocked) return { ok:false as const, error:"Level is locked on the server." };
+    62	    const rules = modeRules(data.mode);
+    63	    const equippedPet = typeof save.equippedPet === "string" ? save.equippedPet : null;
+    64	    const equippedPetLevel = Number(save.petLevels?.[equippedPet ?? ""] ?? 1);
+    65	    const effects = petEffect(equippedPet, equippedPetLevel);
+    66	    const adaptive = data.kind === "level" ? intelligenceAdaptivePlan(save as unknown as import("@/lib/game/types").PlayerSave, data.level) : { tier: "steady" as const, timeMultiplier: 1, startingReveals: 0, bonusTarget: 0, surprise: false };
+    67	    const energyCost = Math.max(1, Math.ceil(1 * rules.energyMultiplier * (1 - Number(effects.energyReductionPercent ?? 0) / 100)));
+    68	    const energy = Number(save.energy ?? 20);
+    69	    if (data.kind === "level" && !rules.free && energy < energyCost) return { ok:false as const, error:"Not enough energy." };
+    70	    const puzzle = data.kind === "daily" ? puzzleForDaily(data.day, data.language, data.dailyChallengeId) : puzzleForLevel(data.level, data.mode, data.language);
+    71	    const daily = data.kind === "daily" ? dailyChallengeFor(data.day) : undefined;
+    72	    const spec = data.kind === "daily" ? { timeLimit: daily?.id === "speed" ? 90 : 150 } : modeMods(data.mode, specFor(data.level));
+    73	    const timeLimitMs = Math.max(20_000, Math.floor((spec.timeLimit ?? 10 * 60) * 1000 * (1 + Number(effects.timeBonusPercent ?? 0) / 100) * adaptive.timeMultiplier));
+    74	    const sessionId = randomUUID();
+    75	    const now = Date.now();
+    76	    const state: SessionState = { kind:data.kind, level:data.level, day:data.day, mode:data.mode, language:data.language, dailyChallengeId:data.dailyChallengeId, words:puzzle.words.map(w=>w.toUpperCase()), grid:puzzle.grid, placements:puzzle.placements.map(p=>({word:p.word.toUpperCase(),cells:p.cells})), actions:[], timeLimitMs, adaptiveTier: adaptive.tier, adaptiveBonusTarget: adaptive.bonusTarget, startingReveals: adaptive.startingReveals };
+    77	    await db.$transaction(async tx => {
+    78	      if (data.kind === "daily") {
+    79	        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`daily-session:${context.userId}:${data.day}`}))`;
+    80	        const claimedInsideTx = await tx.dailyResult.findUnique({ where: { userId_dayKey: { userId: context.userId, dayKey: data.day } }, select: { userId: true } });
+    81	        if (claimedInsideTx) throw new Error("Today's daily challenge has already been claimed.");
+    82	        const activeDaily = await tx.gameSessionV5.findMany({ where:{userId:context.userId,levelId:0,status:"open"}, select:{stateJson:true}, take:10 });
+    83	        if (activeDaily.some((session) => String((safeJson(session.stateJson)).day ?? "") === data.day)) {
+    84	          throw new Error("Today's daily challenge is already active.");
+    85	        }
+    86	      }
+    87	      const currentRow = await tx.playerSave.findUnique({ where:{userId:context.userId} });
+    88	      const currentSave = currentRow?.saveJson ? safeJson(JSON.parse(currentRow.saveJson)) : safeJson(defaultSave());
+    89	      const currentUnlocked = Number(currentSave.unlockedLevel ?? 1);
+    90	      const energyAt = Number(currentSave.energyAt ?? now);
+    91	      const refills = Math.max(0, Math.floor((now - energyAt) / ENERGY_REFILL_MS));
+    92	      const currentEnergy = Math.min(MAX_ENERGY, Number(currentSave.energy ?? MAX_ENERGY) + refills);
+    93	      const nextEnergyAt = currentEnergy >= MAX_ENERGY ? now : energyAt + refills * ENERGY_REFILL_MS;
+    94	      if (data.kind === "level" && data.level > currentUnlocked) throw new Error("Level is locked on the server.");
+    95	      if (data.kind === "level" && !rules.free && currentEnergy < energyCost) throw new Error("Not enough energy.");
+    96	      if (data.kind === "level" && !rules.free) {
+    97	        const nextSave = {...currentSave, energy:currentEnergy-energyCost, energyAt:nextEnergyAt};
+    98	        if (currentRow) await tx.playerSave.update({ where:{userId:context.userId}, data:{ saveJson:JSON.stringify(nextSave), version:{increment:1}, revision:{increment:1n} } });
+    99	        else await tx.playerSave.create({ data:{userId:context.userId,saveJson:JSON.stringify(nextSave),version:1,revision:1n} });
+   100	      } else if (!currentRow) {
+   101	        await tx.playerSave.create({ data:{userId:context.userId,saveJson:JSON.stringify({...currentSave,energy:currentEnergy,energyAt:nextEnergyAt}),version:1,revision:1n} });
+   102	      } else if (currentEnergy !== Number(currentSave.energy ?? MAX_ENERGY) || nextEnergyAt !== energyAt) {
+   103	        await tx.playerSave.update({ where:{userId:context.userId}, data:{saveJson:JSON.stringify({...currentSave,energy:currentEnergy,energyAt:nextEnergyAt}),version:{increment:1},revision:{increment:1n}} });
+   104	      }
+   105	      await tx.gameSessionV5.create({ data:{id:sessionId,userId:context.userId,levelId:data.level,seed:String(puzzle.seed),status:"open",startedAt:BigInt(now),updatedAt:BigInt(now),score:0,stateJson:state as any} });
+   106	    }, { isolationLevel: "Serializable" });
+   107	    const authoritativeRow = await db.playerSave.findUnique({ where:{userId:context.userId}, select:{saveJson:true} });
+   108	    const authoritativeSave = authoritativeRow?.saveJson ? JSON.parse(authoritativeRow.saveJson) : defaultSave();
+   109	    return { ok:true as const, sessionId, startedAt:now, timeLimitMs, seed:puzzle.seed, adaptiveTier: adaptive.tier, startingReveals: adaptive.startingReveals, save: authoritativeSave };
+   110	  });
+   111	
+   112	export const recordGameplayAction = createServerFn({ method:"POST" })
+   113	  .middleware([authMiddleware])
+   114	  .validator((d:{sessionId:string; actionId?:string; type:string; word?:string; cells?:Cell[]; hintKind?:string})=>{
+   115	    const allowed = new Set(["found","bonus","miss","hint","pause","resume"]);
+   116	    if (!allowed.has(d.type)) throw new Error("Invalid gameplay action type.");
+   117	    if (d.type === "hint" && d.hintKind !== "first" && d.hintKind !== "letter" && d.hintKind !== "word") throw new Error("Invalid hint kind.");
+   118	    return {
+   119	      sessionId:String(d.sessionId??"").trim().slice(0,64),
+   120	      actionId:String(d.actionId??"").trim(),
+   121	      type:d.type as Action["type"],
+   122	      word:d.word ? String(d.word).toUpperCase().slice(0,32):undefined,
+   123	      cells:Array.isArray(d.cells)?d.cells.slice(0,32).map(c=>[Number(c[0]),Number(c[1])] as Cell):undefined,
+   124	      hintKind:d.hintKind === "first" || d.hintKind === "letter" || d.hintKind === "word" ? d.hintKind : undefined,
+   125	    };
+   126	  })
+   127	  .handler(async({context,data})=>{
+   128	    if (!/^.{8,64}$/.test(data.sessionId) || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(data.actionId)) {
+   129	      return {ok:false as const,error:"Invalid gameplay action identity."};
+   130	    }
+   131	    const db=getPrisma();
+   132	    return db.$transaction(async tx=>{
+   133	      await tx.$queryRaw`SELECT id FROM game_sessions_v5 WHERE id=${data.sessionId} AND user_id=${context.userId} FOR UPDATE`;
+   134	      const row=await tx.gameSessionV5.findUnique({where:{id:data.sessionId}});
+   135	      if(!row || row.userId!==context.userId || row.status!=="open") return {ok:false as const,error:"Gameplay session is not active."};
+   136	      const state=JSON.parse(JSON.stringify(row.stateJson)) as SessionState;
+   137	      if (data.actionId) {
+   138	        const hasDuplicateAction = state.actions.some(a => a.id === data.actionId);
+   139	        const duplicateAction = hasDuplicateAction ? state.actions.find(a => a.id === data.actionId) : undefined;
+   140	        if (duplicateAction) {
+   141	          if (duplicateAction.type === "hint") {
+   142	            const hintSaveRow = await tx.playerSave.findUnique({where:{userId:context.userId},select:{saveJson:true}});
+   143	            const hintSave = safeJson(hintSaveRow?.saveJson ? JSON.parse(hintSaveRow.saveJson) : defaultSave());
+   144	            return {ok:true as const,duplicate:true,hintEconomy:{coins:Number(hintSave.coins ?? 0),hintsUsed:Number(safeJson(hintSave.stats).hintsUsed ?? 0)}};
+   145	          }
+   146	          return {ok:true as const,duplicate:true};
+   147	        }
+   148	      }
+   149	      if(state.actions.length>=500) return {ok:false as const,error:"Too many gameplay actions."};
+   150	      const lastAction = state.actions[state.actions.length - 1];
+   151	      const currentlyPaused = lastAction?.type === "pause";
+   152	      if(data.type === "pause" && currentlyPaused) return {ok:false as const,error:"Gameplay session is already paused."};
+   153	      if(data.type === "resume" && !currentlyPaused) return {ok:false as const,error:"Gameplay session is not paused."};
+   154	      if(data.type === "pause" && state.kind === "daily" && state.dailyChallengeId === "speed") return {ok:false as const,error:"Speed Day cannot be paused."};
+   155	      let specialKinds: string[] | undefined;
+   156	      const puzzle = state.kind === "daily" ? puzzleForDaily(state.day, state.language, state.dailyChallengeId) : puzzleForLevel(state.level, state.mode, state.language);
+   157	      const specialMap = new Map(specialTilesForPuzzle(puzzle).map(tile => [`${tile.cell[0]},${tile.cell[1]}`, tile.kind] as const));
+   158	      if(data.type === "found") {
+   159	        const p=state.placements.find(x=>x.word===data.word);
+   160	        if(!p || !data.cells || !sameCells(data.cells,p.cells)) return {ok:false as const,error:"Invalid word path."};
+   161	        if(state.actions.some(a=>a.type==="found" && a.word===data.word)) return {ok:true as const,duplicate:true};
+   162	        specialKinds = [...specialKindsAt(data.cells, specialMap)];
+   163	      }
+   164	      if ((data.type === "found" || data.type === "bonus") && data.cells) {
+   165	        const rows = state.grid.length;
+   166	        const cols = rows > 0 ? state.grid[0]!.length : 0;
+   167	        if (data.cells.some(([r,c]) => !Number.isInteger(r) || !Number.isInteger(c) || r < 0 || c < 0 || r >= rows || c >= cols)) {
+   168	          return {ok:false as const,error:"Gameplay path contains an out-of-bounds cell."};
+   169	        }
+   170	      }
+   171	      if(data.type === "bonus") {
+   172	        if(!data.word || !data.cells || data.cells.length < 2 || data.cells.length !== data.word.length) return {ok:false as const,error:"Invalid bonus word."};
+   173	        const bonusKey = bonusActionKey(data.word, data.cells);
+   174	        if (state.actions.some(a => a.type === "bonus" && bonusActionKey(a.word ?? "", a.cells ?? []) === bonusKey)) return {ok:true as const,duplicate:true};
+   175	        const letters = data.cells.map(([r,c]) => state.grid[r]?.[c] ?? "").join("").toUpperCase();
+   176	        const reverse = [...letters].reverse().join("");
+   177	        const word = data.word.toUpperCase();
+   178	        if (letters !== word && reverse !== word) return {ok:false as const,error:"Bonus path does not match the grid."};
+   179	        if (!isWord(word)) return {ok:false as const,error:"Bonus word is not in the verified word bank."};
+   180	        specialKinds = [...specialKindsAt(data.cells, specialMap)];
+   181	        for (let i=1;i<data.cells.length;i++) {
+   182	          const [r1,c1]=data.cells[i-1]!, [r2,c2]=data.cells[i]!;
+   183	          if (Math.abs(r2-r1)>1 || Math.abs(c2-c1)>1 || (r1===r2 && c1===c2)) return {ok:false as const,error:"Bonus path is not contiguous."};
+   184	        }
+   185	      }
+   186	      if ((data.type === "found" || data.type === "bonus") && data.cells) {
+   187	        const clipped = clipAtLocked(data.cells, specialMap);
+   188	        if (clipped.length !== data.cells.length) return {ok:false as const,error:"Locked tile blocks this path."};
+   189	        // Moving hazards are server-evaluated against a deterministic session tick.
+   190	        const tick = Math.floor((Date.now() - Number(row.startedAt)) / 1400);
+   191	        const movingTiles = specialTilesForPuzzle(puzzle).filter(t => t.kind === "moving");
+   192	        if (movingTiles.length) {
+   193	          const movingMap = new Map(movingTiles.map((t,i) => [`${t.cell[0]},${t.cell[1]}`, i]));
+   194	          if (data.cells.some(c => movingMap.has(`${c[0]},${c[1]}`) && ((tick + (movingMap.get(`${c[0]},${c[1]}`) ?? 0)) % movingTiles.length === 0))) return {ok:false as const,error:"A moving obstacle blocked that path."};
+   195	        }
+   196	      }
+   197	      let hintEconomy: { coins: number; hintsUsed: number } | undefined;
+   198	      if (data.type === "hint") {
+   199	        const hintKind = data.hintKind!;
+   200	        // Serialize economy mutations across every gameplay session for this user.
+   201	        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`hint-economy:${context.userId}`}))`;
+   202	        const saveRow = await tx.playerSave.findUnique({where:{userId:context.userId}});
+   203	        const save = safeJson(saveRow?.saveJson ? JSON.parse(saveRow.saveJson) : defaultSave());
+   204	        const equippedPet = typeof save.equippedPet === "string" ? save.equippedPet : null;
+   205	        const petLevel = Number(save.petLevels?.[equippedPet ?? ""] ?? 1);
+   206	        if (modeRules(state.mode).noHints) return {ok:false as const,error:"Hints are disabled in this mode."};
+   207	        const cost = Math.max(5, HINT_COST[hintKind] - (equippedPet === "fox" && hintKind !== "word" ? 8 : 0));
+   208	        const coins = Number(save.coins ?? 0);
+   209	        if (coins < cost) return {ok:false as const,error:"Not enough coins for that hint."};
+   210	        const stats = safeJson(save.stats);
+   211	        const nextSave = {...save,coins:coins-cost,stats:{...stats,hintsUsed:Number(stats.hintsUsed ?? 0)+1}};
+   212	        if (saveRow) await tx.playerSave.update({where:{userId:context.userId},data:{saveJson:JSON.stringify(nextSave),version:{increment:1},revision:{increment:1n}}});
+   213	        else await tx.playerSave.create({data:{userId:context.userId,saveJson:JSON.stringify(nextSave),version:1,revision:1n}});
+   214	        hintEconomy = { coins: coins - cost, hintsUsed: Number((nextSave.stats as Record<string, unknown>).hintsUsed ?? 0) };
+   215	      }
+   216	      state.actions.push({id:data.actionId || undefined,type:data.type,word:data.word,cells:data.cells,specialKinds,at:Date.now(),hintKind:data.hintKind});
+   217	      await tx.gameSessionV5.update({where:{id:data.sessionId},data:{stateJson:state as any,updatedAt:BigInt(Date.now())}});
+   218	      return {ok:true as const, ...(hintEconomy ? {hintEconomy} : {})};
+   219	    }, { isolationLevel: "Serializable" });
+   220	  });
+   221	
+   222	
+   223	export const startBossSession = createServerFn({ method: "POST" })
+   224	  .middleware([authMiddleware])
+   225	  .validator((d: { level: number }) => ({ level: Math.max(1, Math.min(2000, Math.floor(Number(d.level) || 1))) }))
+   226	  .handler(async ({ context, data }) => {
+   227	    if (!isJourneyBoss(data.level)) return { ok:false as const, error:"That level is not a World Boss Gate." };
+   228	    const db = getPrisma();
+   229	    const permanentRewardKey = `boss-reward:${context.userId}:${data.level}`;
+   230	    const alreadyDefeated = await db.rewardLedgerV5.findUnique({ where:{idempotencyKey:permanentRewardKey}, select:{id:true} });
+   231	    if (alreadyDefeated) return { ok:false as const, error:"This World Boss has already been defeated." };
+   232	    const row = await db.playerSave.findUnique({ where:{userId:context.userId} });
+   233	    const save = safeJson(row?.saveJson ? JSON.parse(row.saveJson) : defaultSave());
+   234	    if (data.level > Number(save.unlockedLevel ?? 1)) return { ok:false as const, error:"Boss Gate is locked." };
+   235	    return db.$transaction(async tx => {
+   236	      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`boss-session:${context.userId}:${data.level}`}))`;
+   237	      const existing = await tx.gameSessionV5.findFirst({ where:{userId:context.userId,levelId:data.level,status:"boss_open"}, select:{id:true,stateJson:true} });
+   238	      if (existing) return { ok:true as const, sessionId:existing.id, combat:existing.stateJson as CombatState };
+   239	    const gear = Array.isArray(save.equipment) ? save.equipment.reduce((n:any,e:any) => n + ((save.equippedEquipment?.[e.slot] === e.id) ? Number(e.power||0) : 0),0) : 0;
+   240	    const petId = typeof save.equippedPet === "string" ? save.equippedPet : null;
+   241	    const petLevel = Number(save.petLevels?.[petId ?? ""] ?? 1);
+   242	    const power = playerCombatPower(gear, Number(save.skills?.speed ?? 0), petPower(petId, petLevel));
+   243	    const combat = startCombat(data.level, power);
+   244	    const id = randomUUID(), now=Date.now();
+   245	      await tx.gameSessionV5.create({data:{id,userId:context.userId,levelId:data.level,seed:`boss:${data.level}`,status:"boss_open",startedAt:BigInt(now),updatedAt:BigInt(now),score:0,stateJson:{...combat,playerPower:power,petAbility:petProfile(petId)?.ability ?? null} as any}});
+   246	      return {ok:true as const,sessionId:id,combat};
+   247	    }, { isolationLevel:"Serializable" });
+   248	  });
+   249	
+   250	export const bossCombatAction = createServerFn({ method:"POST" })
+   251	  .middleware([authMiddleware])
+   252	  .validator((d:{sessionId:string;action:string;perfect?:boolean})=>({sessionId:String(d.sessionId??"").slice(0,64),action:(d.action==="word"||d.action==="guard"||d.action==="power")?d.action:"word",perfect:Boolean(d.perfect)}))
+   253	  .handler(async ({context,data}) => {
+   254	    const db=getPrisma();
+   255	    return db.$transaction(async tx=>{
+   256	      await tx.$queryRaw`SELECT id FROM game_sessions_v5 WHERE id=${data.sessionId} AND user_id=${context.userId} FOR UPDATE`;
+   257	      const row=await tx.gameSessionV5.findUnique({where:{id:data.sessionId}});
+   258	      if(!row || row.userId!==context.userId || row.status!=="boss_open") return {ok:false as const,error:"Boss session is not active."};
+   259	      const state=safeJson(row.stateJson) as any as CombatState & {playerPower:number;petAbility?:string|null;rewardClaimed?:boolean};
+   260	      if(state.victory || state.defeated) return {ok:true as const,combat:state};
+   261	      const next=combatTurn(state,state.playerPower,data.action as "word"|"guard"|"power",data.perfect,state.petAbility as any);
+   262	      if(next.victory){
+   263	        const ledgerKey=`boss-reward:${context.userId}:${row.levelId}`;
+   264	        const existing=await tx.rewardLedgerV5.findUnique({where:{idempotencyKey:ledgerKey}});
+   265	        let rewardSave: Record<string, unknown> | undefined;
+   266	        if(!existing){
+   267	          const saveRow=await tx.playerSave.findUnique({where:{userId:context.userId}});
+   268	          const save=safeJson(saveRow?.saveJson ? JSON.parse(saveRow.saveJson) : defaultSave());
+   269	          const reward=Number(next.enemy.reward);
+   270	          const xp=40+next.enemy.level*3;
+   271	          const stats=safeJson(save.stats);
+   272	          rewardSave={...save,coins:Number(save.coins??0)+reward,xp:Number(save.xp??0)+xp,stats:{...stats,bossesDefeated:Number(stats.bossesDefeated??0)+1,coinsEarned:Number(stats.coinsEarned??0)+reward}};
+   273	          if(saveRow) await tx.playerSave.update({where:{userId:context.userId},data:{saveJson:JSON.stringify(rewardSave),version:{increment:1},revision:{increment:1n}}});
+   274	          else await tx.playerSave.create({data:{userId:context.userId,saveJson:JSON.stringify(rewardSave),version:1,revision:1n}});
+   275	          await tx.rewardLedgerV5.create({data:{id:randomUUID(),userId:context.userId,idempotencyKey:ledgerKey,payloadJson:{coins:reward,xp,bossLevel:row.levelId,sessionId:row.id},createdAt:BigInt(Date.now())}});
+   276	        }
+   277	        await tx.gameSessionV5.update({where:{id:row.id},data:{status:"completed",score:next.enemy.maxHp,updatedAt:BigInt(Date.now()),stateJson:{...next,rewardClaimed:true} as any}});
+   278	        return {ok:true as const,combat:next,save:rewardSave};
+   279	      } else {
+   280	        await tx.gameSessionV5.update({where:{id:row.id},data:{stateJson:{...next,playerPower:state.playerPower,petAbility:state.petAbility} as any,updatedAt:BigInt(Date.now())}});
+   281	      }
+   282	      return {ok:true as const,combat:next};
+   283	    },{isolationLevel:"Serializable"});
+   284	  });
+   285	
+   286	export const verifyGameplayCompletion = createServerFn({ method: "POST" })
+   287	  .middleware([authMiddleware])
+   288	  .validator((d: { sessionId: string; found: string[]; paths: Array<{word:string;cells:Cell[]}> }) => ({
+   289	    sessionId:String(d.sessionId??"").slice(0,64),
+   290	    found:cleanWords(d.found),
+   291	    paths:Array.isArray(d.paths)?d.paths.slice(0,32).map(p=>({word:String(p.word??"").toUpperCase().slice(0,32),cells:Array.isArray(p.cells)?p.cells.slice(0,32).map(c=>[Number(c[0]),Number(c[1])] as Cell):[]})):[],
+   292	  }))
+   293	  .handler(async ({ context, data }) => {
+   294	    const db=getPrisma();
+   295	    const result = await db.$transaction(async tx=>{
+   296	      await tx.$queryRaw`SELECT id FROM game_sessions_v5 WHERE id=${data.sessionId} AND user_id=${context.userId} FOR UPDATE`;
+   297	      const row=await tx.gameSessionV5.findUnique({where:{id:data.sessionId}});
+   298	      if(!row || row.userId!==context.userId) return {ok:false as const,error:"Gameplay session not found."};
+   299	      const state=JSON.parse(JSON.stringify(row.stateJson)) as SessionState;
+   300	      if(row.status==="completed") {
+   301	        const settlementKey = `gameplay:${row.id}`;
+   302	        const ledger = await tx.rewardLedgerV5.findUnique({where:{idempotencyKey:settlementKey},select:{payloadJson:true}});
+   303	        const payload = safeJson(ledger?.payloadJson);
+   304	        const saveRow = await tx.playerSave.findUnique({where:{userId:context.userId},select:{saveJson:true}});
+   305	        const currentSave = saveRow?.saveJson ? JSON.parse(saveRow.saveJson) : undefined;
+   306	        return {
+   307	          ok:true as const,
+   308	          duplicate:true,
+   309	          stars:Number(payload.stars ?? state.actions.filter(a=>a.type==="found").length),
+   310	          coins:Number(payload.coins ?? 0),
+   311	          xp:Number(payload.xp ?? 0),
+   312	          ...(currentSave ? {save:currentSave} : {}),
+   313	        };
+   314	      }
+   315	      if(row.status!=="open") return {ok:false as const,error:"Gameplay session is closed."};
+   316	      const now = Date.now();
+   317	      let pausedMs = 0;
+   318	      let pauseAt: number | null = null;
+   319	      for (const action of state.actions) {
+   320	        if (action.type === "pause" && pauseAt === null) pauseAt = Number(action.at ?? now);
+   321	        if (action.type === "resume" && pauseAt !== null) { pausedMs += Math.max(0, Number(action.at ?? now) - pauseAt); pauseAt = null; }
+   322	      }
+   323	      if (pauseAt !== null) pausedMs += Math.min(120_000, Math.max(0, now - pauseAt));
+   324	      const elapsed=now-Number(row.startedAt)-Math.min(pausedMs, 120_000);
+   325	      if(elapsed < Math.min(1200, state.words.length*120)) return {ok:false as const,error:"Completion was too fast to verify."};
+   326	      if(elapsed > state.timeLimitMs + 5000) return {ok:false as const,error:"Gameplay session expired."};
+   327	      const foundActions=state.actions.filter(a=>a.type==="found");
+   328	      const validWords=new Set<string>();
+   329	      for(const a of foundActions){
+   330	        const expected=a.word ? state.placements.find(x=>x.word===a.word) : undefined;
+   331	        if(expected && a.cells && sameCells(a.cells,expected.cells)) validWords.add(a.word!);
+   332	      }
+   333	      if(validWords.size!==state.words.length || state.words.some(w=>!validWords.has(w))) return {ok:false as const,error:"All puzzle words must be solved through verified server actions."};
+   334	      const hints=state.actions.filter(a=>a.type==="hint").length;
+   335	      let combo=0, bestCombo=0;
+   336	      for (const a of state.actions) { if (a.type === "found") { combo++; bestCombo=Math.max(bestCombo, combo); } else if (a.type === "miss") combo=0; }
+   337	      const mistakes=state.actions.filter(a=>a.type==="miss").length;
+   338	      const bonusWords=state.actions.filter(a=>a.type==="bonus").length;
+   339	      if (state.adaptiveTier === "expert" && Number(state.adaptiveBonusTarget ?? 0) > bonusWords) return {ok:false as const,error:"Expert mastery objective not completed: find a bonus word."};
+   340	      const puzzle=state.kind==="daily" ? puzzleForDaily(state.day,state.language,state.dailyChallengeId) : puzzleForLevel(state.level,state.mode,state.language);
+   341	      if (state.kind === "daily") {
+   342	        const challenge = dailyChallengeFor(state.day);
+   343	        const specialHits = new Set(state.actions.flatMap(a => a.specialKinds ?? []));
+   344	        const objective = dailyChallengeObjective(challenge, {
+   345	          perfect: hints === 0 && mistakes === 0,
+   346	          combo: bestCombo,
+   347	          bonusWords,
+   348	          specialHits,
+   349	          elapsedMs: elapsed,
+   350	        });
+   351	        if (!objective.met) return {ok:false as const,error:`Daily challenge objective not completed: ${objective.label}`};
+   352	      }
+   353	      const target=targetTimeMs(state.level||1,state.words.length,puzzle.size);
+   354	      const stars=starsFor({hints,timeMs:elapsed,targetMs:target,mistakes});
+   355	      const boss=state.kind==="level" && isBoss(state.level);
+   356	      const saveRow=await tx.playerSave.findUnique({where:{userId:context.userId}});
+   357	      const save=safeJson(saveRow?.saveJson ? JSON.parse(saveRow.saveJson) : defaultSave());
+   358	      if (state.kind === "daily") {
+   359	        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`daily-result:${context.userId}:${state.day}`}))`;
+   360	        const alreadyClaimed = await tx.dailyResult.findUnique({ where: { userId_dayKey: { userId: context.userId, dayKey: state.day } }, select: { userId: true } });
+   361	        if (alreadyClaimed) {
+   362	          await tx.gameSessionV5.update({ where: { id: row.id }, data: { status: "completed", updatedAt: BigInt(Date.now()) } });
+   363	          return { ok:true as const, duplicate:true, stars:0, coins:0, xp:0 };
+   364	        }
+   365	      }
+   366	      const resultKey=state.kind==="daily"?`daily-${state.day}`:String(state.level);
+   367	      const results=(save.results&&typeof save.results==="object")?save.results as Record<string,unknown>:{};
+   368	      if(results[resultKey]) { await tx.gameSessionV5.update({where:{id:row.id},data:{status:"completed",updatedAt:BigInt(Date.now())}}); return {ok:true as const,duplicate:true,stars:Number((results[resultKey] as any).stars??0),coins:0,xp:0}; }
+   369	      const firstClear=state.kind==="level";
+   370	      const dailyMultiplier=state.kind==="daily" ? dailyChallengeRewardMultiplier(dailyChallengeFor(state.day), {perfect:hints===0 && mistakes===0, combo:bestCombo, bonusWords}) : 1;
+   371	      const equippedPet = typeof save.equippedPet === "string" ? save.equippedPet : null;
+   372	      const equippedPetLevel = Number(save.petLevels?.[equippedPet ?? ""] ?? 1);
+   373	      const effects = petEffect(equippedPet, equippedPetLevel);
+   374	      const rewardKind = state.kind === "daily" ? "challenge" : bestCombo >= 5 ? "speed" : equippedPet ? "pet" : state.level % 25 === 0 ? "collection" : "standard";
+   375	      const personalizationMultiplier = personalizedRewardMultiplier(save as unknown as import("@/lib/game/types").PlayerSave, rewardKind);
+   376	      const coins=Math.floor(rewardCoins({mode:state.mode,stars,combo:bestCombo,hints,mistakes,wordCount:state.words.length,firstClear,boss}) * dailyMultiplier * personalizationMultiplier * (1 + Number(effects.coinBonusPercent ?? 0) / 100));
+   377	      const xp=Math.floor(xpForClear({size:puzzle.size,stars,boss}) * (1 + Number(effects.xpBonusPercent ?? 0) / 100));
+   378	      const earnedPetXp = equippedPet ? petXpEarned({perfect:hints===0 && mistakes===0,boss}) : 0;
+   379	      const stats=safeJson(save.stats);
+   380	      const previousDaily = typeof save.lastDaily === "string" ? save.lastDaily : null;
+   381	      const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0,10);
+   382	      const nextDailyStreak = state.kind === "daily" ? (previousDaily === yesterday ? Number(save.dailyStreak ?? 0) + 1 : 1) : Number(save.dailyStreak ?? 0);
+   383	      const nextPetXp = { ...(save.petXp && typeof save.petXp === "object" ? save.petXp : {}) } as Record<string, number>;
+   384	      if (equippedPet && earnedPetXp > 0) nextPetXp[equippedPet] = Number(nextPetXp[equippedPet] ?? 0) + earnedPetXp;
+   385	      const behaviorized = observeCompletion(save as any, { level: state.level, world: state.kind === "daily" ? 1 : journeyWorldForLevel(Math.max(1, state.level)).world, category: puzzle.category, mode: state.mode, timeMs: elapsed, hints, combo: bestCombo, perfect: hints === 0 && mistakes === 0, stars, pet: equippedPet as any, rewardCoins: coins, daily: state.kind === "daily" });
+   386	      const next={...behaviorized,_serverVerified:true,xp:Number(behaviorized.xp??0)+xp,coins:Number(behaviorized.coins??0)+coins,stars:Number(behaviorized.stars??0)+stars,petXp:nextPetXp,lastDaily:state.kind==="daily"?state.day:behaviorized.lastDaily,dailyStreak:nextDailyStreak,unlockedLevel:state.kind==="level"?Math.max(Number(save.unlockedLevel??1),Math.min(2000,state.level+1)):Number(save.unlockedLevel??1),results:{...results,...(state.kind==="level"?{[resultKey]:{stars,timeMs:elapsed,found:state.words.length,hints,perfect:hints===0&&mistakes===0}}:{})},stats:{...stats,gamesPlayed:Number(stats.gamesPlayed??0)+1,gamesWon:Number(stats.gamesWon??0)+1,wordsFound:Number(stats.wordsFound??0)+state.words.length,hintsUsed:Number(stats.hintsUsed??0),playTimeMs:Number(stats.playTimeMs??0)+elapsed,coinsEarned:Number(stats.coinsEarned??0)+coins,levelsCompleted:Number(stats.levelsCompleted??0)+(state.kind==="level"?1:0),perfectClears:Number(stats.perfectClears??0)+(hints===0&&mistakes===0?1:0),bossesDefeated:Number(stats.bossesDefeated??0)+(boss?1:0),currentStreak:Number(stats.currentStreak??0)+1,bestStreak:Math.max(Number(stats.bestStreak??0),Number(stats.currentStreak??0)+1),dailyCompleted:Number(stats.dailyCompleted??0)+(state.kind==="daily"?1:0)}};
+   387	      if (firstClear) {
+   388	        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`level-clear:${context.userId}:${state.level}`}))`;
+   389	        const levelLedgerKey = `level-clear:${context.userId}:${state.level}`;
+   390	        const existingLevelLedger = await tx.rewardLedgerV5.findUnique({where:{idempotencyKey:levelLedgerKey},select:{id:true}});
+   391	        if (existingLevelLedger) {
+   392	          await tx.gameSessionV5.update({where:{id:row.id},data:{status:"completed",updatedAt:BigInt(Date.now())}});
+   393	          return {ok:true as const,duplicate:true,stars,coins:0,xp:0};
+   394	        }
+   395	        await tx.rewardLedgerV5.create({data:{id:randomUUID(),userId:context.userId,idempotencyKey:levelLedgerKey,payloadJson:{coins,xp,stars,sessionId:row.id,level:state.level},createdAt:BigInt(Date.now())}});
+   396	      }
+   397	      if(saveRow) await tx.playerSave.update({where:{userId:context.userId},data:{saveJson:JSON.stringify(next),version:{increment:1},revision:{increment:1n}}}); else await tx.playerSave.create({data:{userId:context.userId,saveJson:JSON.stringify(next),version:1,revision:1n}});
+   398	      await tx.rewardLedgerV5.create({data:{id:randomUUID(),userId:context.userId,idempotencyKey:`gameplay:${row.id}`,payloadJson:{coins,xp,stars,sessionId:row.id},createdAt:BigInt(Date.now())}}).catch((e:any)=>{if(e?.code!=="P2002")throw e;});
+   399	      await tx.gameSessionV5.update({where:{id:row.id},data:{status:"completed",score:state.words.length*100+stars*100,updatedAt:BigInt(Date.now()),stateJson:{...state,verifiedAt:Date.now(),verifiedElapsedMs:elapsed,hints,mistakes,stars,coins,xp} as any}});
+   400	      const user=await tx.user.findUnique({where:{id:context.userId},select:{name:true}});
+   401	      const name=String(user?.name??"Traveler").slice(0,24);
+   402	      if(state.kind==="daily") await tx.dailyResult.create({data:{userId:context.userId,dayKey:state.day,score:state.words.length*100+stars*100,timeMs:elapsed,stars,displayName:name}});
+   403	      return {ok:true as const,duplicate:false,stars,coins,xp,save:next,leaderboard:{name,starsScore:Number(next.stars??0),wordsScore:Number(next.stats?.wordsFound??0),sessionId:row.id}};
+   404	    }, { isolationLevel: "Serializable" });
+   405	    if (result.ok && !("duplicate" in result && result.duplicate) && "leaderboard" in result && result.leaderboard) {
+   406	      try {
+   407	        const board = result.leaderboard;
+   408	        await db.$transaction(async tx => {
+   409	          await tx.leaderboardScore.create({data:{userId:context.userId,board:"stars",score:board.starsScore,displayName:board.name,metaJson:JSON.stringify({sessionId:board.sessionId})}});
+   410	          await tx.leaderboardScore.create({data:{userId:context.userId,board:"words",score:board.wordsScore,displayName:board.name,metaJson:JSON.stringify({sessionId:board.sessionId})}});
+   411	        });
+   412	      } catch { /* leaderboard is non-critical and must never roll back a settled completion */ }
+   413	    }
+   414	    return result;
+   415	  });

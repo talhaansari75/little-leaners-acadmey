@@ -1,0 +1,177 @@
+   100	  craft: (slot: EquipmentSlot) => boolean;
+   101	  equipEquipment: (id: string) => void;
+   102	  combat: CombatState | null;
+   103	  startBossCombat: (level: number) => Promise<void>;
+   104	  combatAction: (action: "word" | "guard" | "power", perfect?: boolean) => Promise<void>;
+   105	  clearCombat: () => void;
+   106	  claimWorldChest: (world: number) => boolean;
+   107	  dialogue: import("./game/dialogue").DialogueNode | null;
+   108	  npcAffinity: Record<string, number>;
+   109	  openDialogue: (chapter: number) => void;
+   110	  chooseDialogue: (choiceId: string) => void;
+   111	  closeDialogue: () => void;
+   112	  claimAchievement: (id:string)=>Promise<boolean>;
+   113	  claimMission: (id:string)=>Promise<boolean>;
+   114	  claimSeasonTier: (level:number)=>Promise<boolean>;
+   115	  applyCloud: (remote: PlayerSave) => void;
+   116	  applyServerSave: (remote: PlayerSave) => void;
+   117	  exportJson: () => string;
+   118	  importJson: (text: string) => boolean;
+   119	  resetProgress: () => void;
+   120	  now: () => number;
+   121	};
+   122	
+   123	let toastN = 1;
+   124	
+   125	type ServerGameplayAction = { sessionId: string; actionId: string; type: "found" | "bonus" | "miss" | "hint" | "pause" | "resume"; word?: string; cells?: Array<[number, number]>; hintKind?: "first" | "letter" | "word" };
+   126	const serverActionQueues = new Map<string, Promise<unknown>>();
+   127	const newActionId = () => {
+   128	  if (typeof crypto !== "undefined" && "randomUUID" in crypto) return crypto.randomUUID();
+   129	  const bytes = new Uint8Array(16);
+   130	  if (typeof crypto !== "undefined" && "getRandomValues" in crypto) crypto.getRandomValues(bytes);
+   131	  else for (let i = 0; i < bytes.length; i++) bytes[i] = Math.floor(Math.random() * 256);
+   132	  bytes[6] = (bytes[6]! & 0x0f) | 0x40;
+   133	  bytes[8] = (bytes[8]! & 0x3f) | 0x80;
+   134	  const h = Array.from(bytes, b => b.toString(16).padStart(2, "0")).join("");
+   135	  return `${h.slice(0,8)}-${h.slice(8,12)}-${h.slice(12,16)}-${h.slice(16,20)}-${h.slice(20)}`;
+   136	};
+   137	function flushPendingPlayActions(sessionId: string, play: PlaySession) {
+   138	  for (const action of play.actions) {
+   139	    if (!action.id) action.id = newActionId();
+   140	    void queueServerGameplayAction({ sessionId, actionId: action.id, type: action.type, word: action.word, cells: action.cells, hintKind: action.hintKind });
+   141	  }
+   142	}
+   143	const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+   144	function queueServerGameplayAction(data: ServerGameplayAction) {
+   145	  const run = async () => {
+   146	    let last: unknown;
+   147	    for (let attempt = 0; attempt < 3; attempt++) {
+   148	      try {
+   149	        const result = await recordGameplayAction({ data });
+   150	        if (!result.ok) throw new Error(result.error ?? "Gameplay action rejected by server");
+   151	        if (result.save) get().applyServerSave(result.save as PlayerSave);
+   152	        if (result.hintEconomy) {
+   153	          get().patchSave((s) => ({ ...s, coins: result.hintEconomy!.coins, stats: { ...s.stats, hintsUsed: result.hintEconomy!.hintsUsed } }));
+   154	        }
+   155	        return result;
+   156	      } catch (error) { last = error; if (attempt < 2) await sleep(75 * 2 ** attempt); }
+   157	    }
+   158	    return { ok: false as const, error: last instanceof Error ? last.message : "Gameplay action delivery failed" };
+   159	  };
+   160	  const previous = serverActionQueues.get(data.sessionId) ?? Promise.resolve();
+   161	  const next = previous.catch(() => undefined).then(run);
+   162	  serverActionQueues.set(data.sessionId, next);
+   163	  void next.then(() => {
+   164	    if (serverActionQueues.get(data.sessionId) === next) serverActionQueues.delete(data.sessionId);
+   165	  }, () => {
+   166	    if (serverActionQueues.get(data.sessionId) === next) serverActionQueues.delete(data.sessionId);
+   167	  });
+   168	  return next;
+   169	}
+   170	
+   171	const pendingServerStarts = new Map<string, Promise<unknown>>();
+   172	
+   173	function flash(set: (p: Partial<GameState>) => void, text: string) {
+   174	  const id = toastN++;
+   175	  set({ toast: { id, text } });
+   176	  setTimeout(() => {
+   177	    useGame.setState((s) => (s.toast?.id === id ? { toast: null } : s));
+   178	  }, 2200);
+   179	}
+   180	
+   181	function withAchievements(save: PlayerSave): PlayerSave {
+   182	  const ids = unlockedAchievements(save);
+   183	  const extra = ids.filter((id) => !save.achievements.includes(id));
+   184	  if (!extra.length) return save;
+   185	  return { ...save, achievements: [...save.achievements, ...extra] };
+   186	}
+   187	
+   188	function haptic(ms = 12) {
+   189	  try {
+   190	    if (useGame.getState().save.settings.haptics && typeof navigator !== "undefined" && navigator.vibrate) {
+   191	      navigator.vibrate(ms);
+   192	    }
+   193	  } catch {
+   194	    /* ignore */
+   195	  }
+   196	}
+   197	
+   198	function persistPlay(play: PlaySession | null) {
+   199	  if (typeof sessionStorage === "undefined") return;
+   200	  try {
+   201	    if (!play) sessionStorage.removeItem(PLAY_KEY);
+   202	    else sessionStorage.setItem(PLAY_KEY, JSON.stringify(play));
+   203	  } catch {
+   204	    /* ignore */
+   205	  }
+   206	}
+   207	
+   208	export const useGame = create<GameState>((set, get) => ({
+   209	  ready: false,
+   210	  save: defaultSave(),
+   211	  screen: "splash",
+   212	  prevScreen: "home",
+   213	  play: null,
+   214	  toast: null,
+   215	  overlay: null,
+   216	  lastReward: null,
+   217	  combat: null,
+   218	  dialogue: null,
+   219	  npcAffinity: {},
+   220	
+   221	  hydrate: () => {
+   222	    wireGameTelemetry();
+   223	    installV9Integrations();
+   224	    installV18Offline();
+   225	    let save = refillEnergy(loadSave());
+   560	    revealCells();
+   561	    get().patchSave((s) => ({ ...s, coins: s.coins - cost, stats: { ...s.stats, hintsUsed: s.stats.hintsUsed + 1 } }));
+   562	    return true;
+   563	  },
+   564	
+   565	  completePlay: async () => {
+   566	    let play = get().play;
+   567	    if (!play) return;
+   568	    if ((play.kind === "level" || play.kind === "daily") && typeof navigator !== "undefined" && navigator.onLine && !play.serverSessionId) {
+   569	      const pending = pendingServerStarts.get(play.kind === "daily" ? `daily:${todayKey()}` : `${play.level}:${play.mode}`);
+   570	      if (pending) await pending;
+   571	      play = get().play;
+   572	      if (!play?.serverSessionId) { flash(set, "Secure game session could not be started. Please retry."); return; }
+   573	    }
+   574	    const elapsed = Date.now() - play.startAt - play.pausedMs;
+   575	    const target = targetTimeMs(play.level || 1, play.puzzle.words.length, play.puzzle.size);
+   576	    const stars = starsFor({ hints: play.hints, timeMs: elapsed, targetMs: target, mistakes: play.mistakes });
+   577	    const perfect = play.hints === 0 && play.mistakes === 0;
+   578	    const boss = play.kind === "level" && isBoss(play.level);
+   579	    const key = play.kind === "daily" ? `daily-${todayKey()}` : play.kind === "endless" ? `end-${play.round}` : String(play.level);
+   580	    const firstClear = play.kind === "level" && !get().save.results[key];
+   581	    const rules = modeRules(play.mode);
+   582	    const fastBonus = elapsed <= target * 0.72 ? 18 : 0;
+   583	    const goldenBonus = Math.floor(play.found.length / 5) * 10;
+   584	    const dailyClaimed = play.kind === "daily" && get().save.lastDaily === todayKey();
+   585	    const dailyMultiplier = dailyChallengeRewardMultiplier(play.dailyChallenge, { perfect, combo: play.combo, bonusWords: play.bonus.length });
+   586	    const rewardKind = play.kind === "daily" ? "challenge" : play.combo >= 5 ? "speed" : get().save.equippedPet ? "pet" : boss ? "collection" : "standard";
+   587	    const personalizationMultiplier = personalizedRewardMultiplier(get().save, rewardKind);
+   588	    const coins = dailyClaimed ? 0 : Math.max(1, Math.floor(rewardCoins({
+   589	      mode: play.mode, stars, combo: play.combo, hints: play.hints, mistakes: play.mistakes,
+   590	      wordCount: play.puzzle.words.length + play.bonus.length, boss, firstClear,
+   591	    }) * rules.rewardMultiplier * dailyMultiplier * personalizationMultiplier * (1 + (petEffect(get().save.equippedPet, get().save.equippedPet ? (get().save.petLevels[get().save.equippedPet] ?? 1) : 1).coinBonusPercent ?? 0) / 100)) + fastBonus + goldenBonus);
+   592	    const xp = Math.floor(xpForClear({ size: play.puzzle.size, stars, boss }) * (1 + (petEffect(get().save.equippedPet, get().save.equippedPet ? (get().save.petLevels[get().save.equippedPet] ?? 1) : 1).xpBonusPercent ?? 0) / 100));
+   593	    const dragon = get().save.equippedPet === "dragon" && perfect ? 20 : 0;
+   594	    const petId = get().save.equippedPet;
+   595	    const petXp = petId && !dailyClaimed ? petXpEarned({ perfect, boss }) : 0;
+   596	
+   597	    if (play.kind === "endless") {
+   598	      const round = play.round + 1;
+   599	      const puzzle = puzzleEndless(round, play.level, get().save.language);
+   600	      const next: PlaySession = {
+   601	        ...play,
+   602	        puzzle,
+   603	        found: [],
+   604	        bonus: [],
+   605	        startAt: Date.now(),
+   606	        pausedAt: null,
+   607	        pausedMs: 0,
+   608	        hints: 0,
+   609	        revealed: [],
+   610	        mistakes: 0,

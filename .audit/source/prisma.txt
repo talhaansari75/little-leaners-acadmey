@@ -1,0 +1,101 @@
+   320	  async function deleteMany(args: { where?: Where } = {}) {
+   321	    const params: unknown[] = [];
+   322	    const whereSql = compileWhere(cfg, args.where, params);
+   323	    const rows = await runQuery<Dict>(sql, `DELETE FROM ${cfg.table} ${whereSql} RETURNING 1`, params);
+   324	    return { count: rows.length };
+   325	  }
+   326	
+   327	  async function count(args: { where?: Where } = {}) {
+   328	    const params: unknown[] = [];
+   329	    const whereSql = compileWhere(cfg, args.where, params);
+   330	    const rows = await runQuery<{ count: number }>(sql, `SELECT count(*)::int AS count FROM ${cfg.table} ${whereSql}`, params);
+   331	    return Number(rows[0]?.count ?? 0);
+   332	  }
+   333	
+   334	  return { findMany, findFirst, findUnique, create, createMany, update, updateMany, upsert, deleteMany, count };
+   335	}
+   336	
+   337	function taggedToSql(strings: TemplateStringsArray, values: unknown[]) {
+   338	  let text = strings[0] ?? "";
+   339	  const params: unknown[] = [];
+   340	  for (let i = 0; i < values.length; i++) {
+   341	    const v = values[i];
+   342	    params.push(v instanceof Date ? v.toISOString() : typeof v === "bigint" ? Number(v) : v);
+   343	    text += `$${params.length}${strings[i + 1] ?? ""}`;
+   344	  }
+   345	  return { text, params };
+   346	}
+   347	
+   348	function clientFromSql(sql: Sql) {
+   349	  const models: Dict = {};
+   350	  for (const name of Object.keys(MODELS)) models[name] = modelDelegate(sql, name);
+   351	
+   352	  (models as { userRole: ReturnType<typeof modelDelegate> }).userRole.findFirst = async (args: { where?: Where; select?: Select } = {}) => {
+   353	    const where = args.where ?? {};
+   354	    const nested = where.role as Dict | undefined;
+   355	    const permName =
+   356	      nested && typeof nested === "object"
+   357	        ? (((nested.permissions as Dict | undefined)?.some as Dict | undefined)?.permission as Dict | undefined)?.name
+   358	        : undefined;
+   359	    if (typeof permName === "string" && typeof where.userId === "string") {
+   360	      const rows = await sql.query<Dict>(
+   361	        `SELECT ur.user_id AS "userId" FROM user_roles ur
+   362	         JOIN role_permissions rp ON rp.role_id = ur.role_id
+   363	         JOIN permissions p ON p.id = rp.permission_id
+   364	         WHERE ur.user_id = $1 AND p.name = $2 LIMIT 1`,
+   365	        [where.userId, permName],
+   366	      );
+   367	      return rows[0] ?? null;
+   368	    }
+   369	    return modelDelegate(sql, "userRole").findFirst(args);
+   370	  };
+   371	
+   372	  async function $queryRaw<T = Dict>(strings: TemplateStringsArray, ...values: unknown[]): Promise<T[]> {
+   373	    const { text, params } = taggedToSql(strings, values);
+   374	    return runQuery<T & Dict>(sql, text, params) as Promise<T[]>;
+   375	  }
+   376	  async function $executeRaw(strings: TemplateStringsArray, ...values: unknown[]): Promise<number> {
+   377	    const { text, params } = taggedToSql(strings, values);
+   378	    const rows = await runQuery<Dict>(sql, text, params);
+   379	    return rows.length;
+   380	  }
+   381	  async function $transaction<T>(fn: (tx: ReturnType<typeof clientFromSql>) => Promise<T>, opts?: { isolationLevel?: string }): Promise<T> {
+   382	    const isolation = opts?.isolationLevel === "Serializable" ? "SERIALIZABLE" : opts?.isolationLevel === "RepeatableRead" ? "REPEATABLE READ" : undefined;
+   383	    try {
+   384	      return await withTransaction(async (txSql) => fn(clientFromSql(txSql)), isolation);
+   385	    } catch (e) {
+   386	      wrapDbError(e);
+   387	    }
+   388	  }
+   389	  return { ...models, $queryRaw, $executeRaw, $transaction } as PrismaClient;
+   390	}
+   391	
+   392	export type PrismaClient = ReturnType<typeof clientFromSql>;
+   393	
+   394	export function getPrisma(): PrismaClient {
+   395	  return lazyClient;
+   396	}
+   397	
+   398	const lazyClient = new Proxy({} as PrismaClient, {
+   399	  get(_target, prop: string | symbol) {
+   400	    if (prop === "then") return undefined;
+   401	    if (prop === "$transaction") {
+   402	      return async (
+   403	        fn: (tx: PrismaClient) => Promise<unknown>,
+   404	        opts?: { isolationLevel?: string },
+   405	      ) => {
+   406	        const isolation =
+   407	          opts?.isolationLevel === "Serializable"
+   408	            ? "SERIALIZABLE"
+   409	            : opts?.isolationLevel === "RepeatableRead"
+   410	              ? "REPEATABLE READ"
+   411	              : undefined;
+   412	        try {
+   413	          return await withTransaction(async (txSql) => fn(clientFromSql(txSql)), isolation);
+   414	        } catch (e) {
+   415	          wrapDbError(e);
+   416	        }
+   417	      };
+   418	    }
+   419	    if (prop === "$queryRaw" || prop === "$executeRaw") {
+   420	      return async (strings: TemplateStringsArray, ...values: unknown[]) => {

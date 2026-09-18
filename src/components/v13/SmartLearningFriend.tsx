@@ -4,11 +4,18 @@ import { Brain, ChevronRight, Sparkles, Target, Zap } from "lucide-react";
 import { getLearningProfile, recommendNext, type LearningClass, type Recommendation } from "@/lib/intelligence/learningBrain";
 
 const CLASS_COPY: Record<LearningClass, { emoji: string; line: string }> = {
-  Playgroup: { emoji: "🧸", line: "play, pictures and happy first steps" },
-  Nursery: { emoji: "🌱", line: "letters, numbers, colors and rhymes" },
-  "KG-1": { emoji: "🔵", line: "phonics, words and early reading" },
-  "KG-2": { emoji: "🟣", line: "stronger reading, spelling and maths" },
-  "Class 1": { emoji: "⭐", line: "reading, writing, maths and discovery" },
+  Montessori: {
+    emoji: "🧸",
+    line: "practical life, pictures and happy first steps",
+  },
+  Nursery: {
+    emoji: "🌱",
+    line: "letters, numbers, colors and rhymes",
+  },
+  KG: {
+    emoji: "📚",
+    line: "phonics, words, reading, maths and discovery",
+  },
 };
 
 export function SmartLearningFriend({ className }: { className?: string }) {

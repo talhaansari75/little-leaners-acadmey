@@ -37,14 +37,55 @@ export type Recommendation = {
   confidence: number;
 };
 
+const CLASS_SKILL_MAP: Record<LearningClass, Record<string, string>> = {
+  Montessori: {
+    letters: "writing",
+    numbers: "mathematics",
+    math: "mathematics",
+    patterns: "mathematics",
+    story: "reading",
+    listen: "science",
+    animals: "animals",
+    vehicles: "science",
+    puzzle: "general-knowledge",
+    tracing: "writing",
+  },
+  Nursery: {
+    letters: "letters",
+    numbers: "numbers",
+    colors: "colors",
+    shapes: "shapes",
+    body: "letters",
+    rhymes: "rhymes",
+    listen: "animals",
+    animals: "animals",
+    vehicles: "animals",
+    puzzle: "numbers",
+  },
+  KG: {
+    letters: "phonics",
+    numbers: "counting",
+    math: "addition",
+    patterns: "patterns",
+    story: "reading",
+    listen: "science",
+    vehicles: "science",
+    puzzle: "words",
+    spelling: "spelling",
+  },
+};
 export const CLASS_SKILLS: Record<LearningClass, string[]> = {
-  Playgroup: [
+  Montessori: [
     "alphabets",
     "colors",
     "shapes",
     "numbers",
     "animals",
     "rhymes",
+    "writing",
+    "mathematics",
+    "science",
+    "general-knowledge",
   ],
   Nursery: [
     "letters",
@@ -54,29 +95,16 @@ export const CLASS_SKILLS: Record<LearningClass, string[]> = {
     "animals",
     "rhymes",
   ],
-  "KG-1": [
+  KG: [
     "phonics",
     "words",
     "counting",
     "reading",
     "patterns",
     "science",
-  ],
-  "KG-2": [
-    "phonics",
     "spelling",
     "addition",
     "subtraction",
-    "reading",
-    "science",
-  ],
-  "Class 1": [
-    "reading",
-    "writing",
-    "grammar",
-    "mathematics",
-    "science",
-    "general-knowledge",
   ],
 };
 
@@ -162,7 +190,7 @@ export function skillForActivity(
   activityKind: string,
 ): string {
   const maps: Record<LearningClass, Record<string, string>> = {
-    Playgroup: {
+    Montessori: {
       letters: "alphabets",
       numbers: "numbers",
       colors: "colors",
@@ -171,6 +199,12 @@ export function skillForActivity(
       rhymes: "rhymes",
       listen: "animals",
       animals: "animals",
+      vehicles: "animals",
+      puzzle: "general-knowledge",
+      tracing: "writing",
+      math: "mathematics",
+      patterns: "mathematics",
+      story: "reading",
     },
     Nursery: {
       letters: "letters",
@@ -181,37 +215,25 @@ export function skillForActivity(
       rhymes: "rhymes",
       listen: "animals",
       animals: "animals",
+      vehicles: "animals",
+      puzzle: "numbers",
+      tracing: "letters",
+      math: "numbers",
+      patterns: "shapes",
+      story: "rhymes",
     },
-    "KG-1": {
+    KG: {
       letters: "phonics",
       numbers: "counting",
-      math: "counting",
+      math: "addition",
       patterns: "patterns",
       story: "reading",
       listen: "science",
+      animals: "science",
       vehicles: "science",
       puzzle: "words",
-    },
-    "KG-2": {
-      letters: "phonics",
-      numbers: "addition",
-      math: "addition",
-      patterns: "spelling",
-      story: "reading",
-      listen: "science",
-      vehicles: "science",
-      puzzle: "reading",
-    },
-    "Class 1": {
-      letters: "writing",
-      numbers: "mathematics",
-      math: "mathematics",
-      patterns: "mathematics",
-      story: "reading",
-      listen: "science",
-      vehicles: "science",
-      puzzle: "general-knowledge",
       tracing: "writing",
+      spelling: "spelling",
     },
   };
 
@@ -221,45 +243,6 @@ export function skillForActivity(
   );
 }
 
-function profileForClass(
-  profile: LearningProfile,
-  className: LearningClass,
-): Record<string, SkillStat> {
-  if (!profile.byClass[className]) {
-    profile.byClass[className] = {};
-  }
-
-  return profile.byClass[className];
-}
-
-export function recordLearningSignal(
-  profile: LearningProfile,
-  className: LearningClass,
-  skill: string,
-  correct: boolean,
-  elapsedMs = 0,
-  signal?: LearningSignal,
-  now = Date.now(),
-): LearningProfile {
-  const next = normalizeProfile(profile);
-  const stats = profileForClass(next, className);
-
-  const old = stats[skill] ?? EMPTY_STAT();
-
-  stats[skill] = {
-    attempts: old.attempts + 1,
-    correct: old.correct + (correct ? 1 : 0),
-    totalTimeMs: old.totalTimeMs + Math.max(0, elapsedMs),
-    lastAttemptAt: now,
-    signal: signal ?? old.signal,
-  };
-
-  next.lastClass = className;
-  next.updatedAt = now;
-
-  return next;
-}
-
 export function recommendNext(
   profile: LearningProfile,
   className: LearningClass = profile.lastClass,
@@ -267,7 +250,7 @@ export function recommendNext(
 ): Recommendation {
   const normalized = normalizeProfile(profile);
   const skills = CLASS_SKILLS[className];
-  const stats = profileForClass(normalized, className);
+  const stats = normalized.byClass[className];
 
   let bestSkill = skills[0];
   let lowestScore = Number.POSITIVE_INFINITY;
@@ -311,7 +294,7 @@ export function recommendNext(
 
   const mode: LearningSignal =
     stat?.signal ??
-    (className === "Playgroup"
+    (className === "Montessori"
       ? "picture"
       : className === "Nursery"
         ? "game"
@@ -366,21 +349,41 @@ function saveLearningProfile(profile: LearningProfile) {
 }
 
 export function recordAttempt(
-  className: LearningClass,
+  profile: LearningProfile,
   skill: string,
   correct: boolean,
-  elapsedMs = 0,
   signal?: LearningSignal,
+  now = Date.now(),
 ): LearningProfile {
-  const next = recordLearningSignal(
-    getLearningProfile(),
-    className,
-    skill,
-    correct,
-    elapsedMs,
-    signal,
-  );
+  const className = profile.lastClass;
+  const classStats = profile.byClass[className] ?? {};
+  const current = classStats[skill] ?? EMPTY_STAT();
 
-  saveLearningProfile(next);
-  return next;
+  return {
+    ...profile,
+    byClass: {
+      ...profile.byClass,
+      [className]: {
+        ...classStats,
+        [skill]: {
+          ...current,
+          attempts: current.attempts + 1,
+          correct: current.correct + (correct ? 1 : 0),
+          lastAttemptAt: now,
+          ...(signal ? { signal } : {}),
+        },
+      },
+    },
+    updatedAt: now,
+  };
+}
+
+export function recordLearningSignal(
+  profile: LearningProfile,
+  skill: string,
+  signal: LearningSignal,
+  correct = false,
+  now = Date.now(),
+): LearningProfile {
+  return recordAttempt(profile, skill, correct, signal, now);
 }
