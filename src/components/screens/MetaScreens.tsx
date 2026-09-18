@@ -16,6 +16,8 @@ import { loadCloudSave, pushCloudSave } from "@/lib/server/cloud";
 import { SignedIn, SignedOut, UserButton } from "@/lib/auth/gates";
 import { Link } from "@tanstack/react-router";
 import { BUILDINGS } from "@/lib/game/baseCrafting";
+import { ClassSelectionScreen } from "@/components/v13/ClassSelectionScreen";
+import { getSelectedClass, type LearningClass } from "@/lib/academy/classSelection";
 
 export function ShopScreen() {
   const t = useT();
@@ -206,6 +208,8 @@ export function SettingsScreen() {
   const lang = useGame((s) => s.save.language);
   const set = useGame.getState().setSetting;
   const [category, setCategory] = useState<string | null>(null);
+  const [showClassSelector, setShowClassSelector] = useState(false);
+  const [currentClass, setCurrentClass] = useState<LearningClass | null>(() => getSelectedClass());
 
   const toggle = (k: keyof GameSettings) => {
     const next = !s[k];
@@ -221,6 +225,12 @@ export function SettingsScreen() {
   };
 
   const categories = [
+    {
+      id: "class",
+      icon: "🎓",
+      title: "Change Class",
+      description: "Choose your child's learning class",
+    },
     {
       id: "gameplay",
       icon: "🎮",
@@ -267,6 +277,42 @@ export function SettingsScreen() {
 
   const renderCategory = () => {
     switch (category) {
+      case "class":
+        return (
+          <>
+            <SettingHeader title="Change Class" onBack={() => setCategory(null)} />
+            <div className="panel rounded-2xl p-4">
+              <p className="text-xs text-muted">Current class</p>
+              <p className="mt-1 text-xl font-bold text-fg">
+                {currentClass ?? "Not selected"}
+              </p>
+              <p className="mt-1 text-sm text-muted">
+                Change the class to update the learning content throughout the Academy.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              className="mt-3 w-full rounded-2xl bg-primary px-4 py-3 font-bold text-white"
+              onClick={() => setShowClassSelector(true)}
+            >
+              🎓 Change Class
+            </button>
+
+            {showClassSelector && (
+              <ClassSelectionScreen
+                allowCancel
+                onCancel={() => setShowClassSelector(false)}
+                onSelected={(next) => {
+                  setCurrentClass(next);
+                  setShowClassSelector(false);
+                  setCategory(null);
+                }}
+              />
+            )}
+          </>
+        );
+
       case "gameplay":
         return (
           <>

@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { BookOpen, Brain, Calculator, CheckCircle2, Globe2, Heart, PawPrint, Play, Sparkles, Star, Volume2 } from "lucide-react";
+import { getSelectedClass, setSelectedClass, LEARNING_CLASSES, type LearningClass } from "@/lib/academy/classSelection";
 
 type Props = { age:number; xp:number; completed:number; premium:boolean; onSpeak:(text:string)=>void };
 
@@ -61,11 +62,11 @@ export function AdvancedPreschoolHub({age,xp,completed,premium,onSpeak}:Props){
  const math=[{q:"2 + 1 = ?",a:["2","3","4"],c:"3"},{q:"Which is more? 🍎🍎🍎 or 🍎🍎",a:["3 apples","2 apples","Same"],c:"3 apples"},{q:"5 − 2 = ?",a:["2","3","4"],c:"3"},{q:"What comes after 6?",a:["5","7","8"],c:"7"}][mathStep%4];
  return <section className="grid gap-3">
   <section className="panel rounded-3xl p-4"><div className="flex items-center gap-3"><div className="rounded-2xl bg-primary/10 p-3"><Brain className="size-7 text-primary"/></div><div className="flex-1"><p className="text-xs font-black uppercase tracking-wider text-accent">Smart Learning Lab</p><h2 className="font-display text-2xl text-fg">A little plan for today 🌈</h2><p className="text-xs text-muted">Age {age} • {xp} XP • {completed} activities completed</p></div></div><div className="mt-3 grid gap-2">{plan.map((p,i)=><button key={p} onClick={()=>onSpeak(p.replace(/[🔤🔁🔢🎨🐾📖🎵]/g,""))} className="flex items-center gap-3 rounded-2xl bg-white p-3 text-left shadow-sm"><span className="grid size-9 place-items-center rounded-full bg-primary/10 font-black">{i+1}</span><span className="flex-1 text-sm font-bold text-fg">{p}</span><Play className="size-4 text-primary"/></button>)}</div></section>
-  <div className="grid grid-cols-3 gap-2">{[["plan","🧠","Plan"],["adventure","🗺️","Adventure"],["teacher","👩‍🏫","Teacher"],["classes","🎓","Classes"],["montessori","🌱","Montessori"],["worksheets","📝","Offline Worksheet Center"],["audio","🔊","Offline Learning Audio"],["animals","🐾","Nature"],["words","🔤","Words"],["math","🔢","Math"],["stories","📚","Stories"],["music","🎵","Music"],["games","🎮","Games"],["world","🏡","My World"],["art","🎨","Art"],["rewards","⭐","Rewards"]].map(([id,e,t])=><button key={id} onClick={()=>setSection(id as typeof section)} className={`rounded-2xl p-3 text-center text-xs font-black ${section===id?"bg-primary text-white":"bg-white text-slate-700"}`}><span className="block text-xl">{e}</span>{t}</button>)}</div>
+  <div className="grid grid-cols-3 gap-2">{[["plan","🧠","Plan"],["adventure","🗺️","Adventure"],["teacher","👩‍🏫","Teacher"],["classes","🎓","Classes"],...(klass==="Class 1"?[["montessori","🌱","Montessori"]]:[]),["worksheets","📝","Offline Worksheet Center"],["audio","🔊","Offline Learning Audio"],["animals","🐾","Nature"],["words","🔤","Words"],["math","🔢","Math"],["stories","📚","Stories"],["music","🎵","Music"],["games","🎮","Games"],["world","🏡","My World"],["art","🎨","Art"],["rewards","⭐","Rewards"]].map(([id,e,t])=><button key={id} onClick={()=>setSection(id as typeof section)} className={`rounded-2xl p-3 text-center text-xs font-black ${section===id?"bg-primary text-white":"bg-white text-slate-700"}`}><span className="block text-xl">{e}</span>{t}</button>)}</div>
   {section==="adventure"&&<DailyAdventure age={age} step={adventureStep} setStep={v=>{setAdventureStep(v);try{localStorage.setItem("mw-adventure-step",String(v))}catch{}}} onSpeak={onSpeak}/>}
   {section==="teacher"&&<SmartTeacher age={age} xp={xp} completed={completed} mode={teacherMode} setMode={v=>{setTeacherMode(v);try{localStorage.setItem("mw-teacher-mode",v)}catch{}}} onSpeak={onSpeak}/>}
   {section==="classes"&&<ClassPathway age={age} xp={xp} onSpeak={onSpeak}/>}
-  {section==="montessori"&&<MontessoriWorld age={age} onSpeak={onSpeak}/>}
+  {section==="montessori"&&klass==="Class 1"&&<MontessoriWorld age={age} onSpeak={onSpeak}/>}
   {section==="animals"&&<section className="panel rounded-3xl p-4"><div className="flex items-center justify-between"><div><h3 className="font-display text-2xl text-fg">Animal Explorer 🐾</h3><p className="text-xs text-muted">{ANIMALS.length} discovery cards in this pack.</p></div><PawPrint className="size-7 text-primary"/></div><div className="mt-3 grid grid-cols-4 gap-2">{ANIMALS.slice(animalIndex,animalIndex+40).map(([e,n],i)=><button key={`${n}-${i}`} onClick={()=>onSpeak(`${n}. This is a ${n}.`)} className="rounded-2xl bg-white p-2 shadow-sm"><img loading="eager" decoding="async" src={`/offline/preschool/animals/${n.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")}-${animalIndex+i+1}.svg`} alt="" className="mx-auto block h-16 w-16 rounded-xl object-cover"/><span className="text-[10px] font-bold">{n}</span></button>)}</div><button className="btn-primary mt-3 w-full" onClick={()=>setAnimalIndex(i=>(i+8)%ANIMALS.length)}>Next habitat cards →</button><p className="mt-2 text-center text-[10px] text-muted">Previewing card set {Math.floor(animalIndex/8)+1}; all discovery data is bundled for offline use.</p></section>}
   {section==="words"&&<section className="panel rounded-3xl p-4"><div className="flex items-center gap-2"><Globe2 className="size-6 text-primary"/><div><h3 className="font-display text-2xl text-fg">English + Urdu Words</h3><p className="text-xs text-muted">Picture → word → pronunciation.</p></div></div><div className="mt-3 grid grid-cols-2 gap-2">{WORDS.map(([en,ur,e])=><button key={en} onClick={()=>speakWord(en,ur)} className="rounded-2xl bg-white p-4 text-center shadow-sm"><img loading="eager" decoding="async" src={`/offline/preschool/words/${en.toLowerCase().replace(/[^a-z0-9]+/g,"-")}.svg`} alt="" className="mx-auto block h-28 w-28 rounded-2xl object-cover"/><b className="block mt-1">{en}</b><span className="text-sm text-slate-500">{ur}</span><span className="mt-1 flex items-center justify-center gap-1 text-[10px] text-primary"><Volume2 className="size-3"/> Listen</span></button>)}</div></section>}
   {section==="math"&&<section className="panel rounded-3xl p-4 text-center"><Calculator className="mx-auto size-8 text-primary"/><h3 className="mt-2 font-display text-2xl text-fg">Math Mini Quest</h3><p className="mt-1 text-sm text-muted">{math.q}</p><div className="mt-3 grid gap-2">{math.a.map(a=><button key={a} onClick={()=>{onSpeak(a===math.c?"Great job!":"Try again");if(a===math.c)setMathStep(s=>s+1)}} className="rounded-2xl bg-white p-4 text-lg font-black shadow-sm">{a}</button>)}</div></section>}
@@ -81,25 +82,57 @@ export function AdvancedPreschoolHub({age,xp,completed,premium,onSpeak}:Props){
 
 
 function ClassPathway({age,xp,onSpeak}:{age:number;xp:number;onSpeak:(text:string)=>void}){
- const [klass,setKlass]=useState<"Nursery"|"KG"|"Montessori">(()=>{try{const v=localStorage.getItem("lla-class");return v==="KG"||v==="Montessori"?v:"Nursery"}catch{return "Nursery"}});
+ const [klass,setKlass]=useState<LearningClass>(()=>getSelectedClass() ?? "Nursery");
  const [subject,setSubject]=useState("Language");
  const [done,setDone]=useState<string[]>(()=>{try{return JSON.parse(localStorage.getItem("mw-class-skills")||"[]") as string[]}catch{return []}});
  const curriculum={
-  Nursery:{Language:["ABC picture match","Letter tracing","Beginning sounds","Picture vocabulary","Rhyming sounds","Listen and repeat"],Math:["Count 1–5","Count 1–10","Number recognition","Quantity matching","More or less","Big and small"],Creative:["Color matching","Shape coloring","Free drawing","Sticker scene","Music and rhythm","Sensory art"],Life:["Handwashing sequence","Brush teeth sequence","Clean-up routine","Greeting and manners","Dress-up sequence","Sort my toys"]},
-  KG:{Language:["A–Z mastery","Phonics sounds","CVC word building","Vowel and consonant sort","Sight words","Simple sentence building"],Math:["Numbers 1–100","Before, after and between","Greater, less and equal","Addition within 10","Subtraction within 10","Patterns and sequences"],Creative:["Guided drawing","Pattern coloring","Shape composition","Rhythm tapping","Story picture order","Build with shapes"],Life:["Daily routine order","Community helpers","Time of day","Sharing and turn taking","Classroom organization","Safety basics"]},
-  Montessori:{Language:["Sound games","Object naming","Sandpaper-style letter tracing","Beginning-sound sort","Moveable-alphabet word building","Phonetic reading"],Math:["Number rods","Quantity matching","Spindle-box counting","Zero concept","Ten-frame counting","Concrete addition"],Creative:["Color grading","Shape matching","Texture matching","Pattern construction","Nature art","Careful drawing"],Life:["Pouring & transferring","Scooping & spooning","Folding cloth","Buttoning & zipping","Table setting","Toy organization"]}
+  Playgroup:{
+    Language:["ABC picture play","Letter picture matching","First sounds","Picture naming","Listen and repeat","Alphabet song"],
+    Math:["Count 1–5","Number recognition","Quantity matching","Big and small","Same and different","Shape matching"],
+    Creative:["Color matching","Shape coloring","Free drawing","Sticker scene","Music and rhythm","Sensory art"],
+    Life:["Handwashing sequence","Greeting and manners","Clean-up routine","Toy sorting","Dress-up sequence","Sharing with friends"]
+  },
+  Nursery:{
+    Language:["ABC picture match","Letter tracing","Beginning sounds","Picture vocabulary","Rhyming sounds","Listen and repeat"],
+    Math:["Count 1–5","Count 1–10","Number recognition","Quantity matching","More or less","Big and small"],
+    Creative:["Color matching","Shape coloring","Free drawing","Sticker scene","Music and rhythm","Sensory art"],
+    Life:["Handwashing sequence","Brush teeth sequence","Clean-up routine","Greeting and manners","Dress-up sequence","Sort my toys"]
+  },
+  "KG-1":{
+    Language:["A–Z mastery","Letter sounds","CVC word building","Beginning-sound sort","Sight words","Simple sentence building"],
+    Math:["Numbers 1–100","Before, after and between","Greater, less and equal","Addition within 10","Patterns and sequences","Counting practice"],
+    Creative:["Guided drawing","Pattern coloring","Shape composition","Rhythm tapping","Story picture order","Build with shapes"],
+    Life:["Daily routine order","Community helpers","Time of day","Sharing and turn taking","Classroom organization","Safety basics"]
+  },
+  "KG-2":{
+    Language:["Advanced phonics","CVC word building","Spelling practice","Reading fluency","Sight words","Sentence building"],
+    Math:["Numbers 1–100","Addition within 20","Subtraction within 20","Greater and less","Number sequences","Math stories"],
+    Creative:["Guided drawing","Pattern coloring","Shape composition","Story picture order","Science drawing","Build with shapes"],
+    Life:["Daily routine order","Community helpers","Time of day","Sharing and turn taking","Classroom organization","Safety basics"]
+  },
+  "Class 1":{
+    Language:["Reading practice","Writing practice","Sentence building","Vocabulary","Spelling","Picture composition"],
+    Math:["Place value","Addition","Subtraction","Number sequences","Greater and less","Math word problems"],
+    Creative:["Nature drawing","Shape composition","Pattern construction","Observation drawing","Creative art","Discovery projects"],
+    Life:["Practical routines","Organization","Care for materials","Healthy habits","Community helpers","Nature observation"]
+  }
  } as const;
  const subjects=["Language","Math","Creative","Life"] as const;
  const tasks=curriculum[klass][subject as keyof typeof curriculum.Nursery] || [];
- const select=(next:"Nursery"|"KG"|"Montessori")=>{setKlass(next);setSubject("Language");try{localStorage.setItem("lla-class",next)}catch{};window.dispatchEvent(new Event("lla-class-change"));onSpeak(`${next} curriculum selected.`)};
+ const select=(next:LearningClass)=>{
+  setKlass(next);
+  setSubject("Language");
+  setSelectedClass(next);
+  onSpeak(`${next} curriculum selected.`);
+};
  const toggle=(task:string)=>{const key=`${klass}:${subject}:${task}`;const next=done.includes(key)?done.filter(x=>x!==key):[...done,key];setDone(next);try{localStorage.setItem("mw-class-skills",JSON.stringify(next))}catch{};onSpeak(`${task}. Great learning!`)};
  const total=Object.values(curriculum[klass]).flat().length;
- const mastered=Object.entries(curriculum[klass]).flatMap(([sub,ts])=>ts.map((t: string)=>`${klass}:${sub}:${t}`)).filter(k=>done.includes(k)).length;
- return <section className="panel rounded-3xl p-4"><div className="text-center"><div className="text-5xl">🎓</div><h3 className="font-display text-2xl text-fg">Class Curriculum</h3><p className="mt-1 text-xs font-black text-primary">Three Learning Pathways</p><p className="text-xs text-muted">Age {age} • {xp} XP • {mastered}/{total} class skills practiced</p></div><div className="mt-3 grid grid-cols-3 gap-2">{(["Nursery","KG","Montessori"] as const).map(c=><button key={c} onClick={()=>select(c)} className={`rounded-2xl p-3 text-xs font-black ${klass===c?"bg-primary text-white":"bg-white text-slate-700"}`}>{c}</button>)}</div><div className="mt-3 grid grid-cols-4 gap-2">{subjects.map(s=><button key={s} onClick={()=>setSubject(s)} className={`rounded-2xl p-2 text-[11px] font-black ${subject===s?"bg-slate-900 text-white":"bg-white text-slate-700"}`}>{s}</button>)}</div><div className="mt-3 grid gap-2">{tasks.map((task,i)=>{const key=`${klass}:${subject}:${task}`;const isDone=done.includes(key);return <button key={task} onClick={()=>toggle(task)} className={`rounded-2xl p-4 text-left shadow-sm ${isDone?"bg-emerald-50":"bg-white"}`}><span className="mr-2">{isDone?"✅":"○"}</span><b>{i+1}. {task}</b></button>})}</div><p className="mt-3 rounded-2xl bg-slate-50 p-3 text-xs text-muted">This pathway has its own curriculum and progress. Nursery, KG and Montessori are tracked separately.</p></section>
+ const mastered=Object.entries(curriculum[klass]).flatMap(([sub,ts])=>ts.map(t=>`${klass}:${sub}:${t}`)).filter(k=>done.includes(k)).length;
+ return <section className="panel rounded-3xl p-4"><div className="text-center"><div className="text-5xl">🎓</div><h3 className="font-display text-2xl text-fg">Class Curriculum</h3><p className="mt-1 text-xs font-black text-primary">Five Learning Pathways</p><p className="text-xs text-muted">Age {age} • {xp} XP • {mastered}/{total} class skills practiced</p></div><div className="mt-3 grid grid-cols-3 gap-2">{LEARNING_CLASSES.map(c=><button key={c} onClick={()=>select(c)} className={`rounded-2xl p-3 text-xs font-black ${klass===c?"bg-primary text-white":"bg-white text-slate-700"}`}>{c}</button>)}</div><div className="mt-3 grid grid-cols-4 gap-2">{subjects.map(s=><button key={s} onClick={()=>setSubject(s)} className={`rounded-2xl p-2 text-[11px] font-black ${subject===s?"bg-slate-900 text-white":"bg-white text-slate-700"}`}>{s}</button>)}</div><div className="mt-3 grid gap-2">{tasks.map((task,i)=>{const key=`${klass}:${subject}:${task}`;const isDone=done.includes(key);return <button key={task} onClick={()=>toggle(task)} className={`rounded-2xl p-4 text-left shadow-sm ${isDone?"bg-emerald-50":"bg-white"}`}><span className="mr-2">{isDone?"✅":"○"}</span><b>{i+1}. {task}</b></button>})}</div><p className="mt-3 rounded-2xl bg-slate-50 p-3 text-xs text-muted">This pathway has its own curriculum and progress. Playgroup, Nursery, KG-1, KG-2 and Class 1 are tracked separately.</p></section>
 }
 function MontessoriWorld({age,onSpeak}:{age:number;onSpeak:(text:string)=>void}){
  const [area,setArea]=useState("Practical Life");
- const [completed,setCompleted]=useState<string[]>(()=>{try{return JSON.parse(localStorage.getItem("mw-montessori-done")||"[]") as string[]}catch{return []}});
+ const [completed,setCompleted]=useState<string[]>(()=>{try{return JSON.parse(localStorage.getItem("mw-montessori-done-Class-1")||"[]") as string[]}catch{return []}});
  const areas={
   "Practical Life":["Pouring & transferring","Scooping & spooning","Folding cloth","Buttoning & zipping","Lacing & tying","Washing hands sequence","Table setting","Toy organization"],
   "Sensorial":["Big → small grading","Long → short grading","Color grading","Shape matching","Texture matching","Sound matching","Weight comparison","Pattern construction"],
@@ -108,7 +141,7 @@ function MontessoriWorld({age,onSpeak}:{age:number;onSpeak:(text:string)=>void})
   "Culture & Nature":["Land & water forms","Continents","Animals by habitat","Plants & life cycles","Weather matching","Community helpers","Map puzzles","Nature observation"]
  } as const;
  const tasks=areas[area as keyof typeof areas]||areas["Practical Life"];
- const toggle=(task:string)=>{const key=`${area}:${task}`;const next=completed.includes(key)?completed.filter(x=>x!==key):[...completed,key];setCompleted(next);try{localStorage.setItem("mw-montessori-done",JSON.stringify(next))}catch{};onSpeak(`${task}. Explore slowly and carefully.`)};
+ const toggle=(task:string)=>{const key=`${area}:${task}`;const next=completed.includes(key)?completed.filter(x=>x!==key):[...completed,key];setCompleted(next);try{localStorage.setItem("mw-montessori-done-Class-1",JSON.stringify(next))}catch{};onSpeak(`${task}. Explore slowly and carefully.`)};
  return <section className="panel rounded-3xl p-4"><div className="rounded-3xl bg-gradient-to-r from-emerald-100 via-yellow-50 to-sky-100 p-4"><p className="text-xs font-black uppercase tracking-wider">Montessori Learning Environment</p><h3 className="mt-1 font-display text-3xl">Montessori World 🌱</h3><p className="mt-1 text-sm">Age {age} • independence, repetition, hands-on discovery and self-correction.</p></div>
   <div className="mt-3 grid grid-cols-2 gap-2">{Object.entries(areas).map(([name,tasks])=><button key={name} onClick={()=>setArea(name)} className={`rounded-2xl p-3 text-left ${area===name?"bg-primary text-white":"bg-white text-slate-700"}`}><span className="text-2xl">{name==="Practical Life"?"🧺":name==="Sensorial"?"🌈":name==="Language"?"🔤":name==="Mathematics"?"🔢":"🌎"}</span><b className="mt-1 block text-xs">{name}</b><small className="text-[10px] opacity-70">{tasks.length} activities</small></button>)}</div>
   <div className="mt-3 rounded-3xl bg-white p-4 shadow-sm"><div className="flex items-center justify-between"><h4 className="font-display text-2xl">{area}</h4><span className="text-xs font-black">{tasks.filter(t=>completed.includes(`${area}:${t}`)).length}/{tasks.length}</span></div><div className="mt-3 grid gap-2">{tasks.map((task,i)=>{const key=`${area}:${task}`;const isDone=completed.includes(key);return <button key={task} onClick={()=>toggle(task)} className={`rounded-2xl p-4 text-left ${isDone?"bg-emerald-50":"bg-slate-50"}`}><span className="mr-2">{isDone?"✅":"○"}</span><b>{i+1}. {task}</b></button>})}</div></div>

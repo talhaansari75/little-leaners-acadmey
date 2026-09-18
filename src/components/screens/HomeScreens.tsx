@@ -63,7 +63,7 @@ export function SplashScreen() {
       </button>
 
       <div className="academy-opening-bottom" aria-hidden="true">
-        <span>Nursery</span><span>KG</span><span>Montessori</span>
+        <span>Playgroup</span><span>Nursery</span><span>KG-1</span><span>KG-2</span><span>Class 1</span>
       </div>
       <div className="academy-opening-loader" aria-hidden="true"><span /></div>
     </main>
@@ -80,6 +80,7 @@ export function HomeScreen() {
       <header className="flex items-center justify-between gap-3">
         <div><p className="text-xs uppercase tracking-[0.2em] text-accent">{save.playerName}</p><h1 className="font-display text-2xl text-fg">{t("app.title")}</h1></div>
         <button type="button" className="inline-flex h-11 w-11 items-center justify-center rounded-xl panel" onClick={() => useGame.getState().go("profile")} aria-label={t("cta.profile")}><User className="size-5" /></button>
+      <button type="button" className="inline-flex h-11 w-11 items-center justify-center rounded-xl panel" onClick={() => useGame.getState().go("settings")} aria-label="Settings"><Settings className="size-5" /></button>
       </header>
       <HudChips />
       <button type="button" className="journey-continue btn-primary animate-pop" onClick={() => useGame.getState().go("preschool")}>
@@ -107,7 +108,7 @@ export function HomeScreen() {
         <TileButton icon={<PawPrint className="size-5" />} label="Wild Whispers" onClick={() => useGame.getState().go("wildWhispers")} />
         <TileButton icon={<Gift className="size-5" />} label={t("cta.spin")} onClick={() => useGame.getState().go("spin")} />
         <TileButton icon={<BookOpen className="size-5" />} label={t("cta.story")} onClick={() => useGame.getState().go("story")} />
-        <TileButton icon={<Settings className="size-5" />} label={t("cta.more")} onClick={() => useGame.getState().go("more")} />
+        <TileButton icon={<Settings className="size-5" />} label="Settings" onClick={() => useGame.getState().go("settings")} />
       </div>
       <DailyRewardPopup />
       <p className="sr-only">{playerLevel(save.xp)} {WORD_COUNT}</p>

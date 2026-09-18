@@ -1,13 +1,14 @@
-import type { SkillStat } from "@/lib/intelligence/learningBrain";
 import { LEARNING_CLASSES, getSelectedClass, setSelectedClass } from "@/lib/academy/classSelection";
 import { useMemo, useState } from "react";
 import { Brain, CheckCircle2, Gamepad2, Map, Radio, Sparkles, Target, WifiOff } from "lucide-react";
 import { CLASS_SKILLS, getLearningProfile, recommendNext, type LearningClass, type LearningSignal } from "@/lib/intelligence/learningBrain";
 
 const CLASS_EMOJI: Record<LearningClass, string> = {
-  Montessori: "🧸",
-  Nursery: "🌱",
-  KG: "📚",
+  Playgroup: "🧸",
+  Nursery: "🟢",
+  "KG-1": "🔵",
+  "KG-2": "🟣",
+  "Class 1": "⭐",
 };
 const MODES: LearningSignal[] = ["picture", "audio", "game", "story", "hands-on"];
 const MODE_LABEL: Record<LearningSignal, string> = { picture: "Picture", audio: "Audio", game: "Game", story: "Story", "hands-on": "Hands-on" };
@@ -22,9 +23,7 @@ function localProfile(): ReturnType<typeof getLearningProfile> { return getLearn
 export function SmartJourneyPanel({ className, onSpeak }: { className?: string; onSpeak: (text: string) => void }) {
   const [tick, setTick] = useState(0);
   const [tab, setTab] = useState<"adventure" | "skills" | "style" | "offline">("adventure");
-  const [klass, setKlass] = useState<LearningClass>(() => {
-    try { const value = localStorage.getItem("lla-class"); return value === "KG" || value === "Montessori" ? value : "Nursery"; } catch { return "Nursery"; }
-  });
+  const [klass, setKlass] = useState<LearningClass>(() => getSelectedClass() ?? "Nursery");
   const profile = useMemo(() => { void tick; return localProfile(); }, [tick]);
   const recommendation = useMemo(() => recommendNext(profile, klass), [profile, klass]);
   const skills = CLASS_SKILLS[klass];
@@ -38,15 +37,11 @@ export function SmartJourneyPanel({ className, onSpeak }: { className?: string; 
     <div className="smart-journey-head"><div className="smart-journey-icon"><Brain className="size-5"/></div><div className="min-w-0 flex-1"><p>SMART LEARNING JOURNEY</p><h3>Your path can change as you learn ✨</h3><small>Local-first personalization • no internet needed</small></div><button type="button" className="smart-refresh" onClick={refresh} aria-label="Refresh smart plan"><Sparkles className="size-4"/></button></div>
     <div className="smart-tabs" role="tablist" aria-label="Smart journey sections">{([["adventure","🎯 Adventure"],["skills","🗺️ Skill Map"],["style","🎨 Learning Style"],["offline","📡 Offline"]] as const).map(([id,label]) => <button key={id} type="button" className={tab === id ? "is-active" : ""} onClick={() => setTab(id)} role="tab" aria-selected={tab === id}>{label}</button>)}</div>
     {tab === "adventure" && <div className="smart-adventure"><div className="smart-class-picker">{LEARNING_CLASSES.map((name) => <button key={name} type="button" onClick={() => changeClass(name)} className={klass === name ? "is-active" : ""}>{CLASS_EMOJI[name]} {name}</button>)}</div><div className="smart-daily"><div className="smart-daily-icon">{recommendation.mode === "audio" ? "🔊" : recommendation.mode === "story" ? "📖" : recommendation.mode === "hands-on" ? "👐" : "🎮"}</div><div className="min-w-0 flex-1"><span>Today’s smart challenge</span><b>{challenge}</b><small>{recommendation.title} • {recommendation.difficulty} • {mode}</small></div><button type="button" onClick={() => { const map: Record<LearningClass, Record<string,string>> = {
-  Montessori: {
-    "practical-life": "montessori-practical-life",
-    sensorial: "montessori-sensorial",
-    language: "montessori-language",
-    mathematics: "montessori-math",
-    sorting: "montessori-sorting",
-    nature: "montessori-nature",
-    reading: "montessori-reading",
-    writing: "montessori-writing",
+  Playgroup: {
+    alphabets: "pg-abc",
+    colors: "pg-colors",
+    shapes: "pg-shapes",
+    numbers: "pg-numbers",
   },
   Nursery: {
     letters: "letters",
@@ -56,19 +51,53 @@ export function SmartJourneyPanel({ className, onSpeak }: { className?: string; 
     animals: "animals",
     rhymes: "rhymes",
   },
-  KG: {
-    phonics: "kg-phonics",
-    words: "kg-reading",
-    spelling: "kg-reading",
-    math: "kg-math",
-    counting: "kg-math",
-    addition: "kg-math",
-    subtraction: "kg-math",
-    reading: "kg-reading",
-    patterns: "kg-patterns",
-    science: "kg-vehicles",
+  "KG-1": {
+    phonics: "kg1-phonics",
+    counting: "kg1-math",
+    patterns: "kg1-patterns",
   },
-}; const id=map[klass][recommendation.skill]; if(id) window.dispatchEvent(new CustomEvent("lla-open-activity", { detail: { id, difficulty: recommendation.difficulty } })); onSpeak(`${challenge}. ${recommendation.title}. ${recommendation.reason}`); }}><Gamepad2 className="size-4"/> Start</button></div><div className="smart-mini-stats"><span><Target className="size-3.5"/> {explored}/{skills.length} skills explored</span><span><CheckCircle2 className="size-3.5"/> {recommendation.confidence}% guidance</span></div></div>}
+  "KG-2": {
+    phonics: "kg2-phonics",
+    spelling: "kg2-words",
+    reading: "kg2-reading",
+    addition: "kg2-math",
+    subtraction: "kg2-math",
+  },
+  "Class 1": {
+    reading: "class1-writing",
+    writing: "class1-writing",
+    mathematics: "class1-math",
+    science: "class1-nature",
+  },
+};
+
+const id=map[klass][recommendation.skill]; if(id) window.dispatchEvent(new CustomEvent("lla-open-activity", { detail: { id, difficulty: recommendation.difficulty } })); onSpeak(`${challenge}. ${recommendation.title}. ${recommendation.reason}`); }}><Gamepad2 className="size-4"/> Start</button></div><div className="smart-mini-stats"><span><Target className="size-3.5"/> {explored}/{skills.length} skills explored</span><span><CheckCircle2 className="size-3.5"/> {recommendation.confidence}% guidance</span></div>
+<div className="mt-3 rounded-2xl bg-white/80 p-3">
+  <div className="mb-2 flex items-center justify-between">
+    <b className="text-sm">🗺️ Your Learning Path</b>
+    <span className="text-xs text-muted">{Math.min(5, Math.floor((Object.values(stat).reduce((n,s)=>n+s.attempts,0))/2)+1)}/5 levels</span>
+  </div>
+  <div className="grid grid-cols-5 gap-1.5">
+    {[1,2,3,4,5].map(level => {
+      const attempts=Object.values(stat).reduce((n,s)=>n+s.attempts,0);
+      const unlocked=level===1 || attempts >= (level-1)*2;
+      return <button
+        key={level}
+        type="button"
+        onClick={()=>{
+          if(unlocked) onSpeak(`${klass} Level ${level}. Keep learning!`);
+          else onSpeak(`Level ${level} unlocks after more practice.`);
+        }}
+        className={`rounded-xl p-2 text-center text-xs font-black ${unlocked?"bg-primary text-white":"bg-slate-100 text-slate-400"}`}
+      >
+        <span className="block text-base">{unlocked?"⭐":"🔒"}</span>
+        L{level}
+      </button>;
+    })}
+  </div>
+  <p className="mt-2 text-[10px] text-muted">Each level opens through practice. Your progress stays separate for {klass}.</p>
+</div>
+</div>}
     {tab === "skills" && <div className="smart-skill-map"><div className="smart-class-picker">{LEARNING_CLASSES.map((name) => <button key={name} type="button" onClick={() => changeClass(name)} className={klass === name ? "is-active" : ""}>{CLASS_EMOJI[name]} {name}</button>)}</div><div className="smart-skill-grid">{skills.map((skill) => { const s = stat[skill]; const accuracy = s?.attempts ? Math.round((s.correct / s.attempts) * 100) : 0; const state = !s?.attempts ? "New" : accuracy >= 88 ? "Strong" : accuracy >= 65 ? "Growing" : "Practice"; return <div key={skill} className={`smart-skill ${state.toLowerCase()}`}><div><b>{skill.replaceAll("-", " ")}</b><span>{state}</span></div><div className="smart-skill-bar"><i style={{ width: `${s?.attempts ? Math.max(8, accuracy) : 6}%` }}/></div></div>; })}</div><p className="smart-note"><Map className="size-4"/> The map uses only this class’s learning signals, so pathways stay separate.</p></div>}
     {tab === "style" && <LearningStyle profile={profile} klass={klass}/>} 
     {tab === "offline" && <div className="smart-offline"><div className="smart-offline-hero"><WifiOff className="size-6"/><div><b>Offline Smart Mode</b><p>Recommendations, progress and challenge selection stay on this device.</p></div></div><div className="smart-offline-grid"><span>🧠 Local brain</span><span>🎮 Adaptive games</span><span>📊 Local progress</span><span>🔊 Bundled audio</span><span>🖼️ Local artwork</span><span>📝 Local worksheets</span></div><p className="smart-note"><Radio className="size-4"/> Cloud sync and account features can wait until a connection is available.</p></div>}
@@ -80,7 +109,7 @@ function LearningStyle({ profile, klass }: { profile: ReturnType<typeof getLearn
     let attempts = 0;
     let correct = 0;
     for (const stat of Object.values(profile.byClass[klass])) {
-      const item = (stat as SkillStat & { signalStats?: Record<string, { attempts?: number; correct?: number }> }).signalStats?.[mode];
+      const item = stat.signalStats?.[mode];
       attempts += item?.attempts ?? 0;
       correct += item?.correct ?? 0;
     }

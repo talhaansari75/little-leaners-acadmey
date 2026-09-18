@@ -29,26 +29,24 @@ const ACTIVITIES: Activity[] = [
  {id:"body",title:"My Body",subtitle:"Learn body parts",icon:<Sun className="size-6"/>,kind:"body",world:"abc",classes:["Nursery"]},
  {id:"animals",title:"Animal Friends",subtitle:"Pictures, names & sounds",icon:<PawPrint className="size-6"/>,kind:"listen",world:"nature",classes:["Nursery"]},
  {id:"rhymes",title:"Rhythm Garden",subtitle:"Sing, clap & listen",icon:<Music2 className="size-6"/>,kind:"rhymes",premium:true,world:"stories",classes:["Nursery"]},
- {id:"pg-abc",title:"ABC Fun",subtitle:"Letters & pictures",icon:<BookOpen className="size-6"/>,kind:"letters",world:"abc",classes:["Montessori"]},
- {id:"pg-colors",title:"Color Fun",subtitle:"Learn bright colors",icon:<Palette className="size-6"/>,kind:"colors",world:"creative",classes:["Montessori"]},
- {id:"pg-shapes",title:"Shape Fun",subtitle:"Circle, square & triangle",icon:<Shapes className="size-6"/>,kind:"shapes",world:"math",classes:["Montessori"]},
- {id:"pg-numbers",title:"Counting Fun",subtitle:"Numbers 1–5",icon:<Hash className="size-6"/>,kind:"numbers",world:"math",classes:["Montessori"]},
- {id:"kg-phonics",title:"Phonics Builder",subtitle:"Sounds, letters & CVC",icon:<BookOpen className="size-6"/>,kind:"letters",world:"abc",classes:["KG"]},
- {id:"kg-math",title:"Math Mountain",subtitle:"Add, compare & count",icon:<Calculator className="size-6"/>,kind:"math",premium:true,world:"math",classes:["KG"]},
- {id:"kg-patterns",title:"Pattern Detective",subtitle:"Find what comes next",icon:<Sparkles className="size-6"/>,kind:"patterns",premium:true,world:"math",classes:["KG"]},
- {id:"kg-reading",title:"Reading Library",subtitle:"Stories & questions",icon:<BookOpen className="size-6"/>,kind:"story",premium:true,world:"stories",classes:["KG"]},
- {id:"kg-vehicles",title:"Vehicle Science",subtitle:"Cars, buses & motion",icon:<Car className="size-6"/>,kind:"vehicles",world:"nature",classes:["KG"]},
- {id:"kg-puzzle",title:"Picture Puzzles",subtitle:"Match and reason",icon:<Puzzle className="size-6"/>,kind:"puzzle",premium:true,world:"games",classes:["KG"]},
- {id:"class1-writing",title:"Writing Workshop",subtitle:"Letters, words & sentences",icon:<Pencil className="size-6"/>,kind:"tracing",world:"abc",classes:["Montessori"]},
- {id:"class1-math",title:"Mathematics Lab",subtitle:"Numbers & problem solving",icon:<Calculator className="size-6"/>,kind:"math",world:"math",classes:["Montessori"]},
- {id:"class1-science",title:"Science Explorer",subtitle:"Discover the world",icon:<Car className="size-6"/>,kind:"vehicles",world:"nature",classes:["Montessori"]},
- {id:"mont-language",title:"Language Shelf",subtitle:"Objects, sounds & tracing",icon:<Pencil className="size-6"/>,kind:"tracing",world:"abc",classes:["Montessori"]},
- {id:"mont-math",title:"Montessori Mathematics",subtitle:"Quantity & number sense",icon:<Calculator className="size-6"/>,kind:"math",premium:true,world:"math",classes:["Montessori"]},
- {id:"mont-sensorial",title:"Sensorial Studio",subtitle:"Color & shape grading",icon:<Shapes className="size-6"/>,kind:"shapes",world:"creative",classes:["Montessori"]},
- {id:"mont-sorting",title:"Sorting Station",subtitle:"Classify, order & compare",icon:<Star className="size-6"/>,kind:"sorting",world:"games",classes:["Montessori"]},
- {id:"mont-practical",title:"Practical Life",subtitle:"Hands-on daily routines",icon:<Heart className="size-6"/>,kind:"sorting",world:"games",classes:["Montessori"]},
- {id:"mont-nature",title:"Nature Corner",subtitle:"Listen and discover nature",icon:<Volume2 className="size-6"/>,kind:"listen",premium:true,world:"nature",classes:["Montessori"]},
- {id:"mont-worksheets",title:"Worksheet Table",subtitle:"Calm independent practice",icon:<Pencil className="size-6"/>,kind:"tracing",world:"abc",classes:["Montessori"]},
+ {id:"pg-abc",title:"ABC Fun",subtitle:"Letters & pictures",icon:<BookOpen className="size-6"/>,kind:"letters",world:"abc",classes:["Playgroup"]},
+ {id:"pg-colors",title:"Color Fun",subtitle:"Learn bright colors",icon:<Palette className="size-6"/>,kind:"colors",world:"creative",classes:["Playgroup"]},
+ {id:"pg-shapes",title:"Shape Fun",subtitle:"Circle, square & triangle",icon:<Shapes className="size-6"/>,kind:"shapes",world:"math",classes:["Playgroup"]},
+ {id:"pg-numbers",title:"Counting Fun",subtitle:"Numbers 1–5",icon:<Hash className="size-6"/>,kind:"numbers",world:"math",classes:["Playgroup"]},
+ {id:"kg1-phonics",title:"Phonics Builder",subtitle:"Sounds, letters & CVC",icon:<BookOpen className="size-6"/>,kind:"letters",world:"abc",classes:["KG-1"]},
+ {id:"kg1-math",title:"Math Mountain",subtitle:"Add, compare & count",icon:<Calculator className="size-6"/>,kind:"math",premium:true,world:"math",classes:["KG-1"]},
+ {id:"kg1-patterns",title:"Pattern Detective",subtitle:"Find what comes next",icon:<Sparkles className="size-6"/>,kind:"patterns",premium:true,world:"math",classes:["KG-1"]},
+ {id:"kg2-reading",title:"Reading Library",subtitle:"Stories & questions",icon:<BookOpen className="size-6"/>,kind:"story",premium:true,world:"stories",classes:["KG-2"]},
+ {id:"kg2-science",title:"Vehicle Science",subtitle:"Cars, buses & motion",icon:<Car className="size-6"/>,kind:"vehicles",world:"nature",classes:["KG-2"]},
+ {id:"kg2-puzzle",title:"Picture Puzzles",subtitle:"Match and reason",icon:<Puzzle className="size-6"/>,kind:"puzzle",premium:true,world:"games",classes:["KG-2"]},
+ {id:"class1-writing",title:"Writing Workshop",subtitle:"Letters, words & sentences",icon:<Pencil className="size-6"/>,kind:"tracing",world:"abc",classes:["Class 1"]},
+ {id:"class1-math",title:"Mathematics Lab",subtitle:"Numbers & problem solving",icon:<Calculator className="size-6"/>,kind:"math",world:"math",classes:["Class 1"]},
+ {id:"class1-language",title:"Language Shelf",subtitle:"Objects, sounds & tracing",icon:<Pencil className="size-6"/>,kind:"tracing",world:"abc",classes:["Class 1"]},
+ {id:"class1-sensorial",title:"Sensorial Studio",subtitle:"Color & shape grading",icon:<Shapes className="size-6"/>,kind:"shapes",world:"creative",classes:["Class 1"]},
+ {id:"class1-sorting",title:"Sorting Station",subtitle:"Classify, order & compare",icon:<Star className="size-6"/>,kind:"sorting",world:"games",classes:["Class 1"]},
+ {id:"class1-practical",title:"Practical Life",subtitle:"Hands-on daily routines",icon:<Heart className="size-6"/>,kind:"sorting",world:"games",classes:["Class 1"]},
+ {id:"class1-nature",title:"Nature Corner",subtitle:"Listen and discover nature",icon:<Volume2 className="size-6"/>,kind:"listen",premium:true,world:"nature",classes:["Class 1"]},
+ {id:"class1-worksheets",title:"Worksheet Table",subtitle:"Calm independent practice",icon:<Pencil className="size-6"/>,kind:"tracing",world:"abc",classes:["Class 1"]},
 ];
 
 const COLORS=["Red","Blue","Yellow","Green"]; const SHAPES=["Circle","Square","Triangle","Star"]; const BODY=["Eyes 👀","Nose 👃","Ears 👂","Hands 👐"]; const VEHICLES=["Car 🚗","Bus 🚌","Train 🚂","Plane ✈️"];
@@ -100,7 +98,7 @@ export function PreschoolLearningScreen({onBack}:{onBack:()=>void}){
  const [selected,setSelected]=useState<(Activity & { difficulty?: "gentle"|"steady"|"challenge" })|null>(null); const [tab,setTab]=useState<"home"|"worlds"|"discover"|"sounds"|"parent">("home");
  const [room,setRoom]=useState<AcademyRoomId|null>(null);
  const [klass,setKlass]=useState<LearningClass | null>(() => getSelectedClass());
- const availableActivities=useMemo(()=>klass ? ACTIVITIES.filter(a=>a.classes.includes(klass)) : [],[klass]);
+ const availableActivities=useMemo(()=>ACTIVITIES.filter(a=>a.classes.includes(klass)),[klass]);
  const [completed,setCompleted]=useState<string[]>(()=>readLocal(completedKey(getSelectedClass()),[]));
  const [stars,setStars]=useState(()=>readLocal(starsKey(getSelectedClass()),0)); const [xp,setXp]=useState(()=>readLocal(xpKey(getSelectedClass()),0));
  const [online,setOnline]=useState(()=>typeof navigator==="undefined"?true:navigator.onLine); const [premium,setPremium]=useState(false); const [buying,setBuying]=useState(false); const [purchaseGate,setPurchaseGate]=useState(false);
@@ -123,7 +121,7 @@ export function PreschoolLearningScreen({onBack}:{onBack:()=>void}){
   setLevel(readLocal(levelKey(klass),"Beginner"));
  }, [klass]);
  useEffect(()=>{const onOpen=(e:Event)=>{const detail=(e as CustomEvent<{id?:string;difficulty?:"gentle"|"steady"|"challenge"}>).detail;if(!detail.id)return;const activity=availableActivities.find(a=>a.id===detail.id);if(activity){setRoom(null);setSelected({...activity,difficulty:detail.difficulty})}};addEventListener("lla-open-activity",onOpen);const onRoom=(e:Event)=>{const detail=(e as CustomEvent<{room?:AcademyRoomId}>).detail;if(!detail.room)return;setSelected(null);setRoom(detail.room)};addEventListener("lla-open-room",onRoom);return()=>{removeEventListener("lla-open-activity",onOpen);removeEventListener("lla-open-room",onRoom)}},[availableActivities]);
- useEffect(()=>{void getMyEntitlements().then(rows=>setPremium(rows.some((r: { productId: string })=>r.productId==="premium"))).catch(()=>setPremium(false))},[]);
+ useEffect(()=>{void getMyEntitlements().then(rows=>setPremium(rows.some(r=>r.productId==="premium"))).catch(()=>setPremium(false))},[]);
  useEffect(()=>{
    let alive=true;
    void getPreschoolProgress().then(result=>{
@@ -148,7 +146,7 @@ export function PreschoolLearningScreen({onBack}:{onBack:()=>void}){
  const buyPremium=async()=>{setBuying(true);try{const r=await createCheckoutSession({data:{productId:"premium"}});if(r.ok)location.href=r.url}finally{setBuying(false)}};
  const requestPremium=()=>setPurchaseGate(true);
  const complete=(id:string, kind:Kind)=>{const className = getSelectedClass();
-if (!className) return; setCompleted(old=>{const key=`${className}:${id}`;const first=!old.includes(key);const n=first?[...old,key]:old;writeLocal(completedKey(className),n);if(first){setStars(v=>{const next=v+1;writeLocal(starsKey(className),next);return next});}setXp(v=>{const next=v+10;writeLocal(xpKey(className),next);const nextLevel=next>=500?"Super Star":next>=250?"Explorer":next>=100?"Learner":"Beginner";setLevel(nextLevel);writeLocal(levelKey(className),nextLevel);return next});setMission(m=>{const n=(m+1)%MISSIONS.length;writeLocal(missionKeyLocal(className),n);return n});try{localStorage.setItem(UPDATED_KEY,String(Date.now()))}catch{} return n});};
+if (!className) return;recordAttempt(className, skillForActivity(className, kind), true, 0, kind === "listen" || kind === "rhymes" ? "audio" : kind === "tracing" || kind === "sorting" ? "hands-on" : kind === "story" ? "story" : kind === "letters" || kind === "colors" || kind === "shapes" ? "picture" : "game"); setCompleted(old=>{const key=`${className}:${id}`;const first=!old.includes(key);const n=first?[...old,key]:old;writeLocal(completedKey(className),n);if(first){setStars(v=>{const next=v+1;writeLocal(starsKey(className),next);return next});}setXp(v=>{const next=v+10;writeLocal(xpKey(className),next);const nextLevel=next>=500?"Super Star":next>=250?"Explorer":next>=100?"Learner":"Beginner";setLevel(nextLevel);writeLocal(levelKey(className),nextLevel);return next});setMission(m=>{const n=(m+1)%MISSIONS.length;writeLocal(missionKeyLocal(className),n);return n});try{localStorage.setItem(UPDATED_KEY,String(Date.now()))}catch{} return n});};
  const open=(a:Activity)=>{if(a.premium&&!premium){requestPremium();return} if(a.id==="animals"){setRoom("atlas");return} if(a.id==="mont-worksheets"){setRoom("worksheets");return} if(a.id==="rhymes"){setRoom("listen");return} setSelected(a)};
  const saveProfile=(name:string,age:number)=>{const p={name:name.trim().slice(0,40)||"Little Learner",age:Math.max(2,Math.min(6,Math.floor(age)))};writeLocal(PROFILE_KEY,p);try{localStorage.setItem(UPDATED_KEY,String(Date.now()))}catch{} setProfile(p)};
  if(purchaseGate)return <Screen title="Parent Approval" onBack={()=>setPurchaseGate(false)}><div className="preschool-bg min-h-full rounded-3xl p-3"><ParentGate><section className="panel rounded-3xl p-5 text-center"><div className="text-5xl">👑</div><h2 className="mt-2 font-display text-2xl text-fg">Parent approval required</h2><p className="mt-2 text-sm text-muted">Premium learning is for parents to approve.</p><button className="btn-primary mt-4 w-full" disabled={buying} onClick={()=>void buyPremium()}>{buying?"Opening checkout…":"Continue to Premium"}</button><button className="hud-chip mt-2" onClick={()=>setPurchaseGate(false)}>Cancel</button></section></ParentGate></div></Screen>;
@@ -170,7 +168,7 @@ if (!className) return; setCompleted(old=>{const key=`${className}:${id}`;const 
    <section className="panel rounded-3xl p-4"><div className="flex items-center justify-between"><div><p className="text-xs font-bold uppercase tracking-wider text-accent">Learning path</p><h2 className="font-display text-2xl text-fg">Six Little Worlds 🌍</h2></div><ChevronRight className="size-5 text-muted"/></div><div className="mt-3 grid grid-cols-2 gap-2">{WORLDS.map(w=><button key={w.id} onClick={()=>setTab(w.id==="nature"?"sounds":"worlds")} className={`world-card world-${w.tone} rounded-2xl p-3 text-left shadow-sm`}><span className="text-3xl">{w.e}</span><b className="mt-1 block">{w.title}</b><span className="block text-[11px] opacity-70">{w.text}</span></button>)}</div></section>
    <section className="panel rounded-3xl p-4"><div className="flex items-center justify-between"><h3 className="font-semibold text-fg">Activities 🎮</h3><span className="text-xs text-muted">{completed.filter(id=>id.startsWith(`${klass}:`)).length} completed</span></div><div className="mt-3 grid grid-cols-2 gap-2">{availableActivities.map(a=><button key={a.id} type="button" onClick={()=>open(a)} className="preschool-card panel relative min-h-28 rounded-2xl p-3 text-left active:scale-[.98]">{a.premium&&!premium&&<span className="absolute right-2 top-2 rounded-full bg-amber-200 px-2 py-1 text-[10px] font-black text-amber-900">👑</span>}<span className="inline-flex rounded-xl bg-white/75 p-2 text-primary">{a.icon}</span><span className="mt-2 block font-bold text-fg">{a.title}</span><span className="block text-xs text-muted">{a.subtitle}</span>{completed.includes(`${klass}:${a.id}`)&&<span className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-accent"><Check className="size-3"/> Done</span>}</button>)}</div></section>
   </>}
-  {tab==="worlds"&&klass&&<WorldsPanel onOpen={open} klass={klass}/>}
+  {tab==="worlds"&&<WorldsPanel onOpen={open} klass={klass}/>}
   {tab==="discover"&&<AdvancedPreschoolHub age={profile.age} xp={xp} completed={completed.filter(id=>id.startsWith(`${klass}:`)).length} premium={premium} onSpeak={speak}/>} 
   {tab==="sounds"&&<SoundsPanel/>}
   {tab==="parent"&&<ParentGate><ParentPanel profile={profile} saveProfile={saveProfile} premium={premium} buying={buying} buyPremium={buyPremium} offlinePack={offlinePack} packing={packing} setPacking={setPacking} setOfflinePack={setOfflinePack} online={online}/></ParentGate>} 
@@ -181,39 +179,7 @@ if (!className) return; setCompleted(old=>{const key=`${className}:${id}`;const 
 function NavButton({active,icon,text,onClick}:{active:boolean;icon:string;text:string;onClick:()=>void}){return <button onClick={onClick} className={`flex flex-1 flex-col items-center rounded-2xl px-2 py-2 text-[10px] font-black ${active?"bg-primary text-white":"text-slate-600"}`}><span className="text-lg">{icon}</span>{text}</button>}
 function WorldsPanel({onOpen,klass}:{onOpen:(a:Activity)=>void;klass:LearningClass}){return <section className="grid gap-3">{WORLDS.map(w=><section key={w.id} className={`world-card world-${w.tone} rounded-3xl p-4`}><div className="flex items-center gap-3"><span className="text-5xl">{w.e}</span><div><h2 className="font-display text-2xl">{w.title}</h2><p className="text-xs opacity-70">{w.text}</p></div></div><div className="mt-3 flex flex-wrap gap-2">{ACTIVITIES.filter(a=>a.world===w.id&&a.classes.includes(klass)).map(a=><button key={a.id} onClick={()=>onOpen(a)} className="rounded-2xl bg-white/80 px-3 py-2 text-xs font-bold shadow-sm">{a.title}{a.premium?" 👑":""}</button>)}</div></section>)}</section>}
 function SoundsPanel(){const [filter,setFilter]=useState<"All"|"Animal"|"Bird">("All");const list=ANIMAL_LIBRARY.filter(a=>filter==="All"?true:filter==="Bird"?a.group==="bird":a.group==="animal").slice(0,48);return <section className="panel rounded-3xl p-4"><div className="flex items-center justify-between"><div><h2 className="font-display text-2xl text-fg">Animal & Bird Sounds</h2><p className="text-xs text-muted">Tap an animal to see its picture and hear its sound.</p></div><PawPrint className="size-7 text-primary"/></div><div className="mt-3 flex gap-2">{(["All","Animal","Bird"] as const).map(x=><button key={x} onClick={()=>setFilter(x)} className={`rounded-full px-3 py-2 text-xs font-bold ${filter===x?"bg-primary text-white":"bg-slate-100 text-slate-600"}`}>{x}</button>)}</div><div className="mt-3 grid grid-cols-4 gap-2">{list.map(a=><button key={a.id} onClick={()=>{if(a.sound) playBundledAudio(a.sound); else if(["lion","elephant","tiger","fox","wolf","monkey","frog","snake","crocodile","bear","panda","parrot","owl","eagle","penguin","flamingo","duck","peacock","chicken","bee"].includes(a.id)) playAnimalSound(a.id as import("@/lib/game/audio").AnimalSoundId); speak(a.name)}} className="rounded-2xl bg-white p-2 text-center shadow-sm active:scale-95"><img src={a.src} alt={a.name} className="mx-auto h-12 w-12 object-contain"/><span className="text-[10px] font-bold text-slate-700">{a.name}</span></button>)}</div><button type="button" className="btn-primary mt-4 w-full" onClick={()=>window.dispatchEvent(new CustomEvent("lla-open-room",{detail:{room:"atlas"}}))}>Open full Nature Atlas</button></section>}
-
-function AcademyProofBanner() {
-  return (
-    <div
-      style={{
-        margin: "12px auto",
-        maxWidth: 720,
-        padding: "14px 18px",
-        borderRadius: 22,
-        background: "linear-gradient(135deg,#fff7c2,#dff7ff,#eadcff)",
-        border: "2px solid rgba(255,255,255,.9)",
-        boxShadow: "0 8px 24px rgba(80,60,120,.15)",
-        textAlign: "center",
-        fontWeight: 800,
-        animation: "academyProofPulse 2s ease-in-out infinite",
-      }}
-    >
-      🌟 Welcome to Little Learners Academy! 🌟
-      <div style={{ fontSize: 13, marginTop: 4, opacity: .75 }}>
-        Learn • Play • Discover • Grow
-      </div>
-      <style>{`
-        @keyframes academyProofPulse {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.025); }
-        }
-      `}</style>
-    </div>
-  );
-}
-
-export function ParentGate({children}:{children:ReactNode}){const [allowed,setAllowed]=useState(false);const [setup,setSetup]=useState(false);const [pin,setPin]=useState("");const [error,setError]=useState("");useEffect(()=>{void hasKidsLockPin().then(has=>setSetup(!has));},[]);const submit=async()=>{setError("");if(setup){if(!(await setKidsLockPin(pin))){setError("Use a 6-digit parent PIN.");return;}setSetup(false);setAllowed(true);setPin("");return;}if(!(await verifyKidsLockPin(pin))){setError("Wrong parent PIN.");setPin("");return;}setAllowed(true);setPin("");};if(allowed)return <>{children}</>;<AcademyProofBanner />
- return <section className="panel rounded-3xl p-5 text-center"><LockKeyhole className="mx-auto size-9 text-primary"/><h2 className="mt-3 font-display text-2xl text-fg">Parent Area</h2><p className="mt-1 text-sm text-muted">{setup?"Create a parent PIN before opening settings.":"Enter the parent PIN to continue."}</p><input inputMode="numeric" type="password" maxLength={6} value={pin} onChange={e=>setPin(e.target.value.replace(/\D/g,""))} onKeyDown={e=>{if(e.key==="Enter")void submit()}} placeholder="6-digit PIN" className="mt-4 w-full rounded-2xl bg-white px-4 py-4 text-center text-xl tracking-[0.4em] text-slate-900" autoFocus/><button className="btn-primary mt-3 w-full" onClick={()=>void submit()}>{setup?"Create PIN":"Unlock Parent Area"}</button>{error&&<p className="mt-2 text-sm text-red-600">{error}</p>}<p className="mt-3 text-[11px] text-muted">Keep this PIN private. Device-level app exit cannot be blocked by a normal website.</p></section>}
+export function ParentGate({children}:{children:ReactNode}){const [allowed,setAllowed]=useState(false);const [setup,setSetup]=useState(false);const [pin,setPin]=useState("");const [error,setError]=useState("");useEffect(()=>{void hasKidsLockPin().then(has=>setSetup(!has));},[]);const submit=async()=>{setError("");if(setup){if(!(await setKidsLockPin(pin))){setError("Use a 6-digit parent PIN.");return;}setSetup(false);setAllowed(true);setPin("");return;}if(!(await verifyKidsLockPin(pin))){setError("Wrong parent PIN.");setPin("");return;}setAllowed(true);setPin("");};if(allowed)return <>{children}</>;return <section className="panel rounded-3xl p-5 text-center"><LockKeyhole className="mx-auto size-9 text-primary"/><h2 className="mt-3 font-display text-2xl text-fg">Parent Area</h2><p className="mt-1 text-sm text-muted">{setup?"Create a parent PIN before opening settings.":"Enter the parent PIN to continue."}</p><input inputMode="numeric" type="password" maxLength={6} value={pin} onChange={e=>setPin(e.target.value.replace(/\D/g,""))} onKeyDown={e=>{if(e.key==="Enter")void submit()}} placeholder="6-digit PIN" className="mt-4 w-full rounded-2xl bg-white px-4 py-4 text-center text-xl tracking-[0.4em] text-slate-900" autoFocus/><button className="btn-primary mt-3 w-full" onClick={()=>void submit()}>{setup?"Create PIN":"Unlock Parent Area"}</button>{error&&<p className="mt-2 text-sm text-red-600">{error}</p>}<p className="mt-3 text-[11px] text-muted">Keep this PIN private. Device-level app exit cannot be blocked by a normal website.</p></section>}
 
 function ParentPanel({profile,saveProfile,premium,buying,buyPremium,offlinePack,packing,setPacking,setOfflinePack,online}:{profile:{name:string;age:number};saveProfile:(n:string,a:number)=>void;premium:boolean;buying:boolean;buyPremium:()=>Promise<void>;offlinePack:boolean;packing:boolean;setPacking:(v:boolean)=>void;setOfflinePack:(v:boolean)=>void;online:boolean}) {
   const [name,setName]=useState(profile.name);
@@ -231,20 +197,200 @@ function ParentPanel({profile,saveProfile,premium,buying,buyPremium,offlinePack,
   </section>;
 }
 
-function ActivityScreen({activity,difficulty="steady",onBack,onComplete}:{activity:Activity;difficulty?:"gentle"|"steady"|"challenge";onBack:()=>void;onComplete:()=>void}){const [answer,setAnswer]=useState<string|null>(null);const [round,setRound]=useState(0);const data=useMemo(()=>{switch(activity.kind){case"letters":return{prompt:"Which letter starts Apple?",choices:["A","B","C","D"],correct:"A",helper:"A is for Apple!",art:WORD_CARDS.find(w=>w.id==="apple")?.src};case"numbers":return{prompt:"How many apples?",choices:["3","4","5","6"],correct:"4",helper:"Four apples!",art:WORD_CARDS.find(w=>w.id==="apple")?.src};case"colors":return{prompt:"What color is the sky?",choices:COLORS,correct:"Blue",helper:"Blue like the sky!"};case"shapes":return{prompt:"Which shape has 3 sides?",choices:SHAPES,correct:"Triangle",helper:"Triangle has three sides!"};case"sorting":return{prompt:"Which one is BIG?",choices:["Elephant","Ant","Mouse","Ladybug"],correct:"Elephant",helper:"The elephant is big!",art:animalArt("elephant")};case"body":return{prompt:"What do we use to see?",choices:BODY,correct:"Eyes 👀",helper:"We see with our eyes!"};case"vehicles":return{prompt:"Which picture is a car?",choices:["Car","Cat","Tree","Moon"],correct:"Car",helper:"A car is a vehicle.",art:WORD_CARDS.find(w=>w.id==="car")?.src};case"math":return{prompt:"What is 2 + 1?",choices:["2","3","4","5"],correct:"3",helper:"Two plus one makes three!"};case"opposites":return{prompt:"What is the opposite of BIG?",choices:["Small","Fast","Up","Hot"],correct:"Small",helper:"Big ↔ Small"};case"patterns":return{prompt:"What comes next? 🔴 🔵 🔴 🔵 ?",choices:["🔴 Red","🟢 Green","🟡 Yellow","🟣 Purple"],correct:"🔴 Red",helper:"The pattern repeats red, blue."};case"listen":return{prompt:"Which animal did you hear?",choices:["Lion","Frog","Bee","Duck"],correct:"Lion",helper:"That was a lion.",art:animalArt("lion"),listenSrc:CLASS_AUDIO.Nursery[0]?.src,listenText:"Lion"};case"puzzle":return{prompt:"Which picture matches the cat?",choices:["Cat","Fish","Apple","Car"],correct:"Cat",helper:"Same animal!",art:WORD_CARDS.find(w=>w.id==="cat")?.src};default:return{prompt:"What comes next in the story?",choices:["Park","Moon","Sea","Home"],correct:"Park",helper:"Great storytelling!"}}},[activity.kind]);
- const difficultyHint = difficulty === "gentle" ? "Gentle step" : difficulty === "challenge" ? "Challenge step" : "Steady step";
- const tuned = useMemo(() => {
-   if (difficulty === "challenge" && activity.kind === "numbers") return { ...data, prompt: "How many stars? ⭐⭐⭐⭐⭐⭐", choices: ["5","6","7","8"], correct: "6", helper: "Six stars! 🚀" };
-   if (difficulty === "challenge" && activity.kind === "math") return { ...data, prompt: "What is 4 + 3?", choices: ["6","7","8","9"], correct: "7", helper: "Four plus three makes seven! 🚀" };
-   if (difficulty === "challenge" && activity.kind === "patterns") return { ...data, prompt: "What comes next? 🔴 🔵 🟢 🔴 🔵 ?", choices: ["🟢 Green","🔴 Red","🟡 Yellow","🟣 Purple"], correct: "🟢 Green", helper: "The pattern repeats red, blue, green." };
-   if (difficulty === "gentle") {
-     const rest = data.choices.filter((c) => c !== data.correct).slice(0, 1);
-     return { ...data, choices: [data.correct, ...rest] };
+function ActivityScreen({activity,difficulty="steady",onBack,onComplete}:{activity:Activity;difficulty?:"gentle"|"steady"|"challenge";onBack:()=>void;onComplete:()=>void}) {
+ const [answer,setAnswer]=useState<string|null>(null);
+ const [round,setRound]=useState(0);
+
+ type Question={prompt:string;choices:string[];correct:string;helper:string;art?:string;listenSrc?:string;listenText?:string};
+
+ const questionBank:Record<Kind,Question[]> = {
+   letters:[
+     {prompt:"Which letter starts Apple? 🍎",choices:["A","B","C","D"],correct:"A",helper:"A is for Apple!"},
+     {prompt:"Which letter starts Ball? ⚽",choices:["A","B","C","D"],correct:"B",helper:"B is for Ball!"},
+     {prompt:"Which letter starts Cat? 🐱",choices:["C","D","M","T"],correct:"C",helper:"C is for Cat!"},
+     {prompt:"Which letter starts Dog? 🐶",choices:["A","D","G","P"],correct:"D",helper:"D is for Dog!"},
+     {prompt:"Which letter starts Sun? ☀️",choices:["S","M","T","R"],correct:"S",helper:"S is for Sun!"},
+     {prompt:"Which letter starts Fish? 🐟",choices:["F","P","B","L"],correct:"F",helper:"F is for Fish!"},
+     {prompt:"Which letter starts Moon? 🌙",choices:["N","M","S","W"],correct:"M",helper:"M is for Moon!"},
+     {prompt:"Which letter starts Tree? 🌳",choices:["T","C","P","D"],correct:"T",helper:"T is for Tree!"},
+   ],
+   numbers:[
+     {prompt:"How many apples? 🍎🍎",choices:["1","2","3","4"],correct:"2",helper:"There are two apples!"},
+     {prompt:"How many stars? ⭐⭐⭐",choices:["2","3","4","5"],correct:"3",helper:"There are three stars!"},
+     {prompt:"How many ducks? 🦆🦆🦆🦆",choices:["3","4","5","6"],correct:"4",helper:"There are four ducks!"},
+     {prompt:"What comes after 4?",choices:["3","5","6","7"],correct:"5",helper:"5 comes after 4!"},
+     {prompt:"What comes after 7?",choices:["6","8","9","10"],correct:"8",helper:"8 comes after 7!"},
+     {prompt:"How many fingers on one hand? ✋",choices:["4","5","6","10"],correct:"5",helper:"One hand has five fingers!"},
+   ],
+   colors:[
+     {prompt:"What color is the sky? ☁️",choices:["Blue","Red","Green","Pink"],correct:"Blue",helper:"The sky is usually blue!"},
+     {prompt:"What color is grass? 🌱",choices:["Green","Purple","Orange","Black"],correct:"Green",helper:"Grass is green!"},
+     {prompt:"What color is a banana? 🍌",choices:["Yellow","Blue","Brown","Pink"],correct:"Yellow",helper:"A banana is yellow!"},
+     {prompt:"What color is an apple? 🍎",choices:["Red","Blue","Purple","White"],correct:"Red",helper:"A red apple!"},
+     {prompt:"What color is an orange? 🍊",choices:["Orange","Green","Blue","Black"],correct:"Orange",helper:"Orange is orange!"},
+     {prompt:"Which is a warm color?",choices:["Red","Blue","Green","Purple"],correct:"Red",helper:"Red is a warm color!"},
+   ],
+   shapes:[
+     {prompt:"Which shape has 3 sides?",choices:["Circle","Triangle","Square","Star"],correct:"Triangle",helper:"A triangle has three sides!"},
+     {prompt:"Which shape is round?",choices:["Circle","Square","Triangle","Rectangle"],correct:"Circle",helper:"A circle is round!"},
+     {prompt:"Which shape has 4 equal sides?",choices:["Circle","Triangle","Square","Oval"],correct:"Square",helper:"A square has four equal sides!"},
+     {prompt:"Which shape looks like a door?",choices:["Rectangle","Circle","Triangle","Star"],correct:"Rectangle",helper:"A rectangle can look like a door!"},
+     {prompt:"Which shape has 5 points?",choices:["Star","Circle","Square","Oval"],correct:"Star",helper:"A star has points!"},
+   ],
+   sorting:[
+     {prompt:"Which one is BIG?",choices:["Elephant","Ant","Mouse","Ladybug"],correct:"Elephant",helper:"The elephant is big!"},
+     {prompt:"Which one is SMALL?",choices:["Elephant","Ant","Giraffe","Bus"],correct:"Ant",helper:"The ant is small!"},
+     {prompt:"Which belongs in the kitchen?",choices:["Spoon","Shoe","Ball","Book"],correct:"Spoon",helper:"We use a spoon in the kitchen!"},
+     {prompt:"Which is a fruit?",choices:["Apple","Chair","Car","Shoe"],correct:"Apple",helper:"An apple is a fruit!"},
+     {prompt:"Which is a vehicle?",choices:["Bus","Banana","Pencil","Flower"],correct:"Bus",helper:"A bus is a vehicle!"},
+   ],
+   body:[
+     {prompt:"What do we use to see?",choices:["Eyes 👀","Ears 👂","Hands ✋","Feet 🦶"],correct:"Eyes 👀",helper:"We see with our eyes!"},
+     {prompt:"What do we use to hear?",choices:["Eyes 👀","Ears 👂","Nose 👃","Hands ✋"],correct:"Ears 👂",helper:"We hear with our ears!"},
+     {prompt:"What do we use to smell?",choices:["Nose 👃","Eyes 👀","Feet 🦶","Hands ✋"],correct:"Nose 👃",helper:"We smell with our nose!"},
+     {prompt:"What do we use to walk?",choices:["Feet 🦶","Ears 👂","Eyes 👀","Teeth 🦷"],correct:"Feet 🦶",helper:"We walk with our feet!"},
+   ],
+   vehicles:[
+     {prompt:"Which picture is a car?",choices:["Car","Cat","Tree","Moon"],correct:"Car",helper:"A car is a vehicle."},
+     {prompt:"Which one flies?",choices:["Airplane","Bus","Boat","Bicycle"],correct:"Airplane",helper:"An airplane flies!"},
+     {prompt:"Which one travels on water?",choices:["Boat","Car","Bus","Train"],correct:"Boat",helper:"A boat travels on water!"},
+     {prompt:"Which one travels on tracks?",choices:["Train","Car","Boat","Bicycle"],correct:"Train",helper:"A train travels on tracks!"},
+     {prompt:"Which vehicle has two wheels?",choices:["Bicycle","Bus","Train","Boat"],correct:"Bicycle",helper:"A bicycle has two wheels!"},
+   ],
+   math:[
+     {prompt:"What is 2 + 1?",choices:["2","3","4","5"],correct:"3",helper:"Two plus one makes three!"},
+     {prompt:"What is 2 + 2?",choices:["3","4","5","6"],correct:"4",helper:"Two plus two makes four!"},
+     {prompt:"What is 3 + 2?",choices:["4","5","6","7"],correct:"5",helper:"Three plus two makes five!"},
+     {prompt:"What is 5 - 2?",choices:["2","3","4","5"],correct:"3",helper:"Five minus two makes three!"},
+     {prompt:"What is 4 + 3?",choices:["6","7","8","9"],correct:"7",helper:"Four plus three makes seven!"},
+     {prompt:"What comes after 9?",choices:["8","10","11","12"],correct:"10",helper:"10 comes after 9!"},
+   ],
+   opposites:[
+     {prompt:"What is the opposite of BIG?",choices:["Small","Fast","Up","Hot"],correct:"Small",helper:"Big ↔ Small"},
+     {prompt:"What is the opposite of HOT?",choices:["Cold","Tall","Fast","Happy"],correct:"Cold",helper:"Hot ↔ Cold"},
+     {prompt:"What is the opposite of UP?",choices:["Down","Left","Big","Fast"],correct:"Down",helper:"Up ↔ Down"},
+     {prompt:"What is the opposite of FAST?",choices:["Slow","Hot","High","Small"],correct:"Slow",helper:"Fast ↔ Slow"},
+   ],
+   patterns:[
+     {prompt:"What comes next? 🔴 🔵 🔴 🔵 ?",choices:["🔴 Red","🟢 Green","🟡 Yellow","🟣 Purple"],correct:"🔴 Red",helper:"The pattern repeats red, blue."},
+     {prompt:"What comes next? ⭐ 🌙 ⭐ 🌙 ?",choices:["⭐ Star","☀️ Sun","🌈 Rainbow","❤️ Heart"],correct:"⭐ Star",helper:"Star, moon, star, moon!"},
+     {prompt:"What comes next? 🟢 🟢 🔵 🟢 🟢 ?",choices:["🔵 Blue","🟢 Green","🔴 Red","🟡 Yellow"],correct:"🔵 Blue",helper:"Two green, one blue!"},
+     {prompt:"What comes next? 🟡 🔴 🟡 🔴 ?",choices:["🟡 Yellow","🔵 Blue","🟢 Green","🟣 Purple"],correct:"🟡 Yellow",helper:"Yellow, red, yellow, red!"},
+   ],
+   listen:[
+     {prompt:"Which animal says Moo? 🐮",choices:["Cow","Lion","Duck","Bee"],correct:"Cow",helper:"A cow says moo!",listenText:"Cow"},
+     {prompt:"Which animal says Quack? 🦆",choices:["Duck","Cat","Dog","Lion"],correct:"Duck",helper:"A duck says quack!",listenText:"Duck"},
+     {prompt:"Which animal says Woof? 🐶",choices:["Dog","Cat","Cow","Bee"],correct:"Dog",helper:"A dog says woof!",listenText:"Dog"},
+     {prompt:"Which animal says Meow? 🐱",choices:["Cat","Duck","Cow","Lion"],correct:"Cat",helper:"A cat says meow!",listenText:"Cat"},
+   ],
+   puzzle:[
+     {prompt:"Which picture matches the cat? 🐱",choices:["Cat","Fish","Apple","Car"],correct:"Cat",helper:"Same animal!"},
+     {prompt:"Which belongs with a shoe?",choices:["Sock","Apple","Fish","Moon"],correct:"Sock",helper:"A sock goes with a shoe!"},
+     {prompt:"Which belongs with a cup?",choices:["Saucer","Bicycle","Tree","Hat"],correct:"Saucer",helper:"A cup can sit on a saucer!"},
+     {prompt:"Which one is different?",choices:["Apple","Banana","Orange","Chair"],correct:"Chair",helper:"The chair is not a fruit!"},
+   ],
+   story:[
+     {prompt:"What comes next in the story?",choices:["Park","Moon","Sea","Home"],correct:"Park",helper:"Great storytelling!"},
+     {prompt:"A little bird finds a nest. Where should it rest?",choices:["Nest","Road","Shoe","Spoon"],correct:"Nest",helper:"The nest is a safe place for the bird!"},
+     {prompt:"Sara is thirsty. What should she drink?",choices:["Water","Book","Ball","Shoe"],correct:"Water",helper:"Water helps us when we are thirsty!"},
+     {prompt:"The sun goes down. What happens next?",choices:["Night","Morning","Lunch","School"],correct:"Night",helper:"After sunset comes night!"},
+   ],
+   tracing:[],
+   coloring:[],
+   rhymes:[],
+ };
+
+ const base = questionBank[activity.kind] ?? questionBank.story;
+ const tuned = useMemo(()=>{
+   const list = base.length ? base : questionBank.story;
+   const index = round % list.length;
+   let q = list[index];
+   if(difficulty==="challenge" && activity.kind==="numbers"){
+     q={prompt:"How many stars? ⭐⭐⭐⭐⭐⭐",choices:["5","6","7","8"],correct:"6",helper:"Six stars! 🚀"};
    }
-   return data;
- }, [data, difficulty, activity.kind]);
- const choose=(v:string)=>{setAnswer(v);const className = getSelectedClass();
-if (!className) return;if(v===tuned.correct)onComplete()};const special=["tracing","coloring","rhymes"].includes(activity.kind);return <Screen title={activity.title} onBack={onBack}><div className="grid gap-3">{special?<SpecialActivity kind={activity.kind} onComplete={onComplete}/>:<><section className="panel rounded-3xl p-5 text-center"><div className="mx-auto mb-3 inline-flex rounded-2xl bg-surface-2 p-3 text-primary">{activity.icon}</div><p className="text-sm text-muted">Question {round+1} • {difficultyHint}</p>{tuned.art && <img src={tuned.art} alt="" className="mx-auto my-3 h-28 w-28 object-contain" />}<h2 className="mt-2 font-display text-2xl text-fg">{tuned.prompt}</h2><button className="hud-chip mx-auto mt-3" onClick={()=>{ if ((tuned as {listenSrc?:string}).listenSrc) playBundledAudio((tuned as {listenSrc?:string}).listenSrc!); speak((tuned as {listenText?:string}).listenText ?? data.prompt); }}><Volume2 className="size-4"/> Listen</button></section><div className="grid grid-cols-2 gap-2">{tuned.choices.map(c=><button key={c} type="button" onClick={()=>choose(c)} className={`panel min-h-20 rounded-2xl p-3 text-lg font-bold text-fg ${answer===c?(c===tuned.correct?"ring-2 ring-accent":"ring-2 ring-warning"):""}`}>{c}</button>)}</div>{answer&&<section className="panel rounded-2xl p-4 text-center"><p className="text-lg font-bold text-fg">{answer===tuned.correct?"Great job!":"Try again"}</p><p className="mt-1 text-sm text-muted">{tuned.helper}</p><button className="btn-primary mt-3" onClick={()=>{setAnswer(null);setRound(r=>r+1)}}>Next</button></section>}</>}</div></Screen>}
+   if(difficulty==="challenge" && activity.kind==="math"){
+     q={prompt:"What is 6 + 4?",choices:["8","9","10","11"],correct:"10",helper:"Six plus four makes ten! 🚀"};
+   }
+   if(difficulty==="challenge" && activity.kind==="patterns"){
+     q={prompt:"What comes next? 🔴 🔵 🟢 🔴 🔵 ?",choices:["🟢 Green","🔴 Red","🟡 Yellow","🟣 Purple"],correct:"🟢 Green",helper:"The pattern repeats red, blue, green."};
+   }
+   return q;
+ },[round,activity.kind,difficulty]);
+
+ const choose=(v:string)=>{
+   setAnswer(v);
+   const className=getSelectedClass();
+   if(className){
+     recordAttempt(
+       className,
+       skillForActivity(className,activity.kind),
+       v===tuned.correct,
+       0,
+       activity.kind==="listen"?"audio":
+       activity.kind==="story"?"story":
+       activity.kind==="tracing"||activity.kind==="sorting"?"hands-on":
+       activity.kind==="letters"||activity.kind==="colors"||activity.kind==="shapes"?"picture":"game"
+     );
+   }
+   if(v===tuned.correct) onComplete();
+ };
+
+ const special=["tracing","coloring","rhymes"].includes(activity.kind);
+
+ if(special){
+   return <Screen title={activity.title} onBack={onBack}>
+     <SpecialActivity kind={activity.kind} onComplete={onComplete}/>
+   </Screen>;
+ }
+
+ const total=base.length || 1;
+ const finished=round>=total-1 && answer===tuned.correct;
+
+ return <Screen title={activity.title} onBack={onBack}>
+   <div className="grid gap-3">
+     <section className="panel rounded-3xl p-5 text-center">
+       <div className="mx-auto mb-3 inline-flex rounded-2xl bg-surface-2 p-3 text-primary">{activity.icon}</div>
+       <p className="text-sm text-muted">Question {round+1} of {total} • {difficulty}</p>
+       <h2 className="mt-2 font-display text-2xl text-fg">{tuned.prompt}</h2>
+       {tuned.listenText&&<button className="hud-chip mx-auto mt-3" onClick={()=>speak(tuned.listenText!)}>
+         <Volume2 className="size-4"/> Listen
+       </button>}
+     </section>
+
+     <div className="grid grid-cols-2 gap-2">
+       {tuned.choices.map(c=>
+         <button
+           key={c}
+           type="button"
+           onClick={()=>choose(c)}
+           className={`panel min-h-20 rounded-2xl p-3 text-lg font-bold text-fg ${answer===c?(c===tuned.correct?"ring-2 ring-accent":"ring-2 ring-warning"):""}`}
+         >{c}</button>
+       )}
+     </div>
+
+     {answer&&(
+       <section className="panel rounded-2xl p-4 text-center">
+         <p className="text-lg font-bold text-fg">{answer===tuned.correct?"Great job!":"Try again"}</p>
+         <p className="mt-1 text-sm text-muted">{tuned.helper}</p>
+
+         {answer===tuned.correct&&(
+           <button
+             className="btn-primary mt-3"
+             onClick={()=>{
+               setAnswer(null);
+               if(!finished) setRound(r=>r+1);
+               else onBack();
+             }}
+           >
+             {finished?"Finish ✓":"Next →"}
+           </button>
+         )}
+       </section>
+     )}
+   </div>
+ </Screen>;
+}
+
 function SpecialActivity({kind,onComplete}:{kind:Kind;onComplete:()=>void}){
  const [done,setDone]=useState(false); const finish=()=>{if(!done){setDone(true);onComplete()}};
  const [colour,setColour]=useState("#ff6fae"); const [strokes,setStrokes]=useState<{x:number;y:number}[][]>([]); const [drawing,setDrawing]=useState(false);

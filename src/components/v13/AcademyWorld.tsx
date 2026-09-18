@@ -4,45 +4,23 @@ import { SmartLearningFriend } from "./SmartLearningFriend";
 import { SmartJourneyPanel } from "./SmartJourneyPanel";
 import { CLASS_SKILLS, getLearningProfile } from "@/lib/intelligence/learningBrain";
 
-type AcademyClass = "Montessori" | "Nursery" | "KG";
+type AcademyClass = "Playgroup" | "Nursery" | "KG-1" | "KG-2" | "Class 1";
 type Props = { xp: number; completed: number; available: number; onSpeak: (text: string) => void; onMissionComplete?: () => void };
 
 const CLASSES: Record<AcademyClass, { icon: string; color: string; tagline: string; subjects: string[]; rooms: string[]; mascot: string; mission: string }> = {
-  Montessori: {
-    icon: "🌱",
-    color: "academy-montessori",
-    tagline: "Calm hands-on discovery",
-    subjects: ["Practical Life", "Sensorial", "Language", "Mathematics & Culture"],
-    rooms: ["Montessori Garden", "Practical Life Table", "Sensorial Shelf", "Nature Corner"],
-    mascot: "🐼",
-    mission: "Sort objects by size!"
-  },
-  Nursery: {
-    icon: "🟢",
-    color: "academy-nursery",
-    tagline: "Playful first steps",
-    subjects: ["ABC & phonics", "Counting 1–10", "Colors & shapes", "Rhymes & listening"],
-    rooms: ["Rainbow Garden", "Alphabet Garden", "Counting Park", "Music Corner"],
-    mascot: "🐰",
-    mission: "Find 3 colorful things!"
-  },
-  KG: {
-    icon: "🔵",
-    color: "academy-kg",
-    tagline: "Curious school readiness",
-    subjects: ["Phonics & CVC", "Numbers to 100", "Early maths", "Reading & science"],
-    rooms: ["KG Classroom", "Math Mountain", "Reading Library", "Mini Science Lab"],
-    mascot: "🦊",
-    mission: "Build 3 simple words!"
-  },
+  Playgroup: { icon: "🧸", color: "academy-playgroup", tagline: "Happy first discoveries", subjects: ["ABC Fun", "Counting", "Colors & Shapes", "Rhymes"], rooms: ["ABC Garden", "Color Park", "Counting Corner", "Music Corner"], mascot: "🐻", mission: "Find 3 colorful things!" },
+  Nursery: { icon: "🟢", color: "academy-nursery", tagline: "Playful first steps", subjects: ["ABC & phonics", "Counting 1–10", "Colors & shapes", "Rhymes & listening"], rooms: ["Rainbow Garden", "Alphabet Garden", "Counting Park", "Music Corner"], mascot: "🐰", mission: "Find 3 colorful things!" },
+  "KG-1": { icon: "🔵", color: "academy-kg", tagline: "Curious school readiness", subjects: ["Phonics & CVC", "Numbers to 100", "Early maths", "Reading & science"], rooms: ["KG Classroom", "Math Mountain", "Reading Library", "Mini Science Lab"], mascot: "🦊", mission: "Build 3 simple words!" },
+  "KG-2": { icon: "🟣", color: "academy-kg2", tagline: "Growing independent skills", subjects: ["Phonics", "Math", "Reading", "Science"], rooms: ["Phonics Lab", "Math Mountain", "Reading Library", "Science Lab"], mascot: "🦊", mission: "Complete a reading challenge!" },
+  "Class 1": { icon: "🌱", color: "academy-montessori", tagline: "Calm hands-on discovery", subjects: ["Practical Life", "Sensorial", "Language", "Mathematics & Culture"], rooms: ["Montessori Garden", "Practical Life Table", "Sensorial Shelf", "Nature Corner"], mascot: "🐼", mission: "Sort objects by size!" },
 };
-
 const REWARDS: Record<AcademyClass, string[]> = {
-  Montessori: ["🔤 Language Star", "🔢 Mathematics Star", "🖐️ Sensorial Star", "🌿 Nature Explorer"],
+  Playgroup: ["🧸 Play Star", "🎨 Color Star", "🔢 Counting Star", "🎵 Rhyme Star"],
   Nursery: ["🏅 ABC Star", "🔢 Counting Star", "🎨 Color Star", "🎵 Rhyme Star"],
-  KG: ["🔤 Phonics Star", "🔢 Math Star", "📖 Reading Star", "🔬 Discovery Star"],
+  "KG-1": ["🔤 Phonics Star", "🔢 Math Star", "📖 Reading Star", "🔬 Discovery Star"],
+  "KG-2": ["🔤 Phonics Star", "📖 Reading Star", "🔢 Math Star", "🔬 Science Star"],
+  "Class 1": ["🔤 Language Star", "🔢 Mathematics Star", "🖐️ Sensorial Star", "🌿 Nature Explorer"],
 };
-
 const QUICK = [
   ["🎨", "Art Studio", "Draw, color & save"], ["🎵", "Music Room", "Tap a rhythm"], ["📖", "Story Theater", "Listen & explore"],
   ["🔬", "Mini Science Lab", "Discover why"], ["❤️", "Feelings Corner", "Learn emotions"], ["🧼", "Daily Life", "Practice routines"],
@@ -53,7 +31,7 @@ export function AcademyWorld({ xp, completed, available, onSpeak, onMissionCompl
   const [klass, setKlass] = useState<AcademyClass>(() => {
     try {
       const value = localStorage.getItem("lla-class");
-      return (["Montessori", "Nursery", "KG"] as AcademyClass[]).includes(value as AcademyClass)
+      return (["Playgroup", "Nursery", "KG-1", "KG-2", "Class 1"] as AcademyClass[]).includes(value as AcademyClass)
         ? value as AcademyClass
         : "Nursery";
     } catch {
@@ -90,7 +68,7 @@ export function AcademyWorld({ xp, completed, available, onSpeak, onMissionCompl
 
       <div className="flex items-center gap-3">
         <div className="academy-mascot">{data.mascot}</div>
-        <div className="min-w-0 flex-1"><p className="text-[10px] font-black uppercase tracking-[.16em] opacity-70">Welcome to your school</p><h2 className="font-display text-2xl text-slate-800">My Academy 🏫 • Little Learners Academy</h2><p className="text-xs text-slate-600">Three class pathways • {progress}% journey</p></div>
+        <div className="min-w-0 flex-1"><p className="text-[10px] font-black uppercase tracking-[.16em] opacity-70">Welcome to your school</p><h2 className="font-display text-2xl text-slate-800">My Academy 🏫 • Little Learners Academy</h2><p className="text-xs text-slate-600">Five class pathways • {progress}% journey</p></div>
         <button type="button" className="academy-sound" aria-label="Hear classroom message" onClick={() => onSpeak(`${klass}. ${data.tagline}. ${data.subjects.join(", ")}.`)}><Volume2 className="size-5" /></button>
       </div>
 
@@ -105,9 +83,11 @@ export function AcademyWorld({ xp, completed, available, onSpeak, onMissionCompl
 
       <div className="academy-section-title"><span>🏫</span><b>Explore Academy</b><small>Tap a room to visit</small></div>
       <div className="mt-2 grid grid-cols-2 gap-2">{data.rooms.map((room, i) => <button key={room} type="button" disabled={i >= roomCount} onClick={() => { const ids: Record<AcademyClass,string[]> = {
-  Montessori: ["class1-writing", "class1-math", "class1-science", "class1-language"],
-  Nursery: ["colors", "letters", "numbers", "rhymes"],
-  KG: ["kg-phonics", "kg-math", "kg-reading", "kg-patterns"]
+  Playgroup:["pg-colors","pg-abc","pg-numbers","pg-shapes"],
+  Nursery:["colors","letters","numbers","rhymes"],
+  "KG-1":["kg1-phonics","kg1-math","kg1-patterns"],
+  "KG-2":["kg2-phonics","kg2-words","kg2-reading","kg2-counting"],
+  "Class 1":["class1-writing","class1-math","class1-practical","class1-sensorial"]
 }; openActivity(ids[klass][i]); }} className={`academy-room ${i < roomCount ? "" : "is-locked"}`}><span>{["🌈", "🔤", "🔢", "🎵"][i]}</span><b>{room}</b>{i >= roomCount && <small>🔒 {100 * (i + 1)} XP</small>}</button>)}</div>
 
       <div className="academy-section-title"><span>✨</span><b>Magic Rooms</b><small>Creative discoveries</small></div>
@@ -115,7 +95,7 @@ export function AcademyWorld({ xp, completed, available, onSpeak, onMissionCompl
 
       <div className="academy-pet-card mt-3"><div className="academy-pet-avatar">{pet}</div><div className="flex-1"><p className="text-[10px] font-black uppercase tracking-wider opacity-60">My Little Friend</p><b>Pick a learning buddy</b><div className="mt-2 flex gap-1.5">{PETS.map(p => <button key={p} type="button" onClick={() => choosePet(p)} className={`academy-pet-choice ${pet === p ? "is-selected" : ""}`}>{p}</button>)}</div><div className="mt-2 flex flex-wrap gap-1.5"><button className="hud-chip" onClick={() => updatePet({hunger: 18, happiness: 4}, "Yum! Your pet is fed.")}>🍎 Feed</button><button className="hud-chip" onClick={() => updatePet({happiness: 15, energy: -8}, "Play time! Your pet is happy.")}>🎾 Play</button><button className="hud-chip" onClick={() => updatePet({energy: 20, hunger: -5}, "Your pet had a little rest.")}>😴 Rest</button></div><small>Happy {petCare.happiness}% • Energy {petCare.energy}% • Full {petCare.hunger}%</small></div><PawPrint className="size-5 opacity-50"/></div>
 
-      <div className="academy-bus mt-3"><div className="academy-bus-icon"><Bus className="size-6"/></div><div className="flex-1"><b>Magic School Bus 🚌</b><small>Montessori • Nursery • KG</small></div><button onClick={() => window.dispatchEvent(new CustomEvent("lla-open-room", { detail: { room: "bus" } }))}>Ride!</button></div>
+      <div className="academy-bus mt-3"><div className="academy-bus-icon"><Bus className="size-6"/></div><div className="flex-1"><b>Magic School Bus 🚌</b><small>Playgroup • Nursery • KG-1 • KG-2 • Class 1</small></div><button onClick={() => window.dispatchEvent(new CustomEvent("lla-open-room", { detail: { room: "bus" } }))}>Ride!</button></div>
 
       <div className="mt-3 rounded-3xl bg-slate-900/90 p-3 text-white"><div className="flex items-center gap-2"><Trophy className="size-5 text-amber-300"/><b className="flex-1">Trophy Garden</b><span className="text-xs">{unlocked}/{rewards.length}</span></div><div className="mt-2 grid grid-cols-4 gap-2">{rewards.map((reward, i) => <div key={reward} className={`academy-trophy ${i < unlocked ? "is-unlocked" : ""}`}>{i < unlocked ? <Star className="mx-auto size-4" /> : <LockKeyhole className="mx-auto size-4 opacity-30" />}<small>{reward.replace(/^\S+ /, "")}</small></div>)}</div></div>
 
