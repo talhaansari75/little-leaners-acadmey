@@ -241,41 +241,7 @@ function TestLab() {
           </div>
         </header>
 
-        <section className="grid gap-5 lg:grid-cols-[245px_1fr]">
-          <aside className="rounded-3xl border bg-card p-3 shadow-sm">
-            <div className="mb-2 px-3 py-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Test suites</div>
-            <button className={navClass(category === "all")} onClick={() => setCategory("all")}>
-              <span>🧪 All checks</span><span>{counts.total}</span>
-            </button>
-            {(Object.entries(QA_CATEGORY_META) as [QACategory, { label: string; icon: string }][]).map(([id, meta]) => {
-              const items = QA_ITEMS.filter((x) => x.category === id);
-              const done = items.filter((x) => results[x.id] && results[x.id].status !== "pending").length;
-              const failed = items.filter((x) => results[x.id]?.status === "failed").length;
-              return (
-                <button key={id} className={navClass(category === id)} onClick={() => setCategory(id)}>
-                  <span>{meta.icon} {meta.label}</span>
-                  <span className="flex items-center gap-1">{failed > 0 && <XCircle className="h-3 w-3 text-red-500" />}{done}/{items.length}</span>
-                </button>
-              );
-            })}
-            <div className="mt-4 rounded-2xl bg-muted p-3 text-xs text-muted-foreground">
-              <b className="text-foreground">How to test:</b><br />
-              Pick a suite → choose a test → open the academy → perform the real interaction → record Pass/Fail/Blocked.
-            </div>
-          </aside>
-
-          <div className="rounded-3xl border bg-card p-4 shadow-sm sm:p-6">
-            <div className="relative mb-4">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search feature or test…" className="w-full rounded-2xl border bg-background py-3 pl-10 pr-4 text-sm" />
-            </div>
-            <div className="space-y-2">
-              {filtered.map((item) => (
-                <TestRow key={item.id} item={item} result={results[item.id]} selected={selected === item.id} onSelect={() => setSelected(item.id)} />
-              ))}
-            </div>
-          </div>
-        </section>
+        <SuiteAccordion />
 
         <FeatureCoverage />
 
@@ -316,6 +282,194 @@ function TestLab() {
       </div>
     </main>
   );
+}
+
+function SuiteAccordion() {
+  const [openSuite, setOpenSuite] = useState<QACategory | "all">("learning");
+  const [results, setResults] = useState<Record<string, Result>>({});
+  const [expandedTest, setExpandedTest] = useState<string | null>(null);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(RESULT_KEY);
+      if (raw) setResults(JSON.parse(raw) as Record<string, Result>);
+    } catch {}
+  }, []);
+
+  const save = (item: QAItem, status: Status, note: string) => {
+    const result: Result = {
+      status,
+      note,
+      severity:
+        status === "failed" ? "high" : status === "improvement" ? "medium" : status === "blocked" ? "medium" : "low",
+      updatedAt: new Date().toISOString(),
+    };
+    setResults((current) => ({ ...current, [item.id]: result }));
+    try {
+      const all = JSON.parse(localStorage.getItem(RESULT_KEY) || "{}") as Record<string, Result>;
+      all[item.id] = result;
+      localStorage.setItem(RESULT_KEY, JSON.stringify(all));
+    } catch {}
+  };
+
+  const openTarget = (item: QAItem) => {
+    const target = qaTarget(item.category);
+    if (!target) return;
+    try {
+      localStorage.setItem("lla-test-lab-target-screen", target);
+    } catch {}
+    window.open("/", "_blank", "noopener,noreferrer");
+  };
+
+  const run = (item: QAItem) => {
+    if (!item.automated) return;
+    let ok = false;
+    try {
+      switch (item.automated) {
+        case "online": ok = navigator.onLine; break;
+        case "storage": {
+          const key = "__lla_feature_test__";
+          localStorage.setItem(key, "1");
+          ok = localStorage.getItem(key) === "1";
+          localStorage.removeItem(key);
+          break;
+        }
+        case "indexeddb": ok = "indexedDB" in window; break;
+        case "service-worker": ok = "serviceWorker" in navigator; break;
+        case "viewport": ok = window.innerWidth >= 320; break;
+        case "touch": ok = "ontouchstart" in window || navigator.maxTouchPoints > 0; break;
+        case "audio": ok = "AudioContext" in window || "webkitAudioContext" in window; break;
+        case "fullscreen": ok = "fullscreenEnabled" in document; break;
+      }
+      save(item, ok ? "passed" : "failed", ok ? "Automated check passed." : "Automated check failed.");
+    } catch {
+      save(item, "failed", "Automated check threw an error.");
+    }
+  };
+
+  const statusLabel = (status?: Status) =>
+    status === "passed" ? "PASSED" :
+    status === "failed" ? "FAILED" :
+    status === "improvement" ? "NEEDS IMPROVEMENT" :
+    status === "blocked" ? "BLOCKED" : "PENDING";
+
+  return (
+    <section className="rounded-3xl border bg-card p-4 shadow-sm sm:p-6">
+      <div className="mb-4">
+        <div className="text-xs font-bold uppercase tracking-wider text-primary">TEST SUITES</div>
+        <h2 className="mt-1 text-2xl font-black">Feature QA</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Tap a suite to open its features. Every feature has developer actions: Open, Run, Pass, Failed, Needs Improvement and Blocked.
+        </p>
+      </div>
+
+      <div className="space-y-2">
+        {(Object.entries(QA_CATEGORY_META) as [QACategory, { label: string; icon: string }][]).map(([category, meta]) => {
+          const items = QA_ITEMS.filter((item) => item.category === category);
+          const done = items.filter((item) => results[item.id]?.status && results[item.id]?.status !== "pending").length;
+          const isOpen = openSuite === category;
+          return (
+            <div key={category} className="overflow-hidden rounded-2xl border">
+              <button
+                type="button"
+                onClick={() => setOpenSuite(isOpen ? "all" : category)}
+                className="flex min-h-14 w-full items-center gap-3 p-3 text-left sm:p-4"
+                aria-expanded={isOpen}
+              >
+                <span className="text-xl">{meta.icon}</span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate font-black">{meta.label}</span>
+                  <span className="text-[11px] text-muted-foreground">{done}/{items.length} tested</span>
+                </span>
+                <span className="hidden text-[10px] font-bold text-muted-foreground sm:block">
+                  {items.filter((x) => results[x.id]?.status === "passed").length} passed · {items.filter((x) => results[x.id]?.status === "failed").length} failed
+                </span>
+                <span className="text-lg">{isOpen ? "⌃" : "⌄"}</span>
+              </button>
+
+              {isOpen && (
+                <div className="border-t bg-muted/20 p-2 sm:p-3">
+                  <div className="space-y-2">
+                    {items.map((item) => {
+                      const result = results[item.id];
+                      const status = result?.status ?? "pending";
+                      const expanded = expandedTest === item.id;
+                      return (
+                        <article key={item.id} className="overflow-hidden rounded-2xl border bg-background">
+                          <button
+                            type="button"
+                            onClick={() => setExpandedTest(expanded ? null : item.id)}
+                            className="flex w-full items-start gap-3 p-3 text-left sm:p-4"
+                          >
+                            <StatusIcon status={status} />
+                            <span className="min-w-0 flex-1">
+                              <span className="flex flex-wrap items-center gap-2">
+                                <b>{item.title}</b>
+                                {item.automated && <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[9px] font-black text-primary">AUTO</span>}
+                                <span className="rounded-full bg-muted px-2 py-0.5 text-[9px] font-black uppercase">{statusLabel(status)}</span>
+                              </span>
+                              <span className="mt-1 block text-xs text-muted-foreground">{item.description}</span>
+                            </span>
+                            <span className="text-muted-foreground">{expanded ? "⌃" : "⌄"}</span>
+                          </button>
+
+                          {expanded && (
+                            <div className="border-t p-3 sm:p-4">
+                              <div className="mb-3 rounded-xl bg-muted p-3 text-xs">
+                                <b>Developer test:</b> {FEATURE_HINTS[item.category]}
+                              </div>
+                              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+                                <button type="button" onClick={() => openTarget(item)} className="min-h-11 rounded-xl border px-2 py-2 text-xs font-black uppercase hover:bg-muted">
+                                  <ExternalLink className="mx-auto mb-1 h-4 w-4" /> Open
+                                </button>
+                                {item.automated && (
+                                  <button type="button" onClick={() => run(item)} className="min-h-11 rounded-xl border border-primary px-2 py-2 text-xs font-black uppercase text-primary hover:bg-primary/10">
+                                    <Play className="mx-auto mb-1 h-4 w-4" /> Run
+                                  </button>
+                                )}
+                                <button type="button" onClick={() => save(item, "passed", "Tester confirmed the expected behavior.")} className="min-h-11 rounded-xl border px-2 py-2 text-xs font-black uppercase hover:bg-green-500/10">✓ Pass</button>
+                                <button type="button" onClick={() => save(item, "failed", "Tester observed unexpected behavior.")} className="min-h-11 rounded-xl border px-2 py-2 text-xs font-black uppercase hover:bg-red-500/10">✕ Failed</button>
+                                <button type="button" onClick={() => save(item, "improvement", "Feature works but needs improvement.")} className="col-span-2 min-h-11 rounded-xl border px-2 py-2 text-xs font-black uppercase hover:bg-orange-500/10 sm:col-span-1">⚠ Improve</button>
+                                <button type="button" onClick={() => save(item, "blocked", "Test could not run because a dependency was unavailable.")} className="col-span-2 min-h-11 rounded-xl border px-2 py-2 text-xs font-black uppercase hover:bg-amber-500/10 sm:col-span-1">⛔ Blocked</button>
+                              </div>
+                              {result && (
+                                <div className="mt-3 rounded-xl bg-muted px-3 py-2 text-[11px] text-muted-foreground">
+                                  <b>{statusLabel(status)}</b> · {new Date(result.updatedAt).toLocaleString()} · {result.note}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </article>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function qaTarget(category: QACategory): ScreenId {
+  const targets: Record<QACategory, ScreenId> = {
+    learning: "skills",
+    games: "worlds",
+    audio: "voice",
+    offline: "saveSlots",
+    payments: "payments",
+    auth: "profile",
+    parents: "profile",
+    accessibility: "accessibility",
+    security: "systems",
+    performance: "analytics",
+    pwa: "pwa",
+    data: "saveSlots",
+    release: "releaseVerifier",
+  };
+  return targets[category];
 }
 
 function FeatureCoverage() {
