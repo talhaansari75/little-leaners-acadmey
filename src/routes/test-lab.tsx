@@ -31,19 +31,21 @@ const RESULT_KEY = "lla-test-lab-results-v2";
 const HISTORY_KEY = "lla-test-lab-history-v2";
 
 const FEATURE_HINTS: Record<string, string> = {
-  learning: "Open the academy and exercise the learning flow while keeping this lab open in another tab.",
-  games: "Open the academy, enter a game, complete one round and return here to record the result.",
-  audio: "Open the academy and verify sound, speech, music and haptics with the device controls.",
-  offline: "Use browser DevTools to simulate Offline, then exercise the academy and record what actually happens.",
-  payments: "Use QA/testnet configuration only. Never use production payment secrets or real child data.",
-  auth: "Verify parent authentication flows with a dedicated test account.",
-  parents: "Verify parent-only flows using an account that owns the test child profile.",
-  accessibility: "Use keyboard, screen reader, reduced motion and large text settings where available.",
-  security: "Verify only through safe QA accounts/data; never expose production credentials.",
-  performance: "Use browser performance tooling and record observed regressions as notes.",
-  pwa: "Install the PWA, reload, then test the app shell and update behavior.",
-  data: "Export, mutate and restore a test save; never use irreplaceable production progress.",
-  release: "Run the repository's build/typecheck/test/lint commands before release review.",
+  learning: "Open the Academy and complete a class activity, then verify the result and progress.",
+  literacy: "Open the literacy/phonics activity and test letters, sounds, words or writing.",
+  math: "Open a math activity and verify prompts, choices, feedback and progression.",
+  creative: "Open Creative Studio, coloring or music and test the touch interaction.",
+  discovery: "Open Nature/Discovery and verify artwork, content and supported sounds.",
+  stories: "Open Story Time and test narration, reading, questions and next-story flow.",
+  audio: "Test the relevant sound, speech, music or haptic control on the current device.",
+  progress: "Complete a real learning activity and verify class progress, stars and XP.",
+  offline: "Disable network in browser tools, exercise the feature, reload and verify recovery.",
+  accessibility: "Change the relevant accessibility setting and repeat the interaction.",
+  ads: "Verify ads are labeled and outside the core learning interaction; never use targeted child data.",
+  admin: "Open the protected admin area with an authorized admin account and verify aggregate metrics.",
+  mobile: "Use a narrow phone viewport and test touch, scrolling, cards and every action.",
+  data: "Use test data only and verify export, import, reset and class isolation.",
+  release: "Run the release checks and record the actual build, typecheck, lint and test results.",
 };
 
 function TestLab() {
