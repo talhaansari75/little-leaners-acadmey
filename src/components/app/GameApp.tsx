@@ -68,6 +68,7 @@ import { PreschoolLearningScreen } from "@/components/v13/PreschoolLearningScree
 import { ClassSelectionScreen } from "@/components/v13/ClassSelectionScreen";
 import { getSelectedClass } from "@/lib/academy/classSelection";
 import { KidsLockOverlay } from "@/components/v13/KidsLockOverlay";
+import { GameFeatureSuiteScreen } from "@/components/screens/GameFeatureSuiteScreen";
 
 export function GameApp() {
   const ready = useGame((s) => s.ready);
@@ -283,6 +284,8 @@ function ScreenView({ screen }: { screen: ScreenId }) {
       return <WildWhispersScreen onBack={() => useGame.getState().setScreen("more")} />;
     case "preschool":
       return <PreschoolLearningScreen onBack={() => useGame.getState().go("splash")} />;
+    case "gameFeatureSuite":
+      return <GameFeatureSuiteScreen />;
     case "creatorCommunity":
       return <CreatorCommunityScreen />;
     case "more":
