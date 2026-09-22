@@ -1,14 +1,15 @@
 import { GAME_FEATURES, type GameFeature } from "@/lib/game/featureSuite";
+import type { ScreenId } from "@/lib/game/types";
 
 export type GameFeatureTestKind = "automated" | "manual" | "configuration";
 export type GameFeatureTestSpec = GameFeature & {
   kind: GameFeatureTestKind;
-  target?: string;
+  target?: ScreenId;
   steps: string[];
   expected: string;
 };
 
-const TARGETS: Record<string, string> = {
+const TARGETS: Record<string, ScreenId> = {
   "g-play": "home",
   "g-learn": "skills",
   "g-progress": "progression",
