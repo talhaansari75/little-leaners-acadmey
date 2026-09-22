@@ -32,7 +32,6 @@ export type ScreenId =
   | "systems"
   | "multiplayer"
   | "admin"
-  | "payments"
   | "content"
   | "saveSlots"
   | "creator"
