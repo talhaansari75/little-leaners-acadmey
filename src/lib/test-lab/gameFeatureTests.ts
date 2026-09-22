@@ -1,4 +1,17 @@
-import { GAME_FEATURES, type GameFeature } from "@/lib/game/featureSuite";
+import {
+  GAME_FEATURES,
+  type GameFeature,
+  analyzeLearning,
+  appendAudit,
+  chooseNewerSave,
+  checksumPayload,
+  createSaveEnvelope,
+  dedupeRewards,
+  impossibleScore,
+  planDifficulty,
+  spacedReviewQueue,
+  validateSaveEnvelope,
+} from "@/lib/game/featureSuite";
 import type { ScreenId } from "@/lib/game/types";
 
 export type GameFeatureTestKind = "automated" | "manual" | "configuration";
@@ -50,19 +63,6 @@ export const GAME_FEATURE_TEST_COUNT = GAME_FEATURE_TESTS.length;
 export function gameFeatureTest(id: string) {
   return GAME_FEATURE_TESTS.find((x) => x.id === id);
 }
-
-import {
-  analyzeLearning,
-  appendAudit,
-  chooseNewerSave,
-  checksumPayload,
-  createSaveEnvelope,
-  dedupeRewards,
-  impossibleScore,
-  planDifficulty,
-  spacedReviewQueue,
-  validateSaveEnvelope,
-} from "@/lib/game/featureSuite";
 
 export function runGameFeatureAutomation(id: string): { passed: boolean; note: string } | null {
   const feature = gameFeatureTest(id);
