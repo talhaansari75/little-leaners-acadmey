@@ -5,7 +5,7 @@ import { CHAPTERS, WORD_OF_DAY } from "@/lib/game/story";
 import { CATEGORIES, CATEGORY_IDS, ALL_WORDS, categoryOf } from "@/lib/game/words";
 import { getDailyBoard, getLeaderboard } from "@/lib/server/leaderboard";
 import { todayKey } from "@/lib/game/levels";
-import { PawPrint, BookOpen, BarChart3, Languages, Map, Scale, Sparkles, Swords, Trophy, User, Wrench, Home, Hammer, MessageCircle, Flag, ScrollText, Users, CalendarDays, Activity, ShieldCheck, CreditCard, Globe2, HardDrive, PenTool, Crown, CalendarRange, LineChart, Accessibility, Smartphone, Bell, BrainCircuit, Gauge, Route, Mic, WandSparkles, Eye, ClipboardCheck, PackageCheck, FileCheck2, Archive } from "lucide-react";
+import { PawPrint, BookOpen, BarChart3, Languages, Map, Scale, Sparkles, Swords, Trophy, User, Wrench, Home, Hammer, MessageCircle, Flag, ScrollText, Users, CalendarDays, Activity, ShieldCheck, CreditCard, Globe2, HardDrive, PenTool, Crown, CalendarRange, LineChart, Accessibility, Smartphone, Bell, BrainCircuit, Gauge, Route, Mic, WandSparkles, Eye, ClipboardCheck, PackageCheck, FileCheck2, Archive, Gamepad2 } from "lucide-react";
 
 export function MoreScreen() {
   const t = useT();
@@ -134,6 +134,15 @@ export function MoreScreen() {
         { id: "saveSlots" as const, label: "Save & Recovery", icon: HardDrive },
         { id: "payments" as const, label: "Purchases & Entitlements", icon: CreditCard },
         { id: "wildWhispers" as const, label: "Wild Whispers", icon: PawPrint },
+      ],
+    },
+    {
+      id: "gameSuite",
+      title: "Game Suite",
+      description: "All gameplay, learning, progression and integrity capabilities",
+      icon: Gamepad2,
+      items: [
+        { id: "gameFeatureSuite" as const, label: "100-Feature Game Suite", icon: Gamepad2 },
       ],
     },
     {
