@@ -95,7 +95,7 @@ async function prepareOfflinePack(){
 }
 
 export function PreschoolLearningScreen({onBack}:{onBack:()=>void}){
- const [selected,setSelected]=useState<(Activity & { difficulty?: "gentle"|"steady"|"challenge" })|null>(null); const [tab,setTab]=useState<"home"|"worlds"|"discover"|"sounds"|"parent">("home");
+ const [selected,setSelected]=useState<(Activity & { difficulty?: "gentle"|"steady"|"challenge" })|null>(null); const [tab,setTab]=useState<"home"|"worlds"|"discover"|"sounds">("home");
  const [room,setRoom]=useState<AcademyRoomId|null>(null);
  const [klass,setKlass]=useState<LearningClass | null>(() => getSelectedClass());
  const availableActivities=useMemo(()=>ACTIVITIES.filter(a=>a.classes.includes(klass)),[klass]);
@@ -171,8 +171,7 @@ if (!className) return;recordAttempt(className, skillForActivity(className, kind
   {tab==="worlds"&&<WorldsPanel onOpen={open} klass={klass}/>}
   {tab==="discover"&&<AdvancedPreschoolHub age={profile.age} xp={xp} completed={completed.filter(id=>id.startsWith(`${klass}:`)).length} premium={premium} onSpeak={speak}/>} 
   {tab==="sounds"&&<SoundsPanel/>}
-  {tab==="parent"&&<ParentGate><ParentPanel profile={profile} saveProfile={saveProfile} premium={premium} buying={buying} buyPremium={buyPremium} offlinePack={offlinePack} packing={packing} setPacking={setPacking} setOfflinePack={setOfflinePack} online={online}/></ParentGate>} 
-  <div className="fixed bottom-3 left-1/2 z-40 flex w-[calc(100%-24px)] max-w-lg -translate-x-1/2 rounded-3xl border border-white/50 bg-white/90 p-2 shadow-2xl backdrop-blur"><NavButton active={tab==="home"} icon="🏠" text="Home" onClick={()=>setTab("home")}/><NavButton active={tab==="worlds"} icon="🌍" text="Worlds" onClick={()=>setTab("worlds")}/><NavButton active={tab==="discover"} icon="🧠" text="Learn" onClick={()=>setTab("discover")}/><NavButton active={tab==="sounds"} icon="🔊" text="Sounds" onClick={()=>setTab("sounds")}/><NavButton active={tab==="parent"} icon="🔒" text="Parent" onClick={()=>setTab("parent")}/></div>
+  <div className="fixed bottom-3 left-1/2 z-40 flex w-[calc(100%-24px)] max-w-lg -translate-x-1/2 rounded-3xl border border-white/50 bg-white/90 p-2 shadow-2xl backdrop-blur"><NavButton active={tab==="home"} icon="🏠" text="Home" onClick={()=>setTab("home")}/><NavButton active={tab==="worlds"} icon="🌍" text="Worlds" onClick={()=>setTab("worlds")}/><NavButton active={tab==="discover"} icon="🧠" text="Learn" onClick={()=>setTab("discover")}/><NavButton active={tab==="sounds"} icon="🔊" text="Sounds" onClick={()=>setTab("sounds")}/><NavButton active={false} icon="🧪" text="Test Lab" onClick={()=>{window.location.href="/test-lab"}}/><NavButton active={false} icon="⚙️" text="Settings" onClick={()=>useGame.getState().go("settings")}/></div>
  </div></Screen>
 }
 
