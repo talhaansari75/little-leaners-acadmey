@@ -3,6 +3,8 @@ import { LockKeyhole, Maximize2, ShieldCheck } from "lucide-react";
 import { useGame } from "@/lib/store";
 import { exitKidsFullscreen, hasKidsLockPin, requestKidsFullscreen, setKidsLockPin, verifyKidsLockPin } from "@/lib/game/kidsLock";
 
+const KIDS_LOCK_TEMP_DISABLED = true;
+
 export function KidsLockOverlay() {
   const locked = useGame((s) => s.save.settings.parentalLock);
   const [active, setActive] = useState(false);
@@ -11,6 +13,11 @@ export function KidsLockOverlay() {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    if (KIDS_LOCK_TEMP_DISABLED) {
+      if (locked) useGame.getState().setSetting("parentalLock", false);
+      setActive(false);
+      return;
+    }
     if (!locked) {
       setActive(false);
       return;
@@ -37,7 +44,7 @@ export function KidsLockOverlay() {
     };
   }, [active, locked]);
 
-  if (!locked || !active) return null;
+  if (KIDS_LOCK_TEMP_DISABLED || !locked || !active) return null;
 
   const unlock = async () => {
     setError("");
