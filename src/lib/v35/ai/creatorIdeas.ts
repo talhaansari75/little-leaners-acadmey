@@ -48,3 +48,27 @@ export const generateCreatorIdeas = createServerFn({ method: "POST" })
     } catch { /* fallback below */ }
     return { ok: true as const, source: "local" as const, words: fallback, note: "AI response could not be validated; local vocabulary was used." };
   });
+
+
+export const generatePicture = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator((d: { prompt: string }) => ({ prompt: clean(d.prompt, 600) || "A cheerful preschool learning illustration with friendly animals, bright shapes, soft watercolor texture, no text, no logos." }))
+  .handler(async ({ data }) => {
+    const apiKey = process.env.XAI_API_KEY;
+    if (!apiKey) return { ok: false as const, error: "AI image service is not available right now." };
+    const res = await fetch("https://api.x.ai/v1/images/generations", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
+      body: JSON.stringify({
+        model: "grok-imagine-image-quality",
+        prompt: data.prompt,
+        n: 1,
+        resolution: "1k",
+        response_format: "url",
+      }),
+    });
+    if (!res.ok) return { ok: false as const, error: `xAI image error ${res.status}` };
+    const body = (await res.json()) as { data?: { url?: string }[] };
+    const url = body.data?.[0]?.url;
+    return url ? { ok: true as const, url } : { ok: false as const, error: "No image was returned." };
+  });

@@ -56,7 +56,8 @@ export type ScreenId =
   | "releaseVerifier"
   | "releaseArchive"
   | "wildWhispers"
-  | "preschool";
+  | "preschool"
+  | "parentProgress"\n  | "test";
 
 export type GameMode =
   | "classic" | "timed" | "survival" | "blitz" | "zen" | "daily" | "endless"
@@ -126,6 +127,8 @@ export type LevelResult = {
 };
 
 export type CurrencyId = "coins" | "diamonds" | "stars" | "energy" | "xp";
+
+export type PetAbility = "extra_xp" | "combo_guard";
 
 export type PetId =
   | "dog"

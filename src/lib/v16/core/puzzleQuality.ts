@@ -7,6 +7,7 @@ export type PuzzleQuality = {
   unique: boolean;
   density: number;
   difficulty: number;
+  score: number;
   occurrences: Record<string, number>;
   errors: string[];
 };
@@ -65,7 +66,7 @@ export function validatePuzzleQuality(puzzle: Puzzle, requireUnique = true): Puz
   const density = filled / Math.max(1, puzzle.size * puzzle.size);
   const solvable = puzzle.words.every((w) => (occurrences[w] ?? 0) >= 1);
   const unique = puzzle.words.every((w) => (occurrences[w] ?? 0) === 1);
-  return { valid: errors.length === 0, solvable, unique, density, difficulty: puzzleDifficulty(puzzle), occurrences, errors };
+  const difficulty = puzzleDifficulty(puzzle);\n  const score = Math.max(0, Math.min(100, Math.round((solvable ? 45 : 0) + (unique ? 25 : 0) + density * 20 + difficulty * 0.1)));\n  return { valid: errors.length === 0, solvable, unique, density, difficulty, score, occurrences, errors };
 }
 
 export function hasPlacement(puzzle: Puzzle, word: string): boolean {

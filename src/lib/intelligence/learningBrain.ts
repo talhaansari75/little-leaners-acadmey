@@ -18,7 +18,7 @@ export type SkillStat = {
   correct: number;
   totalTimeMs: number;
   lastAttemptAt: number;
-  signal?: LearningSignal;
+  signal?: LearningSignal;\n  signalStats?: Partial<Record<LearningSignal, { attempts: number; correct: number }>>;
 };
 
 export type LearningProfile = {
@@ -370,7 +370,7 @@ export function recordAttempt(
           attempts: current.attempts + 1,
           correct: current.correct + (correct ? 1 : 0),
           lastAttemptAt: now,
-          ...(signal ? { signal } : {}),
+          ...(signal ? { signal, signalStats: { ...current.signalStats, [signal]: { attempts: (current.signalStats?.[signal]?.attempts ?? 0) + 1, correct: (current.signalStats?.[signal]?.correct ?? 0) + (correct ? 1 : 0) } } } : {}),
         },
       },
     },

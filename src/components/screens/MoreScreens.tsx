@@ -1,3 +1,4 @@
+import { FlaskConical } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useGame } from "@/lib/store";
 import { Screen, useT } from "./chrome";
@@ -5,7 +6,7 @@ import { CHAPTERS, WORD_OF_DAY } from "@/lib/game/story";
 import { CATEGORIES, CATEGORY_IDS, ALL_WORDS, categoryOf } from "@/lib/game/words";
 import { getDailyBoard, getLeaderboard } from "@/lib/server/leaderboard";
 import { todayKey } from "@/lib/game/levels";
-import { PawPrint, BookOpen, BarChart3, Languages, Map, Scale, Sparkles, Swords, Trophy, User, Wrench, Home, Hammer, MessageCircle, Flag, ScrollText, Users, CalendarDays, Activity, ShieldCheck, CreditCard, Globe2, HardDrive, PenTool, Crown, CalendarRange, LineChart, Accessibility, Smartphone, Bell, BrainCircuit, Gauge, Route, Mic, WandSparkles, Eye, ClipboardCheck, PackageCheck, FileCheck2, Archive } from "lucide-react";
+import { PawPrint, BookOpen, BarChart3, Languages, Map, Scale, Sparkles, Swords, Trophy, User, Wrench, Home, Hammer, MessageCircle, Flag, ScrollText, Users, CalendarDays, Activity, ShieldCheck, CreditCard, Globe2, HardDrive, PenTool, Crown, CalendarRange, LineChart, Accessibility, Smartphone, Bell, BrainCircuit, Gauge, Route, Mic, WandSparkles, Eye, ClipboardCheck, PackageCheck, FileCheck2, Archive, FlaskConical } from "lucide-react";
 
 export function MoreScreen() {
   const t = useT();
@@ -21,6 +22,7 @@ export function MoreScreen() {
       items: [
         { id: "profile" as const, label: t("cta.profile"), icon: User },
         { id: "stats" as const, label: t("cta.stats"), icon: BarChart3 },
+        { id: "learningReport" as const, label: "Learning Report", icon: BarChart3 },
         { id: "skills" as const, label: t("cta.skills"), icon: Sparkles },
       ],
     },
@@ -367,7 +369,7 @@ export function LegalScreen() {
       <article className="prose-like space-y-4 text-sm leading-relaxed text-muted">
         <h2 className="font-display text-xl text-fg">Terms of travel</h2>
         <p>
-          Mera Word Search Journey is a free, ad-free atlas. An account is required to enter the game and
+          Little Learners Academy is a learning game. An account is not required for local play; signing in enables cloud save and account-based game features. Where configured, the app may display advertisements.
           enables cloud save and account-based game features. You may manage or delete your account through
           the available account tools.
         </p>
@@ -377,7 +379,7 @@ export function LegalScreen() {
           scores, scoped to your account. We do not sell data. Optional AI riddles are user-initiated and sent without
           your full save. Account deletion is available through your signed-in profile tools.
         </p>
-        <p>No ads. Your account data is used to provide the game's account-based features.</p>
+        <p>Advertising is optional and configuration-dependent. Your account data is used to provide the game's account-based features.</p>
       </article>
     </Screen>
   );
