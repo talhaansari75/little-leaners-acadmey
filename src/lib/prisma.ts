@@ -46,6 +46,7 @@ const MODELS: Record<string, ModelCfg> = {
   analyticsEventV5: { table: "analytics_events_v5", jsonb: ["propertiesJson"], uniques: { id: ["id"] } },
   multiplayerRoomV5: { table: "multiplayer_rooms_v5", jsonb: ["stateJson"], uniques: { id: ["id"] } },
   paymentEventV5: { table: "payment_events_v5", jsonb: ["payloadJson"], uniques: { eventId: ["eventId"] } },
+  cryptoPaymentIntent: { table: "crypto_payment_intents", jsonb: ["metadataJson"], dates: ["createdAt", "updatedAt", "expiresAt", "verifiedAt"], uniques: { id: ["id"], userId_orderId: ["userId", "orderId"], txHash: ["txHash"] } },
   auditEventV5: { table: "audit_events_v5", jsonb: ["metadataJson"], uniques: { id: ["id"] } },
   moderationCaseV5: { table: "moderation_cases_v5", uniques: { id: ["id"] } },
 };
