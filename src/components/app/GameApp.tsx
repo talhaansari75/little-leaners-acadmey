@@ -67,8 +67,6 @@ import { WildWhispersScreen } from "@/components/v13/WildWhispersScreen";
 import { PreschoolLearningScreen } from "@/components/v13/PreschoolLearningScreen";
 import { ClassSelectionScreen } from "@/components/v13/ClassSelectionScreen";
 import { getSelectedClass } from "@/lib/academy/classSelection";
-import { KidsLockOverlay } from "@/components/v13/KidsLockOverlay";
-import { GameFeatureSuiteScreen } from "@/components/screens/GameFeatureSuiteScreen";
 
 export function GameApp() {
   const ready = useGame((s) => s.ready);
@@ -178,7 +176,6 @@ export function GameApp() {
     <div className="relative h-dvh overflow-hidden">
       <V9Status />
       <ScreenView screen={screen} />
-      <KidsLockOverlay />
       {toast && (
         <div className="pointer-events-none absolute inset-x-0 bottom-8 z-30 flex justify-center px-4">
           <div className="panel animate-pop rounded-full px-4 py-2 text-sm font-semibold text-fg">{toast.text}</div>
@@ -302,8 +299,6 @@ function ScreenView({ screen }: { screen: ScreenId }) {
       return <WildWhispersScreen onBack={() => useGame.getState().setScreen("more")} />;
     case "preschool":
       return <PreschoolLearningScreen onBack={() => useGame.getState().go("splash")} />;
-    case "gameFeatureSuite":
-      return <GameFeatureSuiteScreen />;
     case "creatorCommunity":
       return <CreatorCommunityScreen />;
     case "more":
