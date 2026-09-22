@@ -128,6 +128,8 @@ export type LevelResult = {
 
 export type CurrencyId = "coins" | "diamonds" | "stars" | "energy" | "xp";
 
+export type PetAbility = "extra_xp" | "combo_guard";
+
 export type PetId =
   | "dog"
   | "cat"
