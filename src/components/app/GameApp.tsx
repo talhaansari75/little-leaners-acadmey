@@ -39,7 +39,6 @@ import { installLiveOpsBridge } from "@/lib/v10/liveops/liveOpsBridge";
 import { SystemsScreen } from "@/components/v11/SystemsScreen";
 import { MultiplayerScreen } from "@/components/v12/MultiplayerScreen";
 import { AdminScreen } from "@/components/v13/AdminScreen";
-import { PaymentsScreen } from "@/components/v13/PaymentsScreen";
 import { ContentLanguagesScreen } from "@/components/v14/ContentLanguagesScreen";
 import { V14LiveOpsScreen } from "@/components/v14/LiveOpsScreen";
 import { SaveSlotsScreen } from "@/components/v16/SaveSlotsScreen";
@@ -251,8 +250,6 @@ function ScreenView({ screen }: { screen: ScreenId }) {
       return <MultiplayerScreen onBack={() => useGame.getState().setScreen("more")} />;
     case "admin":
       return <AdminScreen onBack={() => useGame.getState().setScreen("more")} />;
-    case "payments":
-      return <PaymentsScreen onBack={() => useGame.getState().setScreen("more")} />;
     case "content":
       return <ContentLanguagesScreen />;
     case "saveSlots":
