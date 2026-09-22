@@ -32,6 +32,7 @@ import { DialogueScreen } from "@/components/screens/DialogueScreen";
 import { NPCScreen } from "@/components/screens/NPCScreen";
 import { MissionsScreen } from "@/components/screens/RewardsScreens";
 import { LearningReportScreen } from "@/components/v13/LearningReportScreen";
+import { TestScreen } from "@/components/v43/TestScreen";
 import type { ScreenId } from "@/lib/game/types";
 import { V9Status } from "@/components/v9/V9Status";
 import { SocialScreen } from "@/components/v10/SocialScreen";
