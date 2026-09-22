@@ -88,6 +88,23 @@ export function GameApp() {
   }, []);
 
   useEffect(() => {
+    const openRequestedTestTarget = () => {
+      try {
+        const target = localStorage.getItem("lla-test-lab-target-screen") as ScreenId | null;
+        if (target) {
+          localStorage.removeItem("lla-test-lab-target-screen");
+          useGame.getState().go(target);
+        }
+      } catch {}
+    };
+    openRequestedTestTarget();
+    window.addEventListener("storage", (event) => {
+      if (event.key === "lla-test-lab-target-screen") openRequestedTestTarget();
+    });
+    return () => window.removeEventListener("storage", openRequestedTestTarget);
+  }, []);
+
+  useEffect(() => {
     const id = window.setInterval(() => {
       const cur = useGame.getState().save;
       const next = refillEnergy(cur);
