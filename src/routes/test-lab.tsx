@@ -18,6 +18,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { QA_CATEGORY_META, QA_ITEMS, type QAItem, type QACategory } from "@/lib/test-lab/qaCatalog";
+import { TEST_LAB_FEATURES, TEST_LAB_FEATURE_COUNT } from "@/lib/test-lab/featureCatalog";
 
 export const Route = createFileRoute("/test-lab")({ component: TestLab });
 
@@ -275,6 +276,8 @@ function TestLab() {
           </div>
         </section>
 
+        <FeatureCoverage />
+
         {selectedItem && (
           <TestDetail
             item={selectedItem}
@@ -311,6 +314,66 @@ function TestLab() {
         </footer>
       </div>
     </main>
+  );
+}
+
+function FeatureCoverage() {
+  const [filter, setFilter] = useState("");
+  const [mode, setMode] = useState<"all" | "automated" | "manual" | "environment">("all");
+  const [featureStatus, setFeatureStatus] = useState<Record<string, Status>>({});
+  const visible = TEST_LAB_FEATURES.filter((feature) =>
+    (mode === "all" || feature.mode === mode) &&
+    (!filter || \`\${feature.name} \${feature.group}\`.toLowerCase().includes(filter.toLowerCase())),
+  );
+  function mark(id: string, status: Status) {
+    setFeatureStatus((current) => ({ ...current, [id]: status }));
+  }
+  const passed = Object.values(featureStatus).filter((x) => x === "passed").length;
+  const failed = Object.values(featureStatus).filter((x) => x === "failed").length;
+  const blocked = Object.values(featureStatus).filter((x) => x === "blocked").length;
+  return (
+    <section className="rounded-3xl border bg-card p-5 shadow-sm sm:p-6">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <div className="text-xs font-bold uppercase tracking-wider text-primary">100-FEATURE COVERAGE</div>
+          <h2 className="mt-1 text-2xl font-black">Advanced capability matrix</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            All {TEST_LAB_FEATURE_COUNT} requested capabilities are registered. Environment-dependent items are clearly marked instead of being falsely auto-passed.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2 text-xs font-bold">
+          <span className="rounded-full bg-green-500/10 px-3 py-1 text-green-700">✓ {passed}</span>
+          <span className="rounded-full bg-red-500/10 px-3 py-1 text-red-700">✕ {failed}</span>
+          <span className="rounded-full bg-amber-500/10 px-3 py-1 text-amber-700">⚠ {blocked}</span>
+          <span className="rounded-full bg-muted px-3 py-1">○ {TEST_LAB_FEATURE_COUNT - passed - failed - blocked}</span>
+        </div>
+      </div>
+      <div className="mt-4 grid gap-2 sm:grid-cols-[1fr_auto]">
+        <input value={filter} onChange={(e) => setFilter(e.target.value)} placeholder="Search the 100 capabilities…" className="rounded-2xl border bg-background px-4 py-3 text-sm" />
+        <select value={mode} onChange={(e) => setMode(e.target.value as typeof mode)} className="rounded-2xl border bg-background px-4 py-3 text-sm">
+          <option value="all">All modes</option><option value="automated">Automated</option><option value="manual">Manual</option><option value="environment">Environment</option>
+        </select>
+      </div>
+      <div className="mt-4 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+        {visible.map((feature) => {
+          const status = featureStatus[feature.id] ?? "pending";
+          return (
+            <div key={feature.id} className="rounded-2xl border p-4">
+              <div className="flex items-start justify-between gap-2">
+                <div><div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{feature.id} · {feature.group}</div><b className="mt-1 block">{feature.name}</b></div>
+                <StatusIcon status={status} />
+              </div>
+              <p className="mt-2 text-xs text-muted-foreground">{feature.description}</p>
+              <div className="mt-3 flex flex-wrap gap-1">
+                {(["passed","failed","blocked"] as Status[]).map((next) => (
+                  <button key={next} onClick={() => mark(feature.id, next)} className="rounded-full border px-2 py-1 text-[10px] font-bold uppercase hover:bg-muted">{next}</button>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 
