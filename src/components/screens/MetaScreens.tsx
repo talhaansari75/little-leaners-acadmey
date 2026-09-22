@@ -262,12 +262,6 @@ export function SettingsScreen() {
       description: "Choose your language",
     },
     {
-      id: "safety",
-      icon: "🔒",
-      title: "Kids Safety",
-      description: "Lock the learning app for children",
-    },
-    {
       id: "data",
       icon: "💾",
       title: "Data",
@@ -402,21 +396,6 @@ export function SettingsScreen() {
                 </option>
               ))}
             </select>
-          </>
-        );
-
-      case "safety":
-        return (
-          <>
-            <SettingHeader title="Kids Safety" onBack={() => setCategory(null)} />
-            <ToggleRow
-              label="Kids Lock"
-              on={s.parentalLock}
-              onClick={() => toggle("parentalLock")}
-            />
-            <p className="mt-2 text-xs leading-5 text-muted">
-              When enabled, the app enters a child-safe fullscreen lock and asks for a parent PIN before leaving. The browser cannot block Android/iOS system navigation or other apps; use Android Screen Pinning/App Pinning or managed kiosk mode for full device lockdown.
-            </p>
           </>
         );
 
