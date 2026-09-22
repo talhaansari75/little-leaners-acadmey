@@ -19,6 +19,8 @@ import {
 } from "lucide-react";
 import { QA_CATEGORY_META, QA_ITEMS, type QAItem, type QACategory } from "@/lib/test-lab/qaCatalog";
 import { TEST_LAB_FEATURES, TEST_LAB_FEATURE_COUNT } from "@/lib/test-lab/featureCatalog";
+import { GAME_FEATURE_TESTS, GAME_FEATURE_TEST_COUNT, runGameFeatureAutomation } from "@/lib/test-lab/gameFeatureTests";
+import { useGame } from "@/lib/store";
 
 export const Route = createFileRoute("/test-lab")({ component: TestLab });
 
@@ -319,26 +321,50 @@ function TestLab() {
 
 function FeatureCoverage() {
   const [filter, setFilter] = useState("");
-  const [mode, setMode] = useState<"all" | "automated" | "manual" | "environment">("all");
-  const [featureStatus, setFeatureStatus] = useState<Record<string, Status>>({});
-  const visible = TEST_LAB_FEATURES.filter((feature) =>
-    (mode === "all" || feature.mode === mode) &&
-    (!filter || \`\${feature.name} \${feature.group}\`.toLowerCase().includes(filter.toLowerCase())),
+  const [mode, setMode] = useState<"all" | "automated" | "manual" | "configuration">("all");
+  const visible = GAME_FEATURE_TESTS.filter((feature) =>
+    (mode === "all" || feature.kind === mode) &&
+    (!filter || `${feature.id} ${feature.title} ${feature.group} ${feature.detail}`.toLowerCase().includes(filter.toLowerCase())),
   );
-  function mark(id: string, status: Status) {
-    setFeatureStatus((current) => ({ ...current, [id]: status }));
-  }
-  const passed = Object.values(featureStatus).filter((x) => x === "passed").length;
-  const failed = Object.values(featureStatus).filter((x) => x === "failed").length;
-  const blocked = Object.values(featureStatus).filter((x) => x === "blocked").length;
+  const featureResult = (id: string) => {
+    const raw = localStorage.getItem(RESULT_KEY);
+    if (!raw) return undefined;
+    try { return (JSON.parse(raw) as Record<string, Result>)[id]; } catch { return undefined; }
+  };
+  const allResults = GAME_FEATURE_TESTS.map((f) => featureResult(f.id));
+  const passed = allResults.filter((x) => x?.status === "passed").length;
+  const failed = allResults.filter((x) => x?.status === "failed").length;
+  const blocked = allResults.filter((x) => x?.status === "blocked").length;
+  const openTarget = (target?: string) => {
+    if (!target) return;
+    useGame.getState().go(target as Parameters<ReturnType<typeof useGame.getState>["go"]>[0]);
+  };
+  const setFeatureResult = (feature: typeof GAME_FEATURE_TESTS[number], status: Status, note: string) => {
+    try {
+      const current = JSON.parse(localStorage.getItem(RESULT_KEY) || "{}") as Record<string, Result>;
+      current[feature.id] = {
+        status,
+        note,
+        severity: status === "failed" ? "high" : status === "blocked" ? "medium" : "low",
+        updatedAt: new Date().toISOString(),
+      };
+      localStorage.setItem(RESULT_KEY, JSON.stringify(current));
+      window.dispatchEvent(new StorageEvent("storage", { key: RESULT_KEY, newValue: JSON.stringify(current) }));
+    } catch {}
+  };
+  const run = (feature: typeof GAME_FEATURE_TESTS[number]) => {
+    const result = runGameFeatureAutomation(feature.id);
+    if (result) setFeatureResult(feature, result.passed ? "passed" : "failed", result.note);
+  };
   return (
     <section className="rounded-3xl border bg-card p-5 shadow-sm sm:p-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <div className="text-xs font-bold uppercase tracking-wider text-primary">100-FEATURE COVERAGE</div>
-          <h2 className="mt-1 text-2xl font-black">Advanced capability matrix</h2>
+          <div className="text-xs font-bold uppercase tracking-wider text-primary">100-FEATURE EXECUTABLE QA</div>
+          <h2 className="mt-1 text-2xl font-black">Game feature testing</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            All {TEST_LAB_FEATURE_COUNT} requested capabilities are registered. Environment-dependent items are clearly marked instead of being falsely auto-passed.
+            Every feature now has a test definition, exact steps, expected behavior, a target screen where applicable,
+            and an honest automated/manual/configuration mode. PASS is only for observed or successfully automated behavior.
           </p>
         </div>
         <div className="flex flex-wrap gap-2 text-xs font-bold">
@@ -349,34 +375,48 @@ function FeatureCoverage() {
         </div>
       </div>
       <div className="mt-4 grid gap-2 sm:grid-cols-[1fr_auto]">
-        <input value={filter} onChange={(e) => setFilter(e.target.value)} placeholder="Search the 100 capabilities…" className="rounded-2xl border bg-background px-4 py-3 text-sm" />
+        <input value={filter} onChange={(e) => setFilter(e.target.value)} placeholder="Search the 100 game features…" className="rounded-2xl border bg-background px-4 py-3 text-sm" />
         <select value={mode} onChange={(e) => setMode(e.target.value as typeof mode)} className="rounded-2xl border bg-background px-4 py-3 text-sm">
-          <option value="all">All modes</option><option value="automated">Automated</option><option value="manual">Manual</option><option value="environment">Environment</option>
+          <option value="all">All</option><option value="automated">Automated</option><option value="manual">Manual</option><option value="configuration">Configuration</option>
         </select>
       </div>
-      <div className="mt-4 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+      <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {visible.map((feature) => {
-          const status = featureStatus[feature.id] ?? "pending";
+          const result = featureResult(feature.id);
+          const status = result?.status ?? "pending";
           return (
-            <div key={feature.id} className="rounded-2xl border p-4">
+            <article key={feature.id} className="rounded-2xl border p-4">
               <div className="flex items-start justify-between gap-2">
-                <div><div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{feature.id} · {feature.group}</div><b className="mt-1 block">{feature.name}</b></div>
+                <div>
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{feature.id} · {feature.group}</div>
+                  <b className="mt-1 block">{feature.title}</b>
+                </div>
                 <StatusIcon status={status} />
               </div>
-              <p className="mt-2 text-xs text-muted-foreground">{feature.description}</p>
+              <p className="mt-2 text-xs text-muted-foreground">{feature.detail}</p>
+              <div className="mt-3 rounded-xl bg-muted p-3 text-xs">
+                <b>Test steps</b>
+                <ol className="mt-1 list-decimal space-y-1 pl-4">{feature.steps.map((step) => <li key={step}>{step}</li>)}</ol>
+              </div>
+              <div className="mt-3 rounded-xl border p-3 text-xs">
+                <b>Expected:</b> {feature.expected}
+                <div className="mt-1 text-muted-foreground"><b>Mode:</b> {feature.kind} {feature.target ? `· target: ${feature.target}` : ""}</div>
+              </div>
               <div className="mt-3 flex flex-wrap gap-1">
-                {(["passed","failed","blocked"] as Status[]).map((next) => (
-                  <button key={next} onClick={() => mark(feature.id, next)} className="rounded-full border px-2 py-1 text-[10px] font-bold uppercase hover:bg-muted">{next}</button>
+                {feature.target && <button type="button" onClick={() => openTarget(feature.target)} className="rounded-full border px-2 py-1 text-[10px] font-bold uppercase hover:bg-muted">Open target</button>}
+                {feature.kind === "automated" && <button type="button" onClick={() => run(feature)} className="rounded-full border border-primary px-2 py-1 text-[10px] font-bold uppercase text-primary hover:bg-primary/10">Run test</button>}
+                {([["passed","PASS"],["failed","FAIL"],["blocked","BLOCKED"]] as const).map(([next,label]) => (
+                  <button key={next} type="button" onClick={() => setFeatureResult(feature, next, next === "passed" ? "Tester confirmed the expected behavior." : next === "failed" ? "Tester observed unexpected behavior." : "Tester could not execute the test because a dependency was unavailable.")} className="rounded-full border px-2 py-1 text-[10px] font-bold uppercase hover:bg-muted">{label}</button>
                 ))}
               </div>
-            </div>
+              {result && <div className="mt-2 text-[10px] text-muted-foreground">{result.status.toUpperCase()} · {new Date(result.updatedAt).toLocaleString()} · {result.note}</div>}
+            </article>
           );
         })}
       </div>
     </section>
   );
 }
-
 function TestDetail({
   item,
   result,
