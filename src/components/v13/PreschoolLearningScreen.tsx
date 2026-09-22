@@ -2,12 +2,10 @@ import { useEffect, useMemo, useRef, useState, type PointerEvent, type ReactNode
 import {
   BookOpen, Car, Check, Hash, Heart, Palette, Shapes, Star, Sun, Trophy, Volume2, Puzzle, Pencil,
   Music2, Calculator, Eye, Sparkles, Download, WifiOff, Brain, Mic2, Clock3, ShieldCheck, UserRound,
-  LockKeyhole, RefreshCw, Baby, Gift, PawPrint, CloudOff, CircleHelp, ChevronRight,
+  RefreshCw, Baby, Gift, PawPrint, CloudOff, CircleHelp, ChevronRight,
 } from "lucide-react";
 import { Screen } from "@/components/screens/chrome";
 import { useGame } from "@/lib/store";
-import { createCheckoutSession, getMyEntitlements } from "@/lib/v13/payments/server";
-import { hasKidsLockPin, setKidsLockPin, verifyKidsLockPin } from "@/lib/game/kidsLock";
 import { playAnimalSound, playBundledAudio } from "@/lib/game/audio";
 import { getPreschoolProgress, savePreschoolProgress } from "@/lib/v13/preschool/server";
 import { AdvancedPreschoolHub } from "./AdvancedPreschoolHub";
@@ -16,10 +14,9 @@ import { recordAttempt, skillForActivity, type LearningClass } from "@/lib/intel
 import { getSelectedClass, isLearningClass, setSelectedClass, LEARNING_CLASSES } from "@/lib/academy/classSelection";
 import { AcademyRoomView, type AcademyRoomId } from "@/components/academy/AcademyRooms";
 import { ANIMAL_LIBRARY, WORD_CARDS, animalArt, CLASS_AUDIO } from "@/lib/academy/catalog";
-import { SignedIn, SignedOut, UserButton } from "@/lib/auth/gates";
 
 type Kind = "letters"|"numbers"|"colors"|"shapes"|"memory"|"sorting"|"body"|"vehicles"|"math"|"opposites"|"patterns"|"tracing"|"coloring"|"puzzle"|"listen"|"story"|"rhymes";
-type Activity = { id:string; title:string; subtitle:string; icon:ReactNode; kind:Kind; premium?:boolean; world:string; classes:LearningClass[] };
+type Activity = { id:string; title:string; subtitle:string; icon:ReactNode; kind:Kind;  world:string; classes:LearningClass[] };
 
 const ACTIVITIES: Activity[] = [
  {id:"letters",title:"ABC Fun",subtitle:"Letters & first sounds",icon:<BookOpen className="size-6"/>,kind:"letters",world:"abc",classes:["Nursery"]},
@@ -28,24 +25,24 @@ const ACTIVITIES: Activity[] = [
  {id:"shapes",title:"Shape Safari",subtitle:"Circle, square & more",icon:<Shapes className="size-6"/>,kind:"shapes",world:"math",classes:["Nursery"]},
  {id:"body",title:"My Body",subtitle:"Learn body parts",icon:<Sun className="size-6"/>,kind:"body",world:"abc",classes:["Nursery"]},
  {id:"animals",title:"Animal Friends",subtitle:"Pictures, names & sounds",icon:<PawPrint className="size-6"/>,kind:"listen",world:"nature",classes:["Nursery"]},
- {id:"rhymes",title:"Rhythm Garden",subtitle:"Sing, clap & listen",icon:<Music2 className="size-6"/>,kind:"rhymes",premium:true,world:"stories",classes:["Nursery"]},
+ {id:"rhymes",title:"Rhythm Garden",subtitle:"Sing, clap & listen",icon:<Music2 className="size-6"/>,kind:"rhymes",world:"stories",classes:["Nursery"]},
  {id:"pg-abc",title:"ABC Fun",subtitle:"Letters & pictures",icon:<BookOpen className="size-6"/>,kind:"letters",world:"abc",classes:["Playgroup"]},
  {id:"pg-colors",title:"Color Fun",subtitle:"Learn bright colors",icon:<Palette className="size-6"/>,kind:"colors",world:"creative",classes:["Playgroup"]},
  {id:"pg-shapes",title:"Shape Fun",subtitle:"Circle, square & triangle",icon:<Shapes className="size-6"/>,kind:"shapes",world:"math",classes:["Playgroup"]},
  {id:"pg-numbers",title:"Counting Fun",subtitle:"Numbers 1–5",icon:<Hash className="size-6"/>,kind:"numbers",world:"math",classes:["Playgroup"]},
  {id:"kg1-phonics",title:"Phonics Builder",subtitle:"Sounds, letters & CVC",icon:<BookOpen className="size-6"/>,kind:"letters",world:"abc",classes:["KG-1"]},
- {id:"kg1-math",title:"Math Mountain",subtitle:"Add, compare & count",icon:<Calculator className="size-6"/>,kind:"math",premium:true,world:"math",classes:["KG-1"]},
- {id:"kg1-patterns",title:"Pattern Detective",subtitle:"Find what comes next",icon:<Sparkles className="size-6"/>,kind:"patterns",premium:true,world:"math",classes:["KG-1"]},
- {id:"kg2-reading",title:"Reading Library",subtitle:"Stories & questions",icon:<BookOpen className="size-6"/>,kind:"story",premium:true,world:"stories",classes:["KG-2"]},
+ {id:"kg1-math",title:"Math Mountain",subtitle:"Add, compare & count",icon:<Calculator className="size-6"/>,kind:"math",world:"math",classes:["KG-1"]},
+ {id:"kg1-patterns",title:"Pattern Detective",subtitle:"Find what comes next",icon:<Sparkles className="size-6"/>,kind:"patterns",world:"math",classes:["KG-1"]},
+ {id:"kg2-reading",title:"Reading Library",subtitle:"Stories & questions",icon:<BookOpen className="size-6"/>,kind:"story",world:"stories",classes:["KG-2"]},
  {id:"kg2-science",title:"Vehicle Science",subtitle:"Cars, buses & motion",icon:<Car className="size-6"/>,kind:"vehicles",world:"nature",classes:["KG-2"]},
- {id:"kg2-puzzle",title:"Picture Puzzles",subtitle:"Match and reason",icon:<Puzzle className="size-6"/>,kind:"puzzle",premium:true,world:"games",classes:["KG-2"]},
+ {id:"kg2-puzzle",title:"Picture Puzzles",subtitle:"Match and reason",icon:<Puzzle className="size-6"/>,kind:"puzzle",world:"games",classes:["KG-2"]},
  {id:"class1-writing",title:"Writing Workshop",subtitle:"Letters, words & sentences",icon:<Pencil className="size-6"/>,kind:"tracing",world:"abc",classes:["Class 1"]},
  {id:"class1-math",title:"Mathematics Lab",subtitle:"Numbers & problem solving",icon:<Calculator className="size-6"/>,kind:"math",world:"math",classes:["Class 1"]},
  {id:"class1-language",title:"Language Shelf",subtitle:"Objects, sounds & tracing",icon:<Pencil className="size-6"/>,kind:"tracing",world:"abc",classes:["Class 1"]},
  {id:"class1-sensorial",title:"Sensorial Studio",subtitle:"Color & shape grading",icon:<Shapes className="size-6"/>,kind:"shapes",world:"creative",classes:["Class 1"]},
  {id:"class1-sorting",title:"Sorting Station",subtitle:"Classify, order & compare",icon:<Star className="size-6"/>,kind:"sorting",world:"games",classes:["Class 1"]},
  {id:"class1-practical",title:"Practical Life",subtitle:"Hands-on daily routines",icon:<Heart className="size-6"/>,kind:"sorting",world:"games",classes:["Class 1"]},
- {id:"class1-nature",title:"Nature Corner",subtitle:"Listen and discover nature",icon:<Volume2 className="size-6"/>,kind:"listen",premium:true,world:"nature",classes:["Class 1"]},
+ {id:"class1-nature",title:"Nature Corner",subtitle:"Listen and discover nature",icon:<Volume2 className="size-6"/>,kind:"listen",world:"nature",classes:["Class 1"]},
  {id:"class1-worksheets",title:"Worksheet Table",subtitle:"Calm independent practice",icon:<Pencil className="size-6"/>,kind:"tracing",world:"abc",classes:["Class 1"]},
 ];
 
@@ -101,7 +98,7 @@ export function PreschoolLearningScreen({onBack}:{onBack:()=>void}){
  const availableActivities=useMemo(()=>ACTIVITIES.filter(a=>a.classes.includes(klass)),[klass]);
  const [completed,setCompleted]=useState<string[]>(()=>readLocal(completedKey(getSelectedClass()),[]));
  const [stars,setStars]=useState(()=>readLocal(starsKey(getSelectedClass()),0)); const [xp,setXp]=useState(()=>readLocal(xpKey(getSelectedClass()),0));
- const [online,setOnline]=useState(()=>typeof navigator==="undefined"?true:navigator.onLine); const [premium,setPremium]=useState(false); const [buying,setBuying]=useState(false); const [purchaseGate,setPurchaseGate]=useState(false);
+ const [online,setOnline]=useState(()=>typeof navigator==="undefined"?true:navigator.onLine); const premium=true;
  const [offlinePack,setOfflinePack]=useState(()=>typeof window!=="undefined" && localStorage.getItem("mw-preschool-offline-pack")==="6"); const [packing,setPacking]=useState(false);
  const [profile,setProfile]=useState(()=>readLocal(PROFILE_KEY,{name:"Little Learner",age:4}));
  const [mission,setMission]=useState(()=>readLocal(missionKeyLocal(getSelectedClass()),0)); const [level,setLevel]=useState(()=>readLocal(levelKey(getSelectedClass()),"Beginner"));
@@ -121,7 +118,6 @@ export function PreschoolLearningScreen({onBack}:{onBack:()=>void}){
   setLevel(readLocal(levelKey(klass),"Beginner"));
  }, [klass]);
  useEffect(()=>{const onOpen=(e:Event)=>{const detail=(e as CustomEvent<{id?:string;difficulty?:"gentle"|"steady"|"challenge"}>).detail;if(!detail.id)return;const activity=availableActivities.find(a=>a.id===detail.id);if(activity){setRoom(null);setSelected({...activity,difficulty:detail.difficulty})}};addEventListener("lla-open-activity",onOpen);const onRoom=(e:Event)=>{const detail=(e as CustomEvent<{room?:AcademyRoomId}>).detail;if(!detail.room)return;setSelected(null);setRoom(detail.room)};addEventListener("lla-open-room",onRoom);return()=>{removeEventListener("lla-open-activity",onOpen);removeEventListener("lla-open-room",onRoom)}},[availableActivities]);
- useEffect(()=>{void getMyEntitlements().then(rows=>setPremium(rows.some(r=>r.productId==="premium"))).catch(()=>setPremium(false))},[]);
  useEffect(()=>{
    let alive=true;
    void getPreschoolProgress().then(result=>{
@@ -143,13 +139,11 @@ export function PreschoolLearningScreen({onBack}:{onBack:()=>void}){
    const timer=window.setTimeout(()=>{ void savePreschoolProgress({data:{progress:{profile,completed,stars,xp,mission,level,localUpdatedAt:Number(localStorage.getItem(UPDATED_KEY)??0)}}}).catch(()=>{}); },1200);
    return()=>window.clearTimeout(timer);
  },[online,profile,completed,stars,xp,mission,level]);
- const buyPremium=async()=>{setBuying(true);try{const r=await createCheckoutSession({data:{productId:"premium"}});if(r.ok)location.href=r.url}finally{setBuying(false)}};
- const requestPremium=()=>setPurchaseGate(true);
  const complete=(id:string, kind:Kind)=>{const className = getSelectedClass();
 if (!className) return;recordAttempt(className, skillForActivity(className, kind), true, 0, kind === "listen" || kind === "rhymes" ? "audio" : kind === "tracing" || kind === "sorting" ? "hands-on" : kind === "story" ? "story" : kind === "letters" || kind === "colors" || kind === "shapes" ? "picture" : "game"); setCompleted(old=>{const key=`${className}:${id}`;const first=!old.includes(key);const n=first?[...old,key]:old;writeLocal(completedKey(className),n);if(first){setStars(v=>{const next=v+1;writeLocal(starsKey(className),next);return next});}setXp(v=>{const next=v+10;writeLocal(xpKey(className),next);const nextLevel=next>=500?"Super Star":next>=250?"Explorer":next>=100?"Learner":"Beginner";setLevel(nextLevel);writeLocal(levelKey(className),nextLevel);return next});setMission(m=>{const n=(m+1)%MISSIONS.length;writeLocal(missionKeyLocal(className),n);return n});try{localStorage.setItem(UPDATED_KEY,String(Date.now()))}catch{} return n});};
- const open=(a:Activity)=>{if(a.premium&&!premium){requestPremium();return} if(a.id==="animals"){setRoom("atlas");return} if(a.id==="mont-worksheets"){setRoom("worksheets");return} if(a.id==="rhymes"){setRoom("listen");return} setSelected(a)};
+ const open=(a:Activity)=>{if(a.id==="animals"){setRoom("atlas");return} if(a.id==="mont-worksheets"){setRoom("worksheets");return} if(a.id==="rhymes"){setRoom("listen");return} setSelected(a)};
  const saveProfile=(name:string,age:number)=>{const p={name:name.trim().slice(0,40)||"Little Learner",age:Math.max(2,Math.min(6,Math.floor(age)))};writeLocal(PROFILE_KEY,p);try{localStorage.setItem(UPDATED_KEY,String(Date.now()))}catch{} setProfile(p)};
- if(purchaseGate)return <Screen title="Parent Approval" onBack={()=>setPurchaseGate(false)}><div className="preschool-bg min-h-full rounded-3xl p-3"><ParentGate><section className="panel rounded-3xl p-5 text-center"><div className="text-5xl">👑</div><h2 className="mt-2 font-display text-2xl text-fg">Parent approval required</h2><p className="mt-2 text-sm text-muted">Premium learning is for parents to approve.</p><button className="btn-primary mt-4 w-full" disabled={buying} onClick={()=>void buyPremium()}>{buying?"Opening checkout…":"Continue to Premium"}</button><button className="hud-chip mt-2" onClick={()=>setPurchaseGate(false)}>Cancel</button></section></ParentGate></div></Screen>;
+
  if(room && klass)return <AcademyRoomView room={room} klass={klass} onBack={()=>setRoom(null)} onSpeak={speak} onComplete={()=>complete(room, room==="stories"?"story":room==="listen"||room==="atlas"?"listen":room==="art"||room==="worksheets"?"tracing":"sorting")} onOpenActivity={(id)=>{const activity=availableActivities.find(a=>a.id===id);setRoom(null);if(activity)setSelected(activity)}} onSelectClass={(next)=>{setKlass(next);try{localStorage.setItem("lla-class",next)}catch{} window.dispatchEvent(new Event("lla-class-change"))}} />;
  if(selected && klass)return <ActivityScreen activity={selected} difficulty={selected.difficulty} onBack={()=>setSelected(null)} onComplete={()=>complete(selected.id, selected.kind)}/>;
  return <Screen title="Little Learners Academy" onBack={onBack}><div className="preschool-bg -mx-1 min-h-full rounded-3xl p-2 pb-24 grid gap-3 overflow-y-auto">
@@ -178,24 +172,6 @@ if (!className) return;recordAttempt(className, skillForActivity(className, kind
 function NavButton({active,icon,text,onClick}:{active:boolean;icon:string;text:string;onClick:()=>void}){return <button onClick={onClick} className={`flex flex-1 flex-col items-center rounded-2xl px-2 py-2 text-[10px] font-black ${active?"bg-primary text-white":"text-slate-600"}`}><span className="text-lg">{icon}</span>{text}</button>}
 function WorldsPanel({onOpen,klass}:{onOpen:(a:Activity)=>void;klass:LearningClass}){return <section className="grid gap-3">{WORLDS.map(w=><section key={w.id} className={`world-card world-${w.tone} rounded-3xl p-4`}><div className="flex items-center gap-3"><span className="text-5xl">{w.e}</span><div><h2 className="font-display text-2xl">{w.title}</h2><p className="text-xs opacity-70">{w.text}</p></div></div><div className="mt-3 flex flex-wrap gap-2">{ACTIVITIES.filter(a=>a.world===w.id&&a.classes.includes(klass)).map(a=><button key={a.id} onClick={()=>onOpen(a)} className="rounded-2xl bg-white/80 px-3 py-2 text-xs font-bold shadow-sm">{a.title}{a.premium?" 👑":""}</button>)}</div></section>)}</section>}
 function SoundsPanel(){const [filter,setFilter]=useState<"All"|"Animal"|"Bird">("All");const list=ANIMAL_LIBRARY.filter(a=>filter==="All"?true:filter==="Bird"?a.group==="bird":a.group==="animal").slice(0,48);return <section className="panel rounded-3xl p-4"><div className="flex items-center justify-between"><div><h2 className="font-display text-2xl text-fg">Animal & Bird Sounds</h2><p className="text-xs text-muted">Tap an animal to see its picture and hear its sound.</p></div><PawPrint className="size-7 text-primary"/></div><div className="mt-3 flex gap-2">{(["All","Animal","Bird"] as const).map(x=><button key={x} onClick={()=>setFilter(x)} className={`rounded-full px-3 py-2 text-xs font-bold ${filter===x?"bg-primary text-white":"bg-slate-100 text-slate-600"}`}>{x}</button>)}</div><div className="mt-3 grid grid-cols-4 gap-2">{list.map(a=><button key={a.id} onClick={()=>{if(a.sound) playBundledAudio(a.sound); else if(["lion","elephant","tiger","fox","wolf","monkey","frog","snake","crocodile","bear","panda","parrot","owl","eagle","penguin","flamingo","duck","peacock","chicken","bee"].includes(a.id)) playAnimalSound(a.id as import("@/lib/game/audio").AnimalSoundId); speak(a.name)}} className="rounded-2xl bg-white p-2 text-center shadow-sm active:scale-95"><img src={a.src} alt={a.name} className="mx-auto h-12 w-12 object-contain"/><span className="text-[10px] font-bold text-slate-700">{a.name}</span></button>)}</div><button type="button" className="btn-primary mt-4 w-full" onClick={()=>window.dispatchEvent(new CustomEvent("lla-open-room",{detail:{room:"atlas"}}))}>Open full Nature Atlas</button></section>}
-export function ParentGate({children}:{children:ReactNode}){const [allowed,setAllowed]=useState(false);const [setup,setSetup]=useState(false);const [pin,setPin]=useState("");const [error,setError]=useState("");useEffect(()=>{void hasKidsLockPin().then(has=>setSetup(!has));},[]);const submit=async()=>{setError("");if(setup){if(!(await setKidsLockPin(pin))){setError("Use a 6-digit parent PIN.");return;}setSetup(false);setAllowed(true);setPin("");return;}if(!(await verifyKidsLockPin(pin))){setError("Wrong parent PIN.");setPin("");return;}setAllowed(true);setPin("");};if(allowed)return <>{children}</>;return <section className="panel rounded-3xl p-5 text-center"><LockKeyhole className="mx-auto size-9 text-primary"/><h2 className="mt-3 font-display text-2xl text-fg">Parent Area</h2><p className="mt-1 text-sm text-muted">{setup?"Create a parent PIN before opening settings.":"Enter the parent PIN to continue."}</p><input inputMode="numeric" type="password" maxLength={6} value={pin} onChange={e=>setPin(e.target.value.replace(/\D/g,""))} onKeyDown={e=>{if(e.key==="Enter")void submit()}} placeholder="6-digit PIN" className="mt-4 w-full rounded-2xl bg-white px-4 py-4 text-center text-xl tracking-[0.4em] text-slate-900" autoFocus/><button className="btn-primary mt-3 w-full" onClick={()=>void submit()}>{setup?"Create PIN":"Unlock Parent Area"}</button>{error&&<p className="mt-2 text-sm text-red-600">{error}</p>}<p className="mt-3 text-[11px] text-muted">Keep this PIN private. Device-level app exit cannot be blocked by a normal website.</p></section>}
-
-function ParentPanel({profile,saveProfile,premium,buying,buyPremium,offlinePack,packing,setPacking,setOfflinePack,online}:{profile:{name:string;age:number};saveProfile:(n:string,a:number)=>void;premium:boolean;buying:boolean;buyPremium:()=>Promise<void>;offlinePack:boolean;packing:boolean;setPacking:(v:boolean)=>void;setOfflinePack:(v:boolean)=>void;online:boolean}) {
-  const [name,setName]=useState(profile.name);
-  const [age,setAge]=useState(String(profile.age));
-  const [saved,setSaved]=useState(false);
-  return <section className="grid gap-3">
-    <div className="panel rounded-3xl p-4"><div className="flex items-center gap-3"><div className="rounded-2xl bg-primary/10 p-3"><ShieldCheck className="size-6 text-primary"/></div><div><h2 className="font-display text-2xl text-fg">Parent Area</h2><p className="text-xs text-muted">Settings, progress, offline learning and Premium.</p></div></div></div>
-    <section className="panel rounded-3xl p-4"><h3 className="font-semibold text-fg">Child Profile 👶</h3><div className="mt-3 grid gap-2"><input value={name} onChange={e=>setName(e.target.value)} className="rounded-2xl bg-white px-4 py-3 text-slate-800" placeholder="Child name"/><select value={age} onChange={e=>setAge(e.target.value)} className="rounded-2xl bg-white px-4 py-3 text-slate-800"><option value="2">Age 2</option><option value="3">Age 3</option><option value="4">Age 4</option><option value="5">Age 5</option><option value="6">Age 6</option></select><button className="btn-primary" onClick={()=>{saveProfile(name,Number(age));setSaved(true);setTimeout(()=>setSaved(false),1500)}}>{saved?"Saved ✓":"Save profile"}</button></div></section>
-    <section className="panel rounded-3xl p-4"><div className="flex items-center gap-3"><Clock3 className="size-5 text-primary"/><div><h3 className="font-semibold text-fg">Learning report</h3><p className="text-xs text-muted">This device: {readLocal<string[]>(DONE_KEY,[]).length} completed class activities • Stars are saved locally.</p></div></div><div className="mt-3 rounded-2xl bg-slate-50 p-3 text-xs text-slate-600">For a full parent report and multi-device sync, sign in and use the account/cloud systems already included in the app.</div></section>
-    <section className="panel rounded-3xl p-4"><div className="flex items-center gap-3"><CloudOff className="size-5 text-primary"/><div className="flex-1"><h3 className="font-semibold text-fg">Offline Learning Pack</h3><p className="text-xs text-muted">Prepare the complete local learning pack for this device.</p></div><button className="hud-chip" disabled={packing} onClick={async()=>{setPacking(true);const ok=await prepareOfflinePack();if(ok)setOfflinePack(true);setPacking(false)}}>{offlinePack?<><WifiOff className="size-4"/> Ready</>:<><Download className="size-4"/>{packing?"Preparing…":"Prepare Offline"}</>}</button></div></section>
-    <section className="panel rounded-3xl p-4"><div className="flex items-center gap-3"><LockKeyhole className="size-5 text-primary"/><div><h3 className="font-semibold text-fg">Kids Safety</h3><p className="text-xs text-muted">Use Kids Lock to keep the child inside the learning area. Purchases/settings remain parent-controlled.</p></div></div><button className="hud-chip mt-3" onClick={()=>useGame.getState().setSetting("parentalLock",true)}>Turn Kids Lock ON</button></section>
-    <section className="panel rounded-3xl p-4"><h3 className="font-semibold text-fg">Parent account</h3><p className="text-xs text-muted">Sign in to sync progress and approve purchases. Children can keep learning offline without an account.</p><SignedIn><div className="mt-3"><UserButton /></div></SignedIn><SignedOut><a href="/login" className="btn-primary mt-3 inline-flex w-full items-center justify-center">Parent sign in</a></SignedOut><button className="hud-chip mt-2 w-full" onClick={()=>useGame.getState().go("home")}>Open Journey Hall</button></section>
-    <section className="premium-box rounded-3xl p-4 text-white"><div className="flex items-center gap-3"><div className="rounded-2xl bg-white/20 p-3"><Trophy className="size-6"/></div><div className="flex-1"><h3 className="font-display text-2xl">Premium Kids Club 👑</h3><p className="text-xs opacity-85">Advanced maths, tracing, coloring, puzzles, stories, rhymes and premium listening activities.</p></div></div>{premium?<div className="mt-3 rounded-2xl bg-white/20 px-3 py-2 text-sm font-bold">Active subscription ✓</div>:<button disabled={buying} className="mt-3 w-full rounded-2xl bg-white px-4 py-3 font-black text-slate-800" onClick={()=>void buyPremium()}>{buying?"Opening checkout…":"Subscribe to Premium"}</button>}</section>
-    <div className="rounded-2xl bg-white/80 p-3 text-xs text-slate-500">{online?"🟢 Online: account sync and checkout can work.":"🟠 Offline: local learning remains available; subscription verification waits until online."}</div>
-  </section>;
-}
-
 function ActivityScreen({activity,difficulty="steady",onBack,onComplete}:{activity:Activity;difficulty?:"gentle"|"steady"|"challenge";onBack:()=>void;onComplete:()=>void}) {
  const [answer,setAnswer]=useState<string|null>(null);
  const [round,setRound]=useState(0);
