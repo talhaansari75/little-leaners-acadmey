@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { ParentProgressScreen } from "@/components/v13/ParentProgressScreen";
 import { useGame } from "@/lib/store";
 import { Screen, useT } from "./chrome";
 import { CHAPTERS, WORD_OF_DAY } from "@/lib/game/story";
@@ -22,7 +21,7 @@ export function MoreScreen() {
       items: [
         { id: "profile" as const, label: t("cta.profile"), icon: User },
         { id: "stats" as const, label: t("cta.stats"), icon: BarChart3 },
-        { id: "parentProgress" as const, label: "Parent Progress", icon: BarChart3 },
+        { id: "learningReport" as const, label: "Learning Report", icon: BarChart3 },
         { id: "skills" as const, label: t("cta.skills"), icon: Sparkles },
       ],
     },
@@ -246,7 +245,7 @@ export function MoreScreen() {
   );
 }
 
-export function ParentProgressRouteScreen() {\n  return <ParentProgressScreen />;\n}\n\nexport function StoryScreen() {
+export function StoryScreen() {
   const t = useT();
   const unlocked = useGame((s) => s.save.unlockedLevel);
   return (
