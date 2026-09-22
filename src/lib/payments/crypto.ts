@@ -21,6 +21,17 @@ const CHAINS: Record<number, ChainConfig> = {
   11155111:{id:11155111,name:"Sepolia Testnet",rpc:env("CRYPTO_RPC_11155111"),confirmations:positiveInt(env("CRYPTO_CONFIRMATIONS_11155111"),2),recipient:cleanAddress(env("CRYPTO_TREASURY_11155111")),nativeSymbol:"ETH"},
 };
 
+const CRYPTO_ENABLED = env("CRYPTO_PAYMENTS_ENABLED").toLowerCase() === "true";
+const EXPLORERS: Record<number,string> = {
+  1:"https://etherscan.io",
+  137:"https://polygonscan.com",
+  56:"https://bscscan.com",
+  8453:"https://basescan.org",
+  42161:"https://arbiscan.io",
+  10:"https://optimistic.etherscan.io",
+  11155111:"https://sepolia.etherscan.io",
+};
+
 const PRODUCTS: Record<string,{name:string;amountAtomic:string;assetType:AssetType;assetSymbol:string;tokenAddress?:string;decimals:number}> = {
   premium_crypto:{name:"Journey Premium",amountAtomic:env("CRYPTO_PRICE_PREMIUM_ATOMIC"),assetType:(env("CRYPTO_ASSET_TYPE")||"native") as AssetType,assetSymbol:env("CRYPTO_ASSET_SYMBOL")||"ETH",tokenAddress:cleanAddress(env("CRYPTO_TOKEN_ADDRESS")),decimals:Number(env("CRYPTO_TOKEN_DECIMALS")||18)},
   starter_crypto:{name:"Starter Pack",amountAtomic:env("CRYPTO_PRICE_STARTER_ATOMIC"),assetType:(env("CRYPTO_ASSET_TYPE")||"native") as AssetType,assetSymbol:env("CRYPTO_ASSET_SYMBOL")||"ETH",tokenAddress:cleanAddress(env("CRYPTO_TOKEN_ADDRESS")),decimals:Number(env("CRYPTO_TOKEN_DECIMALS")||18)},
@@ -35,10 +46,16 @@ async function rpc(c:ChainConfig, method:string, params:unknown[]){
   return body.result;
 }
 
-function allowedChain(chainId:number){ return CHAINS[chainId] && CHAINS[chainId].rpc && CHAINS[chainId].recipient; }
+function tokenForChain(chainId:number, product:{tokenAddress?:string}) {
+  return cleanAddress(env(`CRYPTO_TOKEN_ADDRESS_${chainId}`)) || product.tokenAddress || "";
+}
+function allowedChain(chainId:number){ return CRYPTO_ENABLED && CHAINS[chainId] && CHAINS[chainId].rpc && CHAINS[chainId].recipient; }
+function explorer(chainId:number, type:"tx"|"address", value:string) {
+  const base=EXPLORERS[chainId]; return base ? `${base}/${type}/${value}` : "";
+}
 
 export const cryptoConfig = createServerFn({method:"GET"}).middleware([authMiddleware]).handler(async()=>{
-  const chains=Object.values(CHAINS).filter(c=>c.rpc&&c.recipient).map(c=>({id:c.id,name:c.name,nativeSymbol:c.nativeSymbol,confirmations:c.confirmations}));
+  const chains=Object.values(CHAINS).filter(c=>CRYPTO_ENABLED&&c.rpc&&c.recipient).map(c=>({id:c.id,name:c.name,nativeSymbol:c.nativeSymbol,confirmations:c.confirmations,explorer:EXPLORERS[c.id]||""}));
   const products=Object.entries(PRODUCTS).filter(([,p])=>p.amountAtomic).map(([id,p])=>({id,name:p.name,amountAtomic:p.amountAtomic,assetType:p.assetType,assetSymbol:p.assetSymbol,tokenAddress:p.tokenAddress||null,decimals:p.decimals}));
   return {chains,products};
 });
@@ -49,11 +66,12 @@ export const createCryptoPaymentIntent = createServerFn({method:"POST"}).middlew
     const product=PRODUCTS[data.productId]; const chain=CHAINS[data.chainId];
     if(!product||!product.amountAtomic||!allowedChain(data.chainId)) return {ok:false as const,error:"Crypto product or network is not configured."};
     if(!data.payerAddress) return {ok:false as const,error:"Invalid wallet address."};
-    if(product.assetType==="erc20" && !product.tokenAddress) return {ok:false as const,error:"Token contract is not configured."};
+    const tokenAddress=product.assetType==="erc20" ? tokenForChain(chain.id,product) : "";
+    if(product.assetType==="erc20" && !tokenAddress) return {ok:false as const,error:"Token contract is not configured for this network."};
     const id=randomUUID(), orderId=`crypto_${Date.now()}_${randomUUID().slice(0,8)}`;
     const expiresAt=new Date(Date.now()+15*60_000);
-    await getPrisma().cryptoPaymentIntent.create({data:{id,userId:context.userId,orderId,productId:data.productId,chainId:chain.id,assetType:product.assetType,assetSymbol:product.assetSymbol,tokenAddress:product.tokenAddress||null,amountAtomic:product.amountAtomic,recipientAddress:chain.recipient,payerAddress:data.payerAddress,status:"created",confirmations:0,metadataJson:{productName:product.name,decimals:product.decimals},expiresAt}});
-    return {ok:true as const,intent:{id,orderId,productId:data.productId,chainId:chain.id,chainName:chain.name,assetType:product.assetType,assetSymbol:product.assetSymbol,tokenAddress:product.tokenAddress||null,amountAtomic:product.amountAtomic,recipientAddress:chain.recipient,expiresAt:expiresAt.toISOString(),confirmationsRequired:chain.confirmations}};
+    await getPrisma().cryptoPaymentIntent.create({data:{id,userId:context.userId,orderId,productId:data.productId,chainId:chain.id,assetType:product.assetType,assetSymbol:product.assetSymbol,tokenAddress:tokenAddress||null,amountAtomic:product.amountAtomic,recipientAddress:chain.recipient,payerAddress:data.payerAddress,status:"created",confirmations:0,metadataJson:{productName:product.name,decimals:product.decimals,explorer:EXPLORERS[chain.id]||""},expiresAt}});
+    return {ok:true as const,intent:{id,orderId,productId:data.productId,chainId:chain.id,chainName:chain.name,assetType:product.assetType,assetSymbol:product.assetSymbol,tokenAddress:tokenAddress||null,amountAtomic:product.amountAtomic,recipientAddress:chain.recipient,expiresAt:expiresAt.toISOString(),confirmationsRequired:chain.confirmations,explorer:EXPLORERS[chain.id]||"",paymentUri:product.assetType==="native" ? `ethereum:${chain.recipient}@${chain.id}?value=${product.amountAtomic}` : `ethereum:${tokenAddress}@${chain.id}/transfer?address=${chain.recipient}&uint256=${product.amountAtomic}`}};
   });
 
 const TRANSFER_TOPIC="0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
@@ -103,6 +121,32 @@ export const submitCryptoTransaction = createServerFn({method:"POST"}).middlewar
     });
     return {ok:true as const,status:"verified",confirmations,required:chain.confirmations};
   });
+
+export const getCryptoPaymentIntent = createServerFn({method:"GET"}).middleware([authMiddleware]).validator((d:{intentId:string})=>({intentId:String(d.intentId??"").slice(0,64)})).handler(async({context,data})=>{
+  const row=await getPrisma().cryptoPaymentIntent.findUnique({where:{id:data.intentId}});
+  if(!row || row.userId!==context.userId) return {ok:false as const,error:"Payment intent not found."};
+  if(row.status==="created" && new Date(String(row.expiresAt)).getTime()<Date.now()) {
+    await getPrisma().cryptoPaymentIntent.update({where:{id:row.id},data:{status:"expired"}});
+    return {ok:true as const,intent:{...row,status:"expired"}};
+  }
+  return {ok:true as const,intent:row};
+});
+
+export const cancelCryptoPaymentIntent = createServerFn({method:"POST"}).middleware([authMiddleware]).validator((d:{intentId:string})=>({intentId:String(d.intentId??"").slice(0,64)})).handler(async({context,data})=>{
+  const row=await getPrisma().cryptoPaymentIntent.findUnique({where:{id:data.intentId}});
+  if(!row || row.userId!==context.userId) return {ok:false as const,error:"Payment intent not found."};
+  if(["verified","expired"].includes(String(row.status))) return {ok:true as const,status:row.status};
+  await getPrisma().cryptoPaymentIntent.update({where:{id:row.id},data:{status:"expired"}});
+  return {ok:true as const,status:"expired"};
+});
+
+export const getCryptoNetworkHealth = createServerFn({method:"GET"}).middleware([authMiddleware]).validator((d:{chainId:number})=>({chainId:Math.floor(Number(d.chainId))})).handler(async({data})=>{
+  const chain=CHAINS[data.chainId]; if(!CRYPTO_ENABLED||!chain?.rpc) return {ok:false as const,error:"Network is not configured."};
+  try {
+    const [id,block]=await Promise.all([rpc(chain,"eth_chainId",[]),rpc(chain,"eth_blockNumber",[])]);
+    return {ok:true as const,chainId:Number(hexBigInt(id)),latestBlock:String(block),explorer:EXPLORERS[chain.id]||""};
+  } catch { return {ok:false as const,error:"RPC is temporarily unavailable."}; }
+});
 
 export const getMyCryptoPayments = createServerFn({method:"GET"}).middleware([authMiddleware]).handler(async({context})=>{
   return getPrisma().cryptoPaymentIntent.findMany({where:{userId:context.userId},orderBy:{createdAt:"desc"},take:50,select:{id:true,orderId:true,productId:true,chainId:true,assetSymbol:true,amountAtomic:true,status:true,confirmations:true,txHash:true,createdAt:true,verifiedAt:true,expiresAt:true}});
