@@ -96,4 +96,4 @@ Important: blockchain checkout currently represents one-time purchases. Recurrin
 
 ### Production compliance note
 
-Because the app is intended for use in Pakistan, obtain current legal/compliance advice before enabling customer-facing virtual-asset payments. PVARA states that virtual-asset services provided in or from Pakistan fall within its regulatory framework and that relevant services require prior authorization; its 2026 framework includes sandbox/NOC/licensing routes. citeturn0search0turn0search1
+Because the app is intended for use in Pakistan, obtain current legal/compliance advice before enabling customer-facing virtual-asset payments. PVARA states that virtual-asset services provided in or from Pakistan fall within its regulatory framework and that relevant services require prior authorization; its 2026 framework includes sandbox/NOC/licensing routes.
