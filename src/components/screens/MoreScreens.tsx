@@ -1,3 +1,4 @@
+import { FlaskConical } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useGame } from "@/lib/store";
 import { Screen, useT } from "./chrome";
