@@ -38,7 +38,9 @@ async function rpc(c:ChainConfig, method:string, params:unknown[]){
 function allowedChain(chainId:number){ return CHAINS[chainId] && CHAINS[chainId].rpc && CHAINS[chainId].recipient; }
 
 export const cryptoConfig = createServerFn({method:"GET"}).middleware([authMiddleware]).handler(async()=>{
-  return Object.values(CHAINS).filter(c=>c.rpc&&c.recipient).map(c=>({id:c.id,name:c.name,nativeSymbol:c.nativeSymbol,confirmations:c.confirmations,tokenAddress:c.tokenAddress,tokenSymbol:c.tokenSymbol}));
+  const chains=Object.values(CHAINS).filter(c=>c.rpc&&c.recipient).map(c=>({id:c.id,name:c.name,nativeSymbol:c.nativeSymbol,confirmations:c.confirmations}));
+  const products=Object.entries(PRODUCTS).filter(([,p])=>p.amountAtomic).map(([id,p])=>({id,name:p.name,amountAtomic:p.amountAtomic,assetType:p.assetType,assetSymbol:p.assetSymbol,tokenAddress:p.tokenAddress||null,decimals:p.decimals}));
+  return {chains,products};
 });
 
 export const createCryptoPaymentIntent = createServerFn({method:"POST"}).middleware([authMiddleware])
