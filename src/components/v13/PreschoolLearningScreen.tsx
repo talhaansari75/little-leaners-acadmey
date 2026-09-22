@@ -97,6 +97,7 @@ export function PreschoolLearningScreen({onBack}:{onBack:()=>void}){
  const [profile,setProfile]=useState(()=>readLocal(PROFILE_KEY,{name:"Little Learner",age:4}));
  const [mission,setMission]=useState(()=>readLocal(missionKeyLocal(getSelectedClass()),0)); const [level,setLevel]=useState(()=>readLocal(levelKey(getSelectedClass()),"Beginner"));
  useEffect(()=>{const on=()=>setOnline(true),off=()=>setOnline(false);addEventListener("online",on);addEventListener("offline",off);return()=>{removeEventListener("online",on);removeEventListener("offline",off)}},[]);
+ useEffect(()=>{const onBook=(e:Event)=>{const detail=(e as CustomEvent<{subject?:string;klass?:LearningClass}>).detail;if(detail.subject){if(detail.klass&&isLearningClass(detail.klass)){setKlass(detail.klass);setSelectedClass(detail.klass)}setBookSubject(detail.subject)}};addEventListener("lla-open-book",onBook);return()=>removeEventListener("lla-open-book",onBook)},[]);
  useEffect(() => {
   const onClass = () => setKlass(getSelectedClass());
   addEventListener("lla-class-change", onClass);
@@ -138,6 +139,7 @@ if (!className) return;recordAttempt(className, skillForActivity(className, kind
  const open=(a:Activity)=>{if(a.id.endsWith("-animals")){setRoom("atlas");return} if(a.id.includes("worksheets")){setRoom("worksheets");return} if(a.id.endsWith("-music")){setRoom("listen");return} setSelected(a)};
  const saveProfile=(name:string,age:number)=>{const p={name:name.trim().slice(0,40)||"Little Learner",age:Math.max(2,Math.min(6,Math.floor(age)))};writeLocal(PROFILE_KEY,p);try{localStorage.setItem(UPDATED_KEY,String(Date.now()))}catch{} setProfile(p)};
 
+ if(bookSubject && klass)return <SubjectBook subject={bookSubject} klass={klass} activities={availableActivities} onBack={()=>setBookSubject(null)} onOpen={(a)=>{setBookSubject(null);open(a)}} onSpeak={speak}/>;
  if(room && klass)return <AcademyRoomView room={room} klass={klass} onBack={()=>setRoom(null)} onSpeak={speak} onComplete={()=>complete(room, room==="stories"?"story":room==="listen"||room==="atlas"?"listen":room==="art"||room==="worksheets"?"tracing":"sorting")} onOpenActivity={(id)=>{const activity=availableActivities.find(a=>a.id===id);setRoom(null);if(activity)setSelected(activity)}} onSelectClass={(next)=>{setKlass(next);try{localStorage.setItem("lla-class",next)}catch{} window.dispatchEvent(new Event("lla-class-change"))}} />;
  if(selected && klass)return <ActivityScreen activity={selected} difficulty={selected.difficulty} onBack={()=>setSelected(null)} onComplete={()=>complete(selected.id, selected.kind)}/>;
  function ClassChooser(){
@@ -179,6 +181,38 @@ if (!className) return;recordAttempt(className, skillForActivity(className, kind
   {tab==="sounds"&&<SoundsPanel/>}
   <div className="fixed bottom-3 left-1/2 z-40 flex w-[calc(100%-24px)] max-w-lg -translate-x-1/2 rounded-3xl border border-white/50 bg-white/90 p-2 shadow-2xl backdrop-blur"><NavButton active={tab==="home"} icon="🏠" text="Home" onClick={()=>setTab("home")}/><NavButton active={tab==="worlds"} icon="🌍" text="Worlds" onClick={()=>setTab("worlds")}/><NavButton active={tab==="discover"} icon="🧠" text="Learn" onClick={()=>setTab("discover")}/><NavButton active={tab==="sounds"} icon="🔊" text="Sounds" onClick={()=>setTab("sounds")}/><NavButton active={false} icon="🧪" text="Test Lab" onClick={()=>{window.location.href="/test-lab"}}/><NavButton active={false} icon="⚙️" text="Settings" onClick={()=>useGame.getState().go("settings")}/></div>
  </div></Screen>
+}
+
+type BookProps={subject:string;klass:LearningClass;activities:Activity[];onBack:()=>void;onOpen:(a:Activity)=>void;onSpeak:(text:string)=>void};
+const BOOK_CONTENT:Record<LearningClass,Record<string,{cover:string;tagline:string;pages:string[]}>>={
+ Montessori:{
+  "Practical Life":{cover:"🫗",tagline:"Everyday skills, calm hands and independence",pages:["Pouring & transferring","Sorting everyday objects","Handwashing routine","Care of classroom","Dress & self-care","Clean-up sequence"]},
+  "Sensorial":{cover:"🧩",tagline:"Discover with your eyes, hands and senses",pages:["Color matching","Shape matching","Big & small","Long & short","Texture discovery","Pattern building"]},
+  "Language":{cover:"🔤",tagline:"Letters, sounds, words and early writing",pages:["Alphabet sounds","Picture vocabulary","Letter matching","Tracing practice","Beginning sounds","Word-picture matching"]},
+  "Mathematics & Culture":{cover:"🔢",tagline:"Numbers, quantities, nature and our world",pages:["Counting practice","Quantity matching","Number order","More or less","Animals & plants","Our world"]},
+  "English":{cover:"📖",tagline:"Letters, sounds, vocabulary and first words",pages:["ABC story","Letter sounds","Picture words","Trace a letter","Build a word","Read together"]}
+ },
+ Nursery:{
+  "Alphabet":{cover:"🔤",tagline:"A playful first journey through letters",pages:["ABC Garden","Letter pictures","Beginning sounds","Letter tracing","Match letter to picture","Listen & repeat"]},
+  "Counting":{cover:"🔢",tagline:"Numbers, counting and early quantities",pages:["Count 1–5","Count 1–10","Number match","How many?","More or less","Number order"]},
+  "Colors & Shapes":{cover:"🎨",tagline:"Explore bright colors and friendly shapes",pages:["Color Room","Color matching","Shape Room","Shape matching","Big & small","Pattern play"]},
+  "Music & Animals":{cover:"🎵",tagline:"Songs, animals, sounds and listening",pages:["Animal Farm","Animal sounds","Music Corner","Sing & repeat","Match the sound","Nature listening"]},
+  "English":{cover:"📚",tagline:"Simple English through pictures and sounds",pages:["ABC pictures","New words","Letter sounds","Listen & repeat","Picture matching","First words"]}
+ },
+ KG:{
+  "Reading":{cover:"📖",tagline:"Stories, reading and understanding",pages:["Reading Library","Picture story","Story questions","Sentence reading","Sequence the story","Read aloud"]},
+  "Math":{cover:"🔢",tagline:"Counting, comparing and early arithmetic",pages:["Numbers 1–100","Before & after","Greater or less","Addition","Patterns","Number challenge"]},
+  "Science":{cover:"🔬",tagline:"Observe, ask questions and discover",pages:["Science Lab","Animals","Plants","Weather","Our body","What do you see?"]},
+  "Phonics & Words":{cover:"🔤",tagline:"Sounds, phonics and simple word building",pages:["Phonics Studio","Letter sounds","CVC words","Word Builder","Beginning sounds","Sight words"]},
+  "English":{cover:"📕",tagline:"Read, speak, listen and build simple sentences",pages:["Story time","Vocabulary","Phonics","CVC words","Sentence builder","Read & answer"]}
+ }
+};
+function SubjectBook({subject,klass,activities,onBack,onOpen,onSpeak}:BookProps){
+ const data=BOOK_CONTENT[klass][subject]??BOOK_CONTENT[klass].English;
+ const [page,setPage]=useState(0);
+ const activity=activities[page%Math.max(1,activities.length)];
+ const colors=klass==="Montessori"?"from-lime-100 via-amber-50 to-green-100":klass==="Nursery"?"from-pink-100 via-rose-50 to-purple-100":"from-sky-100 via-cyan-50 to-blue-100";
+ return <Screen title={subject} onBack={onBack}><div className={"min-h-full rounded-[2rem] bg-gradient-to-br "+colors+" p-3 pb-24"}><div className="mx-auto max-w-xl overflow-hidden rounded-[2rem] bg-white/90 shadow-2xl ring-4 ring-white/70"><div className="relative overflow-hidden bg-gradient-to-r from-amber-400 to-orange-500 p-4 text-center text-white"><p className="text-[10px] font-black uppercase tracking-[.2em]">{klass} • Learning Book</p><h1 className="mt-1 font-display text-3xl">{subject}</h1><p className="text-xs font-bold opacity-90">{data.tagline}</p></div><div className="p-4"><div className="relative min-h-[360px] overflow-hidden rounded-[1.7rem] bg-[#fffaf0] p-5 shadow-inner ring-1 ring-amber-100"><div className="absolute left-0 top-0 h-full w-3 bg-amber-100"/><div className="absolute right-4 top-4 text-3xl opacity-40">🌈</div><div className="grid min-h-[300px] place-items-center text-center"><div><div className="text-8xl drop-shadow">{data.cover}</div><p className="mt-4 text-xs font-black uppercase tracking-widest text-amber-700">Page {page+1} of {data.pages.length}</p><h2 className="mt-2 font-display text-3xl text-slate-800">{data.pages[page]}</h2><p className="mx-auto mt-3 max-w-sm text-sm font-semibold text-slate-500">Look, listen, touch and learn. Tap the activity below when you're ready!</p></div></div><div className="absolute bottom-3 left-5 right-5 flex justify-between text-xs font-bold text-amber-500"><span>Little Learners</span><span>📖</span></div></div><div className="mt-4 flex items-center gap-2"><button type="button" disabled={page===0} onClick={()=>setPage(p=>Math.max(0,p-1))} className="grid size-12 shrink-0 place-items-center rounded-full bg-white text-3xl font-black shadow-md disabled:opacity-30">‹</button><button type="button" onClick={()=>activity?onOpen(activity):onSpeak(data.pages[page])} className="min-h-14 flex-1 rounded-2xl bg-primary px-4 py-3 text-base font-black text-white shadow-lg active:scale-[.98]">Open Activity 🚀</button><button type="button" disabled={page===data.pages.length-1} onClick={()=>setPage(p=>Math.min(data.pages.length-1,p+1))} className="grid size-12 shrink-0 place-items-center rounded-full bg-white text-3xl font-black shadow-md disabled:opacity-30">›</button></div><div className="mt-3 flex justify-center gap-1.5">{data.pages.map((_,i)=><button key={i} type="button" aria-label={"Page "+(i+1)} onClick={()=>setPage(i)} className={"h-2 rounded-full transition-all "+(i===page?"w-7 bg-primary":"w-2 bg-slate-200")}/>)}</div><div className="mt-4 rounded-2xl bg-white p-3 text-center shadow-sm"><p className="text-[10px] font-black uppercase tracking-wider text-slate-400">All {klass} learning is free</p><p className="mt-1 text-sm font-bold text-slate-700">Complete the page to earn ⭐ stars and XP.</p></div></div></div></div></Screen>;
 }
 
 function NavButton({active,icon,text,onClick}:{active:boolean;icon:string;text:string;onClick:()=>void}){return <button onClick={onClick} className={`flex flex-1 flex-col items-center rounded-2xl px-2 py-2 text-[10px] font-black ${active?"bg-primary text-white":"text-slate-600"}`}><span className="text-lg">{icon}</span>{text}</button>}
