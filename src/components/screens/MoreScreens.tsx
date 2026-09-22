@@ -369,7 +369,7 @@ export function LegalScreen() {
       <article className="prose-like space-y-4 text-sm leading-relaxed text-muted">
         <h2 className="font-display text-xl text-fg">Terms of travel</h2>
         <p>
-          Mera Word Search Journey is a free, ad-free atlas. An account is required to enter the game and
+          Little Learners Academy is a learning game. An account is not required for local play; signing in enables cloud save and account-based game features. Where configured, the app may display advertisements.
           enables cloud save and account-based game features. You may manage or delete your account through
           the available account tools.
         </p>
@@ -379,7 +379,7 @@ export function LegalScreen() {
           scores, scoped to your account. We do not sell data. Optional AI riddles are user-initiated and sent without
           your full save. Account deletion is available through your signed-in profile tools.
         </p>
-        <p>No ads. Your account data is used to provide the game's account-based features.</p>
+        <p>Advertising is optional and configuration-dependent. Your account data is used to provide the game's account-based features.</p>
       </article>
     </Screen>
   );
