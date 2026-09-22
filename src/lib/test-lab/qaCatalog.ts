@@ -21,6 +21,18 @@ export type QAItem = {
   automated?: "online" | "storage" | "indexeddb" | "service-worker" | "viewport" | "touch" | "audio" | "fullscreen";
 };
 
+const AUTOMATED_BY_TITLE: Record<string, QAItem["automated"]> = {
+  "Offline startup": "online",
+  "Offline learning pack": "storage",
+  "Offline save": "storage",
+  "IndexedDB storage": "indexeddb",
+  "Network recovery": "online",
+  "Touch targets": "touch",
+  "Audio fallback": "audio",
+  "Service worker": "service-worker",
+  "Mobile viewport": "viewport",
+};
+
 export const QA_ITEMS: QAItem[] = [
   ["learning","Learning activities","All learning activities open and complete without crashes."],
   ["learning","Class selection","Changing class updates the available learning content."],
@@ -111,6 +123,7 @@ export const QA_ITEMS: QAItem[] = [
   title,
   category: category as QACategory,
   description,
+  automated: AUTOMATED_BY_TITLE[title],
 } as QAItem));
 
 export const QA_CATEGORY_META: Record<QACategory, { label: string; icon: string }> = {
