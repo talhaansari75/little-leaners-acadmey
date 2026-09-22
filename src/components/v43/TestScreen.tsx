@@ -1,6 +1,8 @@
 import { useGame } from "@/lib/store";
 import { Screen } from "@/components/screens/chrome";
-import { CreditCard, LockKeyhole, FlaskConical, EyeOff } from "lucide-react";
+import { CreditCard, LockKeyhole, FlaskConical, EyeOff, Image as ImageIcon, Sparkles } from "lucide-react";
+import { useState } from "react";
+import { generatePicture } from "@/lib/v35/ai/creatorIdeas";
 
 const TEST_FEATURES = [
   { id: "parental-lock", label: "Parent Lock", description: "Test the parent PIN and kids-lock flow.", icon: LockKeyhole },
@@ -8,7 +10,7 @@ const TEST_FEATURES = [
   { id: "hidden-features", label: "Hidden Features", description: "Open development-only and hidden feature screens.", icon: EyeOff },
 ] as const;
 
-export function TestScreen() {
+export function TestScreen() {\n  const [prompt, setPrompt] = useState("A cheerful preschool learning illustration with friendly animals, colorful shapes, soft watercolor texture, no text, no logos.");\n  const [image, setImage] = useState<string | null>(null);\n  const [busy, setBusy] = useState(false);\n  const makePicture = async () => { setBusy(true); try { const r = await generatePicture({ data: { prompt } }); setImage(r.ok ? r.url : null); } finally { setBusy(false); } };
   return (
     <Screen title="Test Lab">
       <p className="mb-4 text-sm text-muted">
@@ -36,7 +38,7 @@ export function TestScreen() {
           </button>
         ))}
       </div>
-      <div className="panel mt-4 rounded-2xl p-4 text-xs text-muted">
+      <section className="panel mt-4 rounded-2xl p-4">\n        <div className="flex items-center gap-2"><ImageIcon className="size-5 text-primary"/><h3 className="font-semibold text-fg">AI Picture Studio</h3></div>\n        <p className="mt-1 text-xs text-muted">Generate proper preschool artwork instead of logo-style placeholder pictures. Uses server-side xAI Imagine when configured.</p>\n        <textarea value={prompt} onChange={e=>setPrompt(e.target.value)} className="mt-3 min-h-24 w-full rounded-xl border border-border bg-surface p-3 text-sm text-fg"/>\n        <button type="button" disabled={busy} onClick={()=>void makePicture()} className="btn-primary mt-3 flex items-center gap-2"><Sparkles className="size-4"/>{busy?"Generating…":"Generate Picture"}</button>\n        {image && <img src={image} alt="AI generated preschool illustration" className="mt-4 w-full rounded-2xl object-cover shadow-lg"/>}\n      </section>\n      <div className="panel mt-4 rounded-2xl p-4 text-xs text-muted">
         <strong className="text-fg">Release rule:</strong> a feature stays in Test Lab until its functional, security, payment and regression checks pass.
       </div>
     </Screen>
