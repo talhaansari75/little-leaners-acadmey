@@ -414,7 +414,7 @@ function SuiteAccordion() {
                           {expanded && (
                             <div className="border-t p-3 sm:p-4">
                               <div className="mb-3 rounded-xl bg-muted p-3 text-xs">
-                                <b>Developer test:</b> {FEATURE_HINTS[item.category]}
+                                <b>Developer test:</b> {FEATURE_HINTS[item.category] ?? "Open the Academy, exercise the feature, and record the observed result."}
                               </div>
                               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
                                 <button type="button" onClick={() => openTarget(item)} className="min-h-11 rounded-xl border px-2 py-2 text-xs font-black uppercase hover:bg-muted">
@@ -451,14 +451,14 @@ function SuiteAccordion() {
   );
 }
 
-function qaTarget(category: QACategory): ScreenId {
+function qaTarget(category: QACategory): ScreenId | null {
   const targets: Partial<Record<QACategory, ScreenId>> = {
     learning: "preschool", literacy: "preschool", math: "preschool", creative: "preschool",
     discovery: "preschool", stories: "preschool", audio: "preschool", progress: "preschool",
     offline: "pwa", accessibility: "accessibility", mobile: "preschool", data: "saveSlots", release: "releaseVerifier",
     ads: "preschool", admin: "admin",
   };
-  return targets[category];
+  return targets[category] ?? null;
 }
 
 function MiniMetric({
