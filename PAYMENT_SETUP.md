@@ -29,10 +29,11 @@ The login system is already wired through Better Auth with email/password enable
 
 ## Blockchain / Web3 payments
 
-Blockchain checkout is non-custodial and server-verified. The browser asks the user's EVM wallet to send a transaction; the server independently verifies the chain, sender, recipient, exact amount, token contract (for ERC-20), receipt status and confirmation depth before granting the entitlement.
+Blockchain checkout is non-custodial and server-verified. It is disabled by default until explicitly enabled with `CRYPTO_PAYMENTS_ENABLED=true`. The browser asks the user's EVM wallet to send a transaction; the server independently verifies the chain, sender, recipient, exact amount, token contract (for ERC-20), receipt status and confirmation depth before granting the entitlement.
 
 Configure only server-side variables:
 
+CRYPTO_PAYMENTS_ENABLED=true
 CRYPTO_RPC_1=https://...
 CRYPTO_TREASURY_1=0x...
 CRYPTO_CONFIRMATIONS_1=12
@@ -80,3 +81,19 @@ Security properties:
 - use dedicated treasury addresses and testnet during QA
 
 Important: blockchain checkout currently represents one-time purchases. Recurring crypto subscriptions need a separate authorization design. On-chain refunds require a deliberate treasury/admin workflow; never expose a private treasury key to the browser.
+
+### Advanced blockchain controls
+
+- Multi-chain EVM allowlist: Ethereum, Polygon, BNB Smart Chain, Base, Arbitrum One and Optimism; Sepolia is available for QA.
+- Per-chain treasury addresses and confirmation depth are enforced server-side.
+- ERC-20 payments can use a per-chain token contract with `CRYPTO_TOKEN_ADDRESS_<CHAIN_ID>`; this prevents a token on one network being accepted for another.
+- Payment intents expire after 15 minutes and can be cancelled safely.
+- Wallet-compatible payment URIs are generated from the server-controlled chain, recipient and exact amount.
+- Network-health checks never return RPC credentials.
+- Transaction history includes status and confirmation information, with chain-specific explorer links.
+- Never add private keys, seed phrases, treasury signing keys or RPC secrets to `VITE_*` variables.
+- The current crypto flow is for one-time purchases. Recurring crypto subscriptions, automated treasury signing and on-chain refunds require separate audited workflows.
+
+### Production compliance note
+
+Because the app is intended for use in Pakistan, obtain current legal/compliance advice before enabling customer-facing virtual-asset payments. PVARA states that virtual-asset services provided in or from Pakistan fall within its regulatory framework and that relevant services require prior authorization; its 2026 framework includes sandbox/NOC/licensing routes. citeturn0search0turn0search1
