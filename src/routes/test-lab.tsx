@@ -23,7 +23,7 @@ import type { ScreenId } from "@/lib/game/types";
 
 export const Route = createFileRoute("/test-lab")({ component: TestLab });
 
-type Status = "pending" | "passed" | "failed" | "blocked";
+type Status = "pending" | "passed" | "failed" | "blocked" | "improvement";
 type Severity = "low" | "medium" | "high" | "critical";
 type Result = { status: Status; note: string; severity: Severity; updatedAt: string; durationMs?: number };
 type Session = { id: string; startedAt: string; durationMs: number; passed: number; failed: number; blocked: number; pending: number };
@@ -319,114 +319,404 @@ function TestLab() {
 }
 
 function FeatureCoverage() {
+  const [suite, setSuite] = useState("all");
   const [filter, setFilter] = useState("");
   const [mode, setMode] = useState<"all" | "automated" | "manual" | "configuration">("all");
   const [featureResults, setFeatureResults] = useState<Record<string, Result>>({});
+  const [expanded, setExpanded] = useState<string | null>(null);
+
   useEffect(() => {
     try {
       const raw = localStorage.getItem(RESULT_KEY);
       if (raw) {
         const all = JSON.parse(raw) as Record<string, Result>;
-        setFeatureResults(Object.fromEntries(GAME_FEATURE_TESTS.map((f) => [f.id, all[f.id]]).filter(([, value]) => value)));
+        setFeatureResults(
+          Object.fromEntries(
+            GAME_FEATURE_TESTS.map((f) => [f.id, all[f.id]]).filter(([, value]) => value),
+          ),
+        );
       }
     } catch {}
   }, []);
-  const visible = GAME_FEATURE_TESTS.filter((feature) =>
+
+  const suites = Array.from(new Set(GAME_FEATURE_TESTS.map((feature) => feature.group)));
+  const suiteFeatures = GAME_FEATURE_TESTS.filter((feature) => suite === "all" || feature.group === suite);
+  const visible = suiteFeatures.filter((feature) =>
     (mode === "all" || feature.kind === mode) &&
-    (!filter || `${feature.id} ${feature.title} ${feature.group} ${feature.detail}`.toLowerCase().includes(filter.toLowerCase())),
+    (!filter ||
+      `${feature.id} ${feature.title} ${feature.group} ${feature.detail}`
+        .toLowerCase()
+        .includes(filter.toLowerCase())),
   );
+
   const allResults = GAME_FEATURE_TESTS.map((f) => featureResults[f.id]);
   const passed = allResults.filter((x) => x?.status === "passed").length;
   const failed = allResults.filter((x) => x?.status === "failed").length;
   const blocked = allResults.filter((x) => x?.status === "blocked").length;
-  const openTarget = (target?: ScreenId) => {
-    if (!target) return;
-    try {
-      localStorage.setItem("lla-test-lab-target-screen", target);
-      window.open("/", "_blank", "noopener,noreferrer");
-    } catch {
-      window.open("/", "_blank", "noopener,noreferrer");
-    }
+  const improvement = allResults.filter((x) => x?.status === "improvement").length;
+  const pending = GAME_FEATURE_TEST_COUNT - passed - failed - blocked - improvement;
+
+  const suiteStats = (name: string) => {
+    const items = GAME_FEATURE_TESTS.filter((feature) => feature.group === name);
+    return {
+      total: items.length,
+      passed: items.filter((f) => featureResults[f.id]?.status === "passed").length,
+      failed: items.filter((f) => featureResults[f.id]?.status === "failed").length,
+      improvement: items.filter((f) => featureResults[f.id]?.status === "improvement").length,
+      blocked: items.filter((f) => featureResults[f.id]?.status === "blocked").length,
+    };
   };
-  const setFeatureResult = (feature: typeof GAME_FEATURE_TESTS[number], status: Status, note: string) => {
+
+  const setFeatureResult = (
+    feature: typeof GAME_FEATURE_TESTS[number],
+    status: Status,
+    note: string,
+  ) => {
     const result: Result = {
       status,
       note,
-      severity: status === "failed" ? "high" : status === "blocked" ? "medium" : "low",
+      severity:
+        status === "failed"
+          ? "high"
+          : status === "improvement"
+            ? "medium"
+            : status === "blocked"
+              ? "medium"
+              : "low",
       updatedAt: new Date().toISOString(),
     };
+
     setFeatureResults((current) => ({ ...current, [feature.id]: result }));
+
     try {
       const all = JSON.parse(localStorage.getItem(RESULT_KEY) || "{}") as Record<string, Result>;
       all[feature.id] = result;
       localStorage.setItem(RESULT_KEY, JSON.stringify(all));
     } catch {}
   };
+
+  const prepareTarget = (target?: ScreenId) => {
+    if (!target) return;
+    try {
+      localStorage.setItem("lla-test-lab-target-screen", target);
+    } catch {}
+  };
+
   const run = (feature: typeof GAME_FEATURE_TESTS[number]) => {
     const result = runGameFeatureAutomation(feature.id);
-    if (result) setFeatureResult(feature, result.passed ? "passed" : "failed", result.note);
+    if (result) {
+      setFeatureResult(feature, result.passed ? "passed" : "failed", result.note);
+    }
   };
+
+  const statusLabel = (status?: Status) => {
+    if (status === "passed") return "PASSED";
+    if (status === "failed") return "FAILED";
+    if (status === "blocked") return "BLOCKED";
+    if (status === "improvement") return "NEEDS IMPROVEMENT";
+    return "PENDING";
+  };
+
   return (
-    <section className="rounded-3xl border bg-card p-5 shadow-sm sm:p-6">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+    <section className="rounded-3xl border bg-card p-4 shadow-sm sm:p-6">
+      <div className="flex flex-col gap-4">
         <div>
-          <div className="text-xs font-bold uppercase tracking-wider text-primary">100-FEATURE EXECUTABLE QA</div>
-          <h2 className="mt-1 text-2xl font-black">Game feature testing</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Every feature has a test definition, exact steps, expected behavior, and a target screen where applicable.
-            Manual tests stay pending until you actually perform them; configuration tests cannot be falsely auto-passed.
+          <div className="text-xs font-bold uppercase tracking-wider text-primary">
+            100-FEATURE DEVELOPER QA
+          </div>
+          <h2 className="mt-1 text-2xl font-black">Feature testing</h2>
+          <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
+            Choose a test suite first. Open a feature, run automation where available, then record the real result.
+            Everything is stored locally on this device.
           </p>
         </div>
-        <div className="flex flex-wrap gap-2 text-xs font-bold">
-          <span className="rounded-full bg-green-500/10 px-3 py-1 text-green-700">✓ {passed}</span>
-          <span className="rounded-full bg-red-500/10 px-3 py-1 text-red-700">✕ {failed}</span>
-          <span className="rounded-full bg-amber-500/10 px-3 py-1 text-amber-700">⚠ {blocked}</span>
-          <span className="rounded-full bg-muted px-3 py-1">○ {GAME_FEATURE_TEST_COUNT - passed - failed - blocked}</span>
+
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+          <MiniMetric label="Total" value={GAME_FEATURE_TEST_COUNT} />
+          <MiniMetric label="Passed" value={passed} tone="good" />
+          <MiniMetric label="Failed" value={failed} tone="bad" />
+          <MiniMetric label="Improve" value={improvement} tone="warn" />
+          <MiniMetric label="Pending" value={pending} />
         </div>
-      </div>
-      <div className="mt-4 grid gap-2 sm:grid-cols-[1fr_auto]">
-        <input value={filter} onChange={(e) => setFilter(e.target.value)} placeholder="Search the 100 game features…" className="rounded-2xl border bg-background px-4 py-3 text-sm" />
-        <select value={mode} onChange={(e) => setMode(e.target.value as typeof mode)} className="rounded-2xl border bg-background px-4 py-3 text-sm">
-          <option value="all">All</option><option value="automated">Automated</option><option value="manual">Manual</option><option value="configuration">Configuration</option>
-        </select>
-      </div>
-      <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-        {visible.map((feature) => {
-          const result = featureResults[feature.id];
-          const status = result?.status ?? "pending";
-          return (
-            <article key={feature.id} className="rounded-2xl border p-4">
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{feature.id} · {feature.group}</div>
-                  <b className="mt-1 block">{feature.title}</b>
-                </div>
-                <StatusIcon status={status} />
-              </div>
-              <p className="mt-2 text-xs text-muted-foreground">{feature.detail}</p>
-              <div className="mt-3 rounded-xl bg-muted p-3 text-xs">
-                <b>Test steps</b>
-                <ol className="mt-1 list-decimal space-y-1 pl-4">{feature.steps.map((step) => <li key={step}>{step}</li>)}</ol>
-              </div>
-              <div className="mt-3 rounded-xl border p-3 text-xs">
-                <b>Expected:</b> {feature.expected}
-                <div className="mt-1 text-muted-foreground"><b>Mode:</b> {feature.kind}{feature.target ? ` · target: ${feature.target}` : ""}</div>
-              </div>
-              <div className="mt-3 flex flex-wrap gap-1">
-                {feature.target && <button type="button" onClick={() => openTarget(feature.target)} className="rounded-full border px-2 py-1 text-[10px] font-bold uppercase hover:bg-muted">Open target</button>}
-                {feature.kind === "automated" && <button type="button" onClick={() => run(feature)} className="rounded-full border border-primary px-2 py-1 text-[10px] font-bold uppercase text-primary hover:bg-primary/10">Run test</button>}
-                {([["passed","PASS"],["failed","FAIL"],["blocked","BLOCKED"]] as const).map(([next,label]) => (
-                  <button key={next} type="button" onClick={() => setFeatureResult(feature, next, next === "passed" ? "Tester confirmed the expected behavior." : next === "failed" ? "Tester observed unexpected behavior." : "Tester could not execute the test because a dependency was unavailable.")} className="rounded-full border px-2 py-1 text-[10px] font-bold uppercase hover:bg-muted">{label}</button>
-                ))}
-              </div>
-              {result && <div className="mt-2 text-[10px] text-muted-foreground">{result.status.toUpperCase()} · {new Date(result.updatedAt).toLocaleString()} · {result.note}</div>}
-            </article>
-          );
-        })}
+
+        <div className="rounded-2xl border bg-muted/30 p-2">
+          <div className="mb-2 px-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            Test suites · tap a suite to open its features
+          </div>
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+            <SuiteButton
+              active={suite === "all"}
+              name="All features"
+              icon="🧪"
+              stats={{ total: GAME_FEATURE_TEST_COUNT, passed, failed, improvement, blocked }}
+              onClick={() => setSuite("all")}
+            />
+            {suites.map((name) => (
+              <SuiteButton
+                key={name}
+                active={suite === name}
+                name={name}
+                icon={suiteIcon(name)}
+                stats={suiteStats(name)}
+                onClick={() => setSuite(name)}
+              />
+            ))}
+          </div>
+        </div>
+
+        <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
+          <div className="relative">
+            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+            <input
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              placeholder="Search this suite…"
+              className="w-full rounded-2xl border bg-background py-3 pl-10 pr-4 text-sm"
+            />
+          </div>
+          <select
+            value={mode}
+            onChange={(e) => setMode(e.target.value as typeof mode)}
+            className="rounded-2xl border bg-background px-4 py-3 text-sm"
+          >
+            <option value="all">All test types</option>
+            <option value="automated">Automated</option>
+            <option value="manual">Manual</option>
+            <option value="configuration">Configuration</option>
+          </select>
+        </div>
+
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <div className="text-lg font-black">{suite === "all" ? "All features" : suite}</div>
+            <div className="text-xs text-muted-foreground">
+              {visible.length} feature{visible.length === 1 ? "" : "s"} shown
+            </div>
+          </div>
+          <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
+            Developer QA
+          </span>
+        </div>
+
+        <div className="space-y-3">
+          {visible.map((feature) => {
+            const result = featureResults[feature.id];
+            const status = result?.status ?? "pending";
+            const isExpanded = expanded === feature.id;
+
+            return (
+              <article key={feature.id} className="overflow-hidden rounded-2xl border bg-background">
+                <button
+                  type="button"
+                  onClick={() => setExpanded(isExpanded ? null : feature.id)}
+                  className="flex w-full items-start gap-3 p-4 text-left"
+                  aria-expanded={isExpanded}
+                >
+                  <StatusIcon status={status} />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <b className="truncate">{feature.title}</b>
+                      <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold uppercase">
+                        {feature.kind}
+                      </span>
+                      {status !== "pending" && (
+                        <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold uppercase">
+                          {statusLabel(status)}
+                        </span>
+                      )}
+                    </div>
+                    <div className="mt-1 text-[11px] text-muted-foreground">
+                      {feature.id} · {feature.group}
+                    </div>
+                    <p className="mt-2 text-xs text-muted-foreground">{feature.detail}</p>
+                  </div>
+                  <span className="shrink-0 text-lg text-muted-foreground">{isExpanded ? "⌃" : "⌄"}</span>
+                </button>
+
+                {isExpanded && (
+                  <div className="border-t p-4">
+                    <div className="grid gap-3 lg:grid-cols-2">
+                      <div className="rounded-2xl bg-muted p-3 text-xs">
+                        <b>Test steps</b>
+                        <ol className="mt-2 list-decimal space-y-1 pl-4">
+                          {feature.steps.map((step) => <li key={step}>{step}</li>)}
+                        </ol>
+                      </div>
+                      <div className="rounded-2xl border p-3 text-xs">
+                        <b>Expected result</b>
+                        <p className="mt-2 text-muted-foreground">{feature.expected}</p>
+                        <div className="mt-2 text-muted-foreground">
+                          <b>Target:</b> {feature.target ?? "Configuration / external dependency"}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+                      {feature.target ? (
+                        <a
+                          href="/"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => prepareTarget(feature.target)}
+                          className="inline-flex min-h-11 items-center justify-center gap-1 rounded-xl border px-3 py-2 text-xs font-black uppercase hover:bg-muted"
+                        >
+                          <ExternalLink className="h-4 w-4" /> Open
+                        </a>
+                      ) : (
+                        <span className="inline-flex min-h-11 items-center justify-center rounded-xl border border-dashed px-3 py-2 text-center text-[11px] font-bold text-muted-foreground">
+                          No app target
+                        </span>
+                      )}
+
+                      {feature.kind === "automated" && (
+                        <button
+                          type="button"
+                          onClick={() => run(feature)}
+                          className="inline-flex min-h-11 items-center justify-center gap-1 rounded-xl border border-primary px-3 py-2 text-xs font-black uppercase text-primary hover:bg-primary/10"
+                        >
+                          <Play className="h-4 w-4" /> Run
+                        </button>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={() => setFeatureResult(feature, "passed", "Tester confirmed the expected behavior.")}
+                        className="min-h-11 rounded-xl border px-3 py-2 text-xs font-black uppercase hover:bg-green-500/10"
+                      >
+                        ✓ Pass
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setFeatureResult(feature, "failed", "Tester observed unexpected behavior.")}
+                        className="min-h-11 rounded-xl border px-3 py-2 text-xs font-black uppercase hover:bg-red-500/10"
+                      >
+                        ✕ Failed
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setFeatureResult(
+                            feature,
+                            "improvement",
+                            "Feature works, but tester marked it for improvement.",
+                          )
+                        }
+                        className="col-span-2 min-h-11 rounded-xl border px-3 py-2 text-xs font-black uppercase hover:bg-orange-500/10 sm:col-span-1"
+                      >
+                        ⚠ Need improvement
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setFeatureResult(
+                            feature,
+                            "blocked",
+                            "Tester could not execute the test because a dependency was unavailable.",
+                          )
+                        }
+                        className="col-span-2 min-h-11 rounded-xl border px-3 py-2 text-xs font-black uppercase hover:bg-amber-500/10 sm:col-span-1"
+                      >
+                        ⛔ Blocked
+                      </button>
+                    </div>
+
+                    {result && (
+                      <div className="mt-3 rounded-xl bg-muted px-3 py-2 text-[11px] text-muted-foreground">
+                        <b>{statusLabel(status)}</b> · {new Date(result.updatedAt).toLocaleString()} · {result.note}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </article>
+            );
+          })}
+        </div>
+
+        {visible.length === 0 && (
+          <div className="rounded-2xl border border-dashed p-8 text-center text-sm text-muted-foreground">
+            No features match this suite/search/filter.
+          </div>
+        )}
       </div>
     </section>
   );
 }
+
+function suiteIcon(name: string) {
+  const icons: Record<string, string> = {
+    Gameplay: "🎮",
+    Learning: "📚",
+    Progression: "🏆",
+    "Save & Sync": "💾",
+    "Mobile & Access": "📱",
+    Audio: "🔊",
+    Parents: "👨‍👩‍👧",
+    Integrity: "🛡️",
+  };
+  return icons[name] ?? "🧩";
+}
+
+function SuiteButton({
+  name,
+  icon,
+  active,
+  stats,
+  onClick,
+}: {
+  name: string;
+  icon: string;
+  active: boolean;
+  stats: { total: number; passed: number; failed: number; improvement: number; blocked: number };
+  onClick: () => void;
+}) {
+  const done = stats.passed + stats.failed + stats.improvement + stats.blocked;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-2xl border p-3 text-left transition ${active ? "border-primary bg-primary/10 ring-2 ring-primary/20" : "hover:bg-muted"}`}
+    >
+      <div className="flex items-center gap-2">
+        <span className="text-lg">{icon}</span>
+        <b className="min-w-0 flex-1 truncate text-sm">{name}</b>
+        <span className="text-xs font-black">{done}/{stats.total}</span>
+      </div>
+      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted">
+        <div
+          className="h-full rounded-full bg-primary"
+          style={{ width: `${stats.total ? Math.round((done / stats.total) * 100) : 0}%` }}
+        />
+      </div>
+      <div className="mt-2 flex flex-wrap gap-1 text-[9px] font-bold">
+        <span className="text-green-600">✓{stats.passed}</span>
+        <span className="text-red-600">✕{stats.failed}</span>
+        <span className="text-orange-600">⚠{stats.improvement}</span>
+        <span className="text-amber-600">⛔{stats.blocked}</span>
+      </div>
+    </button>
+  );
+}
+
+function MiniMetric({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: number;
+  tone?: "good" | "bad" | "warn";
+}) {
+  return (
+    <div className={`rounded-2xl border px-3 py-2 ${tone === "good" ? "bg-green-500/5" : tone === "bad" ? "bg-red-500/5" : tone === "warn" ? "bg-orange-500/5" : ""}`}>
+      <div className="text-lg font-black">{value}</div>
+      <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{label}</div>
+    </div>
+  );
+}
+
 function TestDetail({
   item,
   result,
@@ -506,6 +796,7 @@ function StatusIcon({ status }: { status: Status }) {
   if (status === "passed") return <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-green-600" />;
   if (status === "failed") return <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-600" />;
   if (status === "blocked") return <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />;
+  if (status === "improvement") return <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-orange-500" />;
   return <Circle className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />;
 }
 
