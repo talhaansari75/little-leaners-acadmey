@@ -86,37 +86,24 @@ function ClassPathway({age,xp,onSpeak}:{age:number;xp:number;onSpeak:(text:strin
  const [subject,setSubject]=useState("Language");
  const [done,setDone]=useState<string[]>(()=>{try{return JSON.parse(localStorage.getItem("mw-class-skills")||"[]") as string[]}catch{return []}});
  const curriculum={
-  Playgroup:{
-    Language:["ABC picture play","Letter picture matching","First sounds","Picture naming","Listen and repeat","Alphabet song"],
-    Math:["Count 1–5","Number recognition","Quantity matching","Big and small","Same and different","Shape matching"],
-    Creative:["Color matching","Shape coloring","Free drawing","Sticker scene","Music and rhythm","Sensory art"],
-    Life:["Handwashing sequence","Greeting and manners","Clean-up routine","Toy sorting","Dress-up sequence","Sharing with friends"]
+  Montessori:{
+    Language:["Letter sounds","Object vocabulary","Listening practice","Sound matching","Writing preparation","Word-picture matching"],
+    Math:["Number rods","Counting practice","Quantity matching","More or less","Shape matching","Number order"],
+    Creative:["Color matching","Shape grading","Free drawing","Pattern work","Music and rhythm","Sensory art"],
+    Life:["Pouring practice","Care of materials","Handwashing sequence","Clean-up routine","Greeting and manners","Independent work"]
   },
   Nursery:{
     Language:["ABC picture match","Letter tracing","Beginning sounds","Picture vocabulary","Rhyming sounds","Listen and repeat"],
     Math:["Count 1–5","Count 1–10","Number recognition","Quantity matching","More or less","Big and small"],
-    Creative:["Color matching","Shape coloring","Free drawing","Sticker scene","Music and rhythm","Sensory art"],
+    Creative:["Color matching","Shape coloring","Free drawing","Music and rhythm","Sticker scene","Sensory art"],
     Life:["Handwashing sequence","Brush teeth sequence","Clean-up routine","Greeting and manners","Dress-up sequence","Sort my toys"]
   },
-  "KG-1":{
+  KG:{
     Language:["A–Z mastery","Letter sounds","CVC word building","Beginning-sound sort","Sight words","Simple sentence building"],
     Math:["Numbers 1–100","Before, after and between","Greater, less and equal","Addition within 10","Patterns and sequences","Counting practice"],
-    Creative:["Guided drawing","Pattern coloring","Shape composition","Rhythm tapping","Story picture order","Build with shapes"],
-    Life:["Daily routine order","Community helpers","Time of day","Sharing and turn taking","Classroom organization","Safety basics"]
-  },
-  "KG-2":{
-    Language:["Advanced phonics","CVC word building","Spelling practice","Reading fluency","Sight words","Sentence building"],
-    Math:["Numbers 1–100","Addition within 20","Subtraction within 20","Greater and less","Number sequences","Math stories"],
     Creative:["Guided drawing","Pattern coloring","Shape composition","Story picture order","Science drawing","Build with shapes"],
     Life:["Daily routine order","Community helpers","Time of day","Sharing and turn taking","Classroom organization","Safety basics"]
-  },
-  "Class 1":{
-    Language:["Reading practice","Writing practice","Sentence building","Vocabulary","Spelling","Picture composition"],
-    Math:["Place value","Addition","Subtraction","Number sequences","Greater and less","Math word problems"],
-    Creative:["Nature drawing","Shape composition","Pattern construction","Observation drawing","Creative art","Discovery projects"],
-    Life:["Practical routines","Organization","Care for materials","Healthy habits","Community helpers","Nature observation"]
   }
- } as const;
  const subjects=["Language","Math","Creative","Life"] as const;
  const tasks=curriculum[klass][subject as keyof typeof curriculum.Nursery] || [];
  const select=(next:LearningClass)=>{
@@ -128,7 +115,7 @@ function ClassPathway({age,xp,onSpeak}:{age:number;xp:number;onSpeak:(text:strin
  const toggle=(task:string)=>{const key=`${klass}:${subject}:${task}`;const next=done.includes(key)?done.filter(x=>x!==key):[...done,key];setDone(next);try{localStorage.setItem("mw-class-skills",JSON.stringify(next))}catch{};onSpeak(`${task}. Great learning!`)};
  const total=Object.values(curriculum[klass]).flat().length;
  const mastered=Object.entries(curriculum[klass]).flatMap(([sub,ts])=>ts.map(t=>`${klass}:${sub}:${t}`)).filter(k=>done.includes(k)).length;
- return <section className="panel rounded-3xl p-4"><div className="text-center"><div className="text-5xl">🎓</div><h3 className="font-display text-2xl text-fg">Class Curriculum</h3><p className="mt-1 text-xs font-black text-primary">Five Learning Pathways</p><p className="text-xs text-muted">Age {age} • {xp} XP • {mastered}/{total} class skills practiced</p></div><div className="mt-3 grid grid-cols-3 gap-2">{LEARNING_CLASSES.map(c=><button key={c} onClick={()=>select(c)} className={`rounded-2xl p-3 text-xs font-black ${klass===c?"bg-primary text-white":"bg-white text-slate-700"}`}>{c}</button>)}</div><div className="mt-3 grid grid-cols-4 gap-2">{subjects.map(s=><button key={s} onClick={()=>setSubject(s)} className={`rounded-2xl p-2 text-[11px] font-black ${subject===s?"bg-slate-900 text-white":"bg-white text-slate-700"}`}>{s}</button>)}</div><div className="mt-3 grid gap-2">{tasks.map((task,i)=>{const key=`${klass}:${subject}:${task}`;const isDone=done.includes(key);return <button key={task} onClick={()=>toggle(task)} className={`rounded-2xl p-4 text-left shadow-sm ${isDone?"bg-emerald-50":"bg-white"}`}><span className="mr-2">{isDone?"✅":"○"}</span><b>{i+1}. {task}</b></button>})}</div><p className="mt-3 rounded-2xl bg-slate-50 p-3 text-xs text-muted">This pathway has its own curriculum and progress. Playgroup, Nursery, KG-1, KG-2 and Class 1 are tracked separately.</p></section>
+ return <section className="panel rounded-3xl p-4"><div className="text-center"><div className="text-5xl">🎓</div><h3 className="font-display text-2xl text-fg">Class Curriculum</h3><p className="mt-1 text-xs font-black text-primary">Three Learning Pathways</p><p className="text-xs text-muted">Age {age} • {xp} XP • {mastered}/{total} class skills practiced</p></div><div className="mt-3 grid grid-cols-3 gap-2">{LEARNING_CLASSES.map(c=><button key={c} onClick={()=>select(c)} className={`rounded-2xl p-3 text-xs font-black ${klass===c?"bg-primary text-white":"bg-white text-slate-700"}`}>{c}</button>)}</div><div className="mt-3 grid grid-cols-4 gap-2">{subjects.map(s=><button key={s} onClick={()=>setSubject(s)} className={`rounded-2xl p-2 text-[11px] font-black ${subject===s?"bg-slate-900 text-white":"bg-white text-slate-700"}`}>{s}</button>)}</div><div className="mt-3 grid gap-2">{tasks.map((task,i)=>{const key=`${klass}:${subject}:${task}`;const isDone=done.includes(key);return <button key={task} onClick={()=>toggle(task)} className={`rounded-2xl p-4 text-left shadow-sm ${isDone?"bg-emerald-50":"bg-white"}`}><span className="mr-2">{isDone?"✅":"○"}</span><b>{i+1}. {task}</b></button>})}</div><p className="mt-3 rounded-2xl bg-slate-50 p-3 text-xs text-muted">This pathway has its own curriculum and progress. Montessori, Nursery and KG are tracked separately.</p></section>
 }
 function MontessoriWorld({age,onSpeak}:{age:number;onSpeak:(text:string)=>void}){
  const [area,setArea]=useState("Practical Life");
