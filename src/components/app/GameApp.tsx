@@ -98,10 +98,11 @@ export function GameApp() {
       } catch {}
     };
     openRequestedTestTarget();
-    window.addEventListener("storage", (event) => {
+    const onStorage = (event: StorageEvent) => {
       if (event.key === "lla-test-lab-target-screen") openRequestedTestTarget();
-    });
-    return () => window.removeEventListener("storage", openRequestedTestTarget);
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
   }, []);
 
   useEffect(() => {
