@@ -1,5 +1,5 @@
 import { useMemo, useState, type CSSProperties } from "react";
-import { Sparkles, Star, Trophy, Volume2, Bus, Palette, Music2, BookOpen, FlaskConical, Heart, Sun, PawPrint, LockKeyhole } from "lucide-react";
+import { Sparkles, Star, Trophy, Volume2, Bus, Palette, Music2, BookOpen, FlaskConical, Heart, Sun, PawPrint } from "lucide-react";
 import { SmartLearningFriend } from "./SmartLearningFriend";
 import { SmartJourneyPanel } from "./SmartJourneyPanel";
 import { CLASS_SKILLS, getLearningProfile } from "@/lib/intelligence/learningBrain";
