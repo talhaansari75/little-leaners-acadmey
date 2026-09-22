@@ -173,7 +173,7 @@ function CloudRow() {
               setMsg(remote.error);
               return;
             }
-            if (remote.save && typeof remote.save === "object") {
+            if (remote.ok && remote.save && typeof remote.save === "object") {
               useGame.getState().applyCloud(remote.save as never);
             } else setMsg("No cloud save yet.");
           } catch {
