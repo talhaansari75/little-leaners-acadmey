@@ -56,7 +56,8 @@ export type ScreenId =
   | "releaseVerifier"
   | "releaseArchive"
   | "wildWhispers"
-  | "preschool";
+  | "preschool"
+  | "gameFeatureSuite";
 
 export type GameMode =
   | "classic" | "timed" | "survival" | "blitz" | "zen" | "daily" | "endless"
