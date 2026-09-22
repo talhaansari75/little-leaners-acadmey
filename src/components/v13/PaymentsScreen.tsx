@@ -20,6 +20,7 @@ function encodeTransfer(to:string,amount:string){return "0xa9059cbb"+pad32(to)+p
 export function PaymentsScreen({onBack}:{onBack:()=>void}){
  const [rows,setRows]=useState<Awaited<ReturnType<typeof getMyEntitlements>>>([]),[error,setError]=useState(""),[busy,setBusy]=useState<string|null>(null);
  const [tab,setTab]=useState<"card"|"crypto">("card"),[wallet,setWallet]=useState(""),[crypto,setCrypto]=useState<Awaited<ReturnType<typeof cryptoConfig>>|null>(null),[history,setHistory]=useState<Awaited<ReturnType<typeof getMyCryptoPayments>>>([]),[chainId,setChainId]=useState<number|undefined>(),[cryptoBusy,setCryptoBusy]=useState<string|null>(null);
+ const [activeIntent,setActiveIntent]=useState<any>(null);
  useEffect(()=>{void getMyEntitlements().then(setRows).catch(()=>setError("Sign in to view account entitlements."));void cryptoConfig().then(setCrypto).catch(()=>setCrypto(null));void getMyCryptoPayments().then(setHistory).catch(()=>{});},[]);
  useEffect(()=>{if(!window.ethereum)return;void window.ethereum.request({method:"eth_accounts"}).then(x=>{const a=x as string[];if(a?.[0])setWallet(a[0])});void window.ethereum.request({method:"eth_chainId"}).then(x=>setChainId(Number(BigInt(String(x))))).catch(()=>{});},[]);
  const selectedChain=crypto?.chains.find(c=>c.id===chainId)??crypto?.chains[0];
@@ -33,7 +34,7 @@ export function PaymentsScreen({onBack}:{onBack:()=>void}){
    const product=crypto?.products.find(p=>p.id===productId);if(!product||!selectedChain)throw new Error("Crypto product/network is not configured.");
    if(chainId!==selectedChain.id){await switchChain(selectedChain.id);await new Promise(r=>setTimeout(r,700));}
    const intent=await createCryptoPaymentIntent({data:{productId,chainId:selectedChain.id,payerAddress:wallet}});
-   if(!intent.ok)throw new Error(intent.error);if(!window.ethereum)throw new Error("Wallet unavailable.");
+   if(!intent.ok)throw new Error(intent.error);setActiveIntent(intent);if(!window.ethereum)throw new Error("Wallet unavailable.");
    const tx:{from:string;to:string;value?:string;data?:string}=product.assetType==="native"?{from:wallet,to:intent.intent.recipientAddress,value:"0x"+BigInt(product.amountAtomic).toString(16)}:{from:wallet,to:product.tokenAddress??"",data:encodeTransfer(intent.intent.recipientAddress,product.amountAtomic)};
    if(product.assetType==="erc20"&&!product.tokenAddress)throw new Error("Token contract is not configured.");
    const txHash=String(await window.ethereum.request({method:"eth_sendTransaction",params:[tx]}));
@@ -42,12 +43,21 @@ export function PaymentsScreen({onBack}:{onBack:()=>void}){
    if(!result.ok)throw new Error(result.error);
    await getMyCryptoPayments().then(setHistory);
    if(result.status!=="verified")setError(`Transaction submitted: ${result.confirmations??0}/${result.required??intent.intent.confirmationsRequired} confirmations.`);
+   else setActiveIntent(null);
   }catch(e){setError(e instanceof Error?e.message:"Blockchain payment failed.");}finally{setCryptoBusy(null);}
  };
  return <Screen title="Purchases & Entitlements" onBack={onBack}><ParentGate>
   <div className="panel rounded-2xl p-4"><p className="font-semibold text-fg">Secure payments</p><p className="mt-2 text-sm text-muted">Card checkout is server-created. Blockchain checkout verifies the transaction on-chain before access is granted. Private keys and seed phrases never enter this app.</p></div>
   <div className="mt-3 grid grid-cols-2 gap-2"><button className={`hud-chip ${tab==="card"?"bg-primary text-primary-foreground":""}`} onClick={()=>setTab("card")}>💳 Card</button><button className={`hud-chip ${tab==="crypto"?"bg-primary text-primary-foreground":""}`} onClick={()=>setTab("crypto")}>⛓️ Blockchain</button></div>
   {tab==="card"?<><div className="mt-3 grid gap-2">{PRODUCTS.map(p=><div key={p.id} className="panel rounded-2xl p-4"><div className="flex items-start justify-between gap-3"><div><p className="font-semibold text-fg">{p.title}</p><p className="mt-1 text-xs text-muted">{p.detail}</p></div><button className="btn-primary" disabled={busy!==null} onClick={()=>void buyCard(p.id)}>{busy===p.id?"Opening…":"Buy"}</button></div></div>)}</div><Entitlements rows={rows}/></>:<><div className="mt-3 panel rounded-2xl p-4"><div className="flex flex-wrap items-center justify-between gap-3"><div><p className="font-semibold text-fg">Non-custodial wallet</p><p className="text-xs text-muted">{wallet?wallet.slice(0,6)+"…"+wallet.slice(-4):"No wallet connected"}</p></div><button className="btn-primary" onClick={()=>void connect()}>{wallet?"Connected":"Connect wallet"}</button></div><div className="mt-3"><label className="text-xs text-muted">Network</label><select className="mt-1 w-full rounded-xl border bg-background p-2 text-sm" value={selectedChain?.id??""} onChange={e=>void switchChain(Number(e.target.value))}>{crypto?.chains.map(c=><option key={c.id} value={c.id}>{c.name} · {c.nativeSymbol}</option>)}</select></div></div>
+  {activeIntent?.ok && <div className="mt-3 panel rounded-2xl p-4">
+   <div className="flex items-center justify-between gap-2"><p className="font-semibold text-fg">Payment request</p><button className="hud-chip" onClick={()=>void navigator.clipboard?.writeText(activeIntent.intent.paymentUri)}>Copy payment URI</button></div>
+   <p className="mt-2 break-all text-[11px] text-muted">{activeIntent.intent.paymentUri}</p>
+   <div className="mt-2 flex flex-wrap gap-2">
+    {activeIntent.intent.explorer&&<a className="hud-chip" href={activeIntent.intent.explorer} target="_blank" rel="noreferrer">Network explorer</a>}
+    <button className="hud-chip" onClick={()=>void navigator.clipboard?.writeText(activeIntent.intent.recipientAddress)}>Copy treasury address</button>
+   </div>
+  </div>}
   <div className="mt-3 grid gap-2">{crypto?.products.map(p=><div key={p.id} className="panel rounded-2xl p-4"><div className="flex items-start justify-between gap-3"><div><p className="font-semibold text-fg">{p.name}</p><p className="mt-1 text-xs text-muted">{atomicToDisplay(p.amountAtomic,p.decimals)} {p.assetSymbol} · server-verified · {p.assetType==="erc20"?"token":"native"}</p></div><button className="btn-primary" disabled={cryptoBusy!==null||!wallet} onClick={()=>void payCrypto(p.id)}>{cryptoBusy===p.id?"Verifying…":"Pay on-chain"}</button></div></div>)}{!crypto?.products.length&&<p className="text-sm text-muted">Blockchain products are not configured yet.</p>}</div>
   <div className="mt-4"><p className="mb-2 text-sm font-semibold text-fg">Blockchain payment history</p>{history.map(x=><div key={x.id} className="panel mb-2 rounded-xl p-3 text-xs"><div className="flex justify-between"><span>{x.productId}</span><span>{x.status}</span></div><div className="mt-1 text-muted">{x.assetSymbol} · {x.confirmations} confirmations {x.txHash?"· "+x.txHash.slice(0,10)+"…":""}</div></div>)}{!history.length&&<p className="text-sm text-muted">No blockchain payments yet.</p>}</div>
   </>}
