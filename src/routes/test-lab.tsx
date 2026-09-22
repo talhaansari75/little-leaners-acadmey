@@ -341,7 +341,13 @@ function FeatureCoverage() {
   const failed = allResults.filter((x) => x?.status === "failed").length;
   const blocked = allResults.filter((x) => x?.status === "blocked").length;
   const openTarget = (target?: ScreenId) => {
-    if (target) useGame.getState().go(target);
+    if (!target) return;
+    try {
+      localStorage.setItem("lla-test-lab-target-screen", target);
+      window.open("/", "_blank", "noopener,noreferrer");
+    } catch {
+      window.open("/", "_blank", "noopener,noreferrer");
+    }
   };
   const setFeatureResult = (feature: typeof GAME_FEATURE_TESTS[number], status: Status, note: string) => {
     const result: Result = {
