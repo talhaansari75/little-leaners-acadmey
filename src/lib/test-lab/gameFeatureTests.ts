@@ -46,8 +46,24 @@ const STEPS_BY_GROUP: Record<string, string[]> = {
 
 function kindFor(feature: GameFeature): GameFeatureTestKind {
   if (feature.status === "configuration") return "configuration";
-  const auto = new Set(["difficulty-adaptation", "learning-analysis", "spaced-review", "reward-deduplication", "score-integrity", "save-integrity", "save-conflict", "audit-trail"]);
-  return auto.has(feature.id) ? "automated" : "manual";
+  const auto = new Set([
+    "Adaptive difficulty",
+    "Weak-skill detection",
+    "Strong-skill detection",
+    "Topic mastery",
+    "Concept decay",
+    "Spaced repetition",
+    "Error-pattern analysis",
+    "Mastery confidence",
+    "Revision queue",
+    "Reward deduplication",
+    "Score validation",
+    "Impossible-score detection",
+    "Save integrity checksum",
+    "Conflict detection",
+    "Progress audit trail",
+  ]);
+  return auto.has(feature.title) ? "automated" : "manual";
 }
 
 export const GAME_FEATURE_TESTS: GameFeatureTestSpec[] = GAME_FEATURES.map((feature) => ({
