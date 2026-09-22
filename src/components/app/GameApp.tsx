@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import { useGame } from "@/lib/store";
 import { refillEnergy } from "@/lib/game/economy";
 import { writeSave } from "@/lib/game/persist";
-import { applyVolumes, startMusic, unlockAudio } from "@/lib/game/audio";
+import { applyVolumes, sfxPlay, startMusic, unlockAudio } from "@/lib/game/audio";
 import { isRtl } from "@/lib/game/i18n";
 import { PlayScreen } from "@/components/play/PlayScreen";
 import { HomeScreen, SplashScreen } from "@/components/screens/HomeScreens";
@@ -69,7 +69,6 @@ import { WildWhispersScreen } from "@/components/v13/WildWhispersScreen";
 import { PreschoolLearningScreen } from "@/components/v13/PreschoolLearningScreen";
 import { ClassSelectionScreen } from "@/components/v13/ClassSelectionScreen";
 import { getSelectedClass } from "@/lib/academy/classSelection";
-import { KidsLockOverlay } from "@/components/v13/KidsLockOverlay";
 
 export function GameApp() {
   const ready = useGame((s) => s.ready);
@@ -129,6 +128,8 @@ export function GameApp() {
   }, [ready, save.equippedTheme, save.settings, save.language]);
 
   useEffect(() => {
+    const onButtonSound = (event: Event) => { const target = event.target as HTMLElement | null; if (target?.closest("button, [role=\"button\"]")) sfxPlay.tap(); };
+    document.addEventListener("click", onButtonSound, true);
     const onFirst = () => {
       unlockAudio();
       if (useGame.getState().save.settings.music) startMusic();
@@ -161,7 +162,6 @@ export function GameApp() {
     <div className="relative h-dvh overflow-hidden">
       <V9Status />
       <ScreenView screen={screen} />
-      <KidsLockOverlay />
       {toast && (
         <div className="pointer-events-none absolute inset-x-0 bottom-8 z-30 flex justify-center px-4">
           <div className="panel animate-pop rounded-full px-4 py-2 text-sm font-semibold text-fg">{toast.text}</div>
