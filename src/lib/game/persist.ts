@@ -23,7 +23,6 @@ export function defaultSettings(): GameSettings {
     tileStyle: "carved",
     shake: true,
     particles: true,
-    parentalLock: false,
     analytics: false,
     personalization: true,
     cloudSync: true,
