@@ -1,5 +1,5 @@
 import { useMemo, useState, type CSSProperties } from "react";
-import { Sparkles, Star, Trophy, Volume2, Bus, Palette, Music2, BookOpen, FlaskConical, Heart, Sun, PawPrint } from "lucide-react";
+import { Sparkles, Star, Trophy, Volume2, Bus, Palette, Music2, BookOpen, FlaskConical, Heart, Sun, PawPrint, LockKeyhole } from "lucide-react";
 import { SmartLearningFriend } from "./SmartLearningFriend";
 import { SmartJourneyPanel } from "./SmartJourneyPanel";
 import { CLASS_SKILLS, getLearningProfile } from "@/lib/intelligence/learningBrain";
@@ -74,7 +74,7 @@ export function AcademyWorld({ xp, completed, available, onSpeak, onMissionCompl
 
       <div className="academy-mission mt-3"><div className="flex items-center gap-3"><div className="academy-mission-icon">🎯</div><div className="flex-1"><p className="text-[10px] font-black uppercase tracking-wider opacity-60">Today's {klass} mission</p><b>{data.mission}</b></div><button className="academy-check" onClick={completeMission}> {missionDone ? "⭐" : "✓"}</button></div></div>
 
-      <div className="mt-3 rounded-3xl bg-white/80 p-4 backdrop-blur-sm"><div className="flex items-center justify-between gap-2"><div><p className="text-[10px] font-black uppercase tracking-wider text-slate-500">{klass} classroom</p><h3 className="font-display text-xl text-slate-800">{data.tagline} {data.icon}</h3></div><div className="academy-progress-ring" style={{ "--progress": `${progress * 3.6}deg` } as CSSProperties}><span>{progress}%</span></div></div><div className="mt-3 grid grid-cols-2 gap-2">{data.subjects.map((subject, i) => <button key={subject} type="button" onClick={() => action(`${klass}. ${subject}`)} className="academy-subject"><span>{["🔤", "🔢", "🎨", "📚"][i]}</span><b>{subject}</b><small>{"Room ready"}</small></button>)}</div></div>
+      <div className="mt-3 rounded-3xl bg-white/80 p-4 backdrop-blur-sm"><div className="flex items-center justify-between gap-2"><div><p className="text-[10px] font-black uppercase tracking-wider text-slate-500">{klass} classroom</p><h3 className="font-display text-xl text-slate-800">{data.tagline} {data.icon}</h3></div><div className="academy-progress-ring" style={{ "--progress": `${progress * 3.6}deg` } as CSSProperties}><span>{progress}%</span></div></div><div className="mt-3 grid grid-cols-2 gap-2">{data.subjects.map((subject, i) => <button key={subject} type="button" onClick={() => window.dispatchEvent(new CustomEvent("lla-open-book", { detail: { subject, klass } }))} className="academy-subject"><span>{["🔤", "🔢", "🎨", "📚"][i]}</span><b>{subject}</b><small>{"Room ready"}</small></button>)}</div></div>
 
       <SmartLearningFriend className="mt-3" />
       <SmartJourneyPanel className="mt-3" onSpeak={onSpeak} />
