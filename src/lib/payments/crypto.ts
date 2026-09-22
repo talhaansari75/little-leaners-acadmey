@@ -87,7 +87,20 @@ export const submitCryptoTransaction = createServerFn({method:"POST"}).middlewar
     const expected=BigInt(String(intent.amountAtomic));
     if(paid!==expected) return {ok:false as const,error:"Exact payment amount or recipient could not be verified."};
     if(confirmations<chain.confirmations){ await db.cryptoPaymentIntent.update({where:{id:intent.id},data:{txHash:data.txHash,status:"confirming",confirmations,payerAddress:String(tx.from).toLowerCase()}}); return {ok:true as const,status:"confirming",confirmations,required:chain.confirmations}; }
-    await db.cryptoPaymentIntent.update({where:{id:intent.id},data:{txHash:data.txHash,status:"verified",confirmations,verifiedAt:new Date(),payerAddress:String(tx.from).toLowerCase()}});
+    const entitlementProduct = intent.productId === "premium_crypto" ? "premium" : intent.productId === "starter_crypto" ? "starter_pack" : intent.productId;
+    await db.$transaction(async (tx) => {
+      await tx.cryptoPaymentIntent.update({where:{id:intent.id},data:{txHash:data.txHash,status:"verified",confirmations,verifiedAt:new Date(),payerAddress:String(tx.from).toLowerCase()}});
+      await tx.purchaseReceipt.upsert({
+        where:{provider_externalId:{provider:`crypto-eip155-${intent.chainId}`,externalId:data.txHash}},
+        create:{userId:context.userId,provider:`crypto-eip155-${intent.chainId}`,externalId:data.txHash,productId:entitlementProduct,amountMinor:0,currency:String(intent.assetSymbol),status:"verified",rawJson:{chainId:intent.chainId,assetType:intent.assetType,amountAtomic:String(intent.amountAtomic),recipient:intent.recipientAddress,payer:String(tx.from).toLowerCase()}},
+        update:{status:"verified",rawJson:{chainId:intent.chainId,assetType:intent.assetType,amountAtomic:String(intent.amountAtomic),recipient:intent.recipientAddress,payer:String(tx.from).toLowerCase()}}
+      });
+      await tx.entitlement.upsert({
+        where:{userId_productId:{userId:context.userId,productId:entitlementProduct}},
+        create:{userId:context.userId,productId:entitlementProduct,active:true,source:"purchase",expiresAt:null},
+        update:{active:true,source:"purchase",expiresAt:null}
+      });
+    });
     return {ok:true as const,status:"verified",confirmations,required:chain.confirmations};
   });
 
