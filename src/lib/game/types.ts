@@ -216,7 +216,6 @@ export type GameSettings = {
   tileStyle: "carved" | "ink" | "neon";
   shake: boolean;
   particles: boolean;
-  parentalLock: boolean;
   analytics: boolean;
   personalization: boolean;
   cloudSync: boolean;
