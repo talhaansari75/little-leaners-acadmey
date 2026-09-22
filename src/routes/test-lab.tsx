@@ -21,6 +21,7 @@ import { QA_CATEGORY_META, QA_ITEMS, type QAItem, type QACategory } from "@/lib/
 import { TEST_LAB_FEATURES, TEST_LAB_FEATURE_COUNT } from "@/lib/test-lab/featureCatalog";
 import { GAME_FEATURE_TESTS, GAME_FEATURE_TEST_COUNT, runGameFeatureAutomation } from "@/lib/test-lab/gameFeatureTests";
 import { useGame } from "@/lib/store";
+import type { ScreenId } from "@/lib/game/types";
 
 export const Route = createFileRoute("/test-lab")({ component: TestLab });
 
@@ -322,34 +323,39 @@ function TestLab() {
 function FeatureCoverage() {
   const [filter, setFilter] = useState("");
   const [mode, setMode] = useState<"all" | "automated" | "manual" | "configuration">("all");
+  const [featureResults, setFeatureResults] = useState<Record<string, Result>>({});
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(RESULT_KEY);
+      if (raw) {
+        const all = JSON.parse(raw) as Record<string, Result>;
+        setFeatureResults(Object.fromEntries(GAME_FEATURE_TESTS.map((f) => [f.id, all[f.id]]).filter(([, value]) => value)));
+      }
+    } catch {}
+  }, []);
   const visible = GAME_FEATURE_TESTS.filter((feature) =>
     (mode === "all" || feature.kind === mode) &&
     (!filter || `${feature.id} ${feature.title} ${feature.group} ${feature.detail}`.toLowerCase().includes(filter.toLowerCase())),
   );
-  const featureResult = (id: string) => {
-    const raw = localStorage.getItem(RESULT_KEY);
-    if (!raw) return undefined;
-    try { return (JSON.parse(raw) as Record<string, Result>)[id]; } catch { return undefined; }
-  };
-  const allResults = GAME_FEATURE_TESTS.map((f) => featureResult(f.id));
+  const allResults = GAME_FEATURE_TESTS.map((f) => featureResults[f.id]);
   const passed = allResults.filter((x) => x?.status === "passed").length;
   const failed = allResults.filter((x) => x?.status === "failed").length;
   const blocked = allResults.filter((x) => x?.status === "blocked").length;
-  const openTarget = (target?: string) => {
-    if (!target) return;
-    useGame.getState().go(target as Parameters<ReturnType<typeof useGame.getState>["go"]>[0]);
+  const openTarget = (target?: ScreenId) => {
+    if (target) useGame.getState().go(target);
   };
   const setFeatureResult = (feature: typeof GAME_FEATURE_TESTS[number], status: Status, note: string) => {
+    const result: Result = {
+      status,
+      note,
+      severity: status === "failed" ? "high" : status === "blocked" ? "medium" : "low",
+      updatedAt: new Date().toISOString(),
+    };
+    setFeatureResults((current) => ({ ...current, [feature.id]: result }));
     try {
-      const current = JSON.parse(localStorage.getItem(RESULT_KEY) || "{}") as Record<string, Result>;
-      current[feature.id] = {
-        status,
-        note,
-        severity: status === "failed" ? "high" : status === "blocked" ? "medium" : "low",
-        updatedAt: new Date().toISOString(),
-      };
-      localStorage.setItem(RESULT_KEY, JSON.stringify(current));
-      window.dispatchEvent(new StorageEvent("storage", { key: RESULT_KEY, newValue: JSON.stringify(current) }));
+      const all = JSON.parse(localStorage.getItem(RESULT_KEY) || "{}") as Record<string, Result>;
+      all[feature.id] = result;
+      localStorage.setItem(RESULT_KEY, JSON.stringify(all));
     } catch {}
   };
   const run = (feature: typeof GAME_FEATURE_TESTS[number]) => {
@@ -363,15 +369,15 @@ function FeatureCoverage() {
           <div className="text-xs font-bold uppercase tracking-wider text-primary">100-FEATURE EXECUTABLE QA</div>
           <h2 className="mt-1 text-2xl font-black">Game feature testing</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Every feature now has a test definition, exact steps, expected behavior, a target screen where applicable,
-            and an honest automated/manual/configuration mode. PASS is only for observed or successfully automated behavior.
+            Every feature has a test definition, exact steps, expected behavior, and a target screen where applicable.
+            Manual tests stay pending until you actually perform them; configuration tests cannot be falsely auto-passed.
           </p>
         </div>
         <div className="flex flex-wrap gap-2 text-xs font-bold">
           <span className="rounded-full bg-green-500/10 px-3 py-1 text-green-700">✓ {passed}</span>
           <span className="rounded-full bg-red-500/10 px-3 py-1 text-red-700">✕ {failed}</span>
           <span className="rounded-full bg-amber-500/10 px-3 py-1 text-amber-700">⚠ {blocked}</span>
-          <span className="rounded-full bg-muted px-3 py-1">○ {TEST_LAB_FEATURE_COUNT - passed - failed - blocked}</span>
+          <span className="rounded-full bg-muted px-3 py-1">○ {GAME_FEATURE_TEST_COUNT - passed - failed - blocked}</span>
         </div>
       </div>
       <div className="mt-4 grid gap-2 sm:grid-cols-[1fr_auto]">
@@ -382,7 +388,7 @@ function FeatureCoverage() {
       </div>
       <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {visible.map((feature) => {
-          const result = featureResult(feature.id);
+          const result = featureResults[feature.id];
           const status = result?.status ?? "pending";
           return (
             <article key={feature.id} className="rounded-2xl border p-4">
@@ -400,7 +406,7 @@ function FeatureCoverage() {
               </div>
               <div className="mt-3 rounded-xl border p-3 text-xs">
                 <b>Expected:</b> {feature.expected}
-                <div className="mt-1 text-muted-foreground"><b>Mode:</b> {feature.kind} {feature.target ? `· target: ${feature.target}` : ""}</div>
+                <div className="mt-1 text-muted-foreground"><b>Mode:</b> {feature.kind}{feature.target ? ` · target: ${feature.target}` : ""}</div>
               </div>
               <div className="mt-3 flex flex-wrap gap-1">
                 {feature.target && <button type="button" onClick={() => openTarget(feature.target)} className="rounded-full border px-2 py-1 text-[10px] font-bold uppercase hover:bg-muted">Open target</button>}
