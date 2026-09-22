@@ -109,7 +109,7 @@ function LearningStyle({ profile, klass }: { profile: ReturnType<typeof getLearn
     let attempts = 0;
     let correct = 0;
     for (const stat of Object.values(profile.byClass[klass])) {
-      const item = stat.signalStats?.[mode];
+      const item = stat[mode] ?? undefined;
       attempts += item?.attempts ?? 0;
       correct += item?.correct ?? 0;
     }
