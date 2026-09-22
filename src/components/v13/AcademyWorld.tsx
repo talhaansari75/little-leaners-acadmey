@@ -9,15 +9,17 @@ type AcademyClass = LearningClass;
 type Props = { xp: number; completed: number; available: number; onSpeak: (text: string) => void; onMissionComplete?: () => void };
 
 const CLASSES: Record<AcademyClass, { icon: string; color: string; tagline: string; subjects: string[]; rooms: string[]; mascot: string; mission: string }> = {
-  Montessori: { icon: "🌱", color: "academy-montessori", tagline: "Calm hands-on discovery", subjects: ["Practical Life", "Sensorial", "Language", "Mathematics & Culture"], rooms: ["Practical Life", "Sensorial Shelf", "Language Garden", "Nature Corner"], mascot: "🐼", mission: "Sort objects by size!" },
-  Nursery: { icon: "🌸", color: "academy-nursery", tagline: "Playful first steps", subjects: ["Alphabet", "Counting", "Colors & Shapes", "Music & Animals"], rooms: ["Alphabet Garden", "Counting Park", "Color Room", "Music Corner"], mascot: "🐰", mission: "Find 3 colorful things!" },
-  KG: { icon: "🔵", color: "academy-kg", tagline: "Curious school readiness", subjects: ["Reading", "Math", "Science", "Phonics & Words"], rooms: ["Reading Library", "Math Mountain", "Science Lab", "Phonics Studio"], mascot: "🦊", mission: "Build 3 simple words!" },
+  Montessori: { icon: "🌱", color: "academy-montessori", tagline: "Calm hands-on discovery", subjects: ["Practical Life", "Sensorial", "English", "Mathematics & Culture"], rooms: ["Practical Life", "Sensorial Shelf", "Language Garden", "Nature Corner"], mascot: "🐼", mission: "Sort objects by size!" },
+  Nursery: { icon: "🌸", color: "academy-nursery", tagline: "Playful first steps", subjects: ["English", "Counting", "Colors & Shapes", "Music & Animals"], rooms: ["Alphabet Garden", "Counting Park", "Color Room", "Music Corner"], mascot: "🐰", mission: "Find 3 colorful things!" },
+  KG: { icon: "🔵", color: "academy-kg", tagline: "Curious school readiness", subjects: ["Reading", "Math", "Science", "Phonics & Words", "English"], rooms: ["Reading Library", "Math Mountain", "Science Lab", "Phonics Studio"], mascot: "🦊", mission: "Build 3 simple words!" },
 };
 const REWARDS: Record<AcademyClass, string[]> = {
   Montessori: ["🌿 Practical Life Star", "🧩 Sensorial Star", "🔤 Language Star", "🔢 Mathematics Star"],
   Nursery: ["🌸 Alphabet Star", "🔢 Counting Star", "🎨 Color Star", "🎵 Music Star"],
   KG: ["📖 Reading Star", "🔢 Math Star", "🔬 Science Star", "🔤 Phonics Star"],
 };
+
+const SUBJECT_BOOK_ICONS: Record<string,string> = {"Practical Life":"🫗","Sensorial":"🧩","English":"📖","Mathematics & Culture":"🔢","Alphabet":"🔤","Counting":"🔢","Colors & Shapes":"🎨","Music & Animals":"🎵","Reading":"📚","Math":"🔢","Science":"🔬","Phonics & Words":"🔤"};
 
 const QUICK = [
   ["🎨", "Art Studio", "Draw, color & save"], ["🎵", "Music Room", "Tap a rhythm"], ["📖", "Story Theater", "Listen & explore"],
@@ -74,7 +76,7 @@ export function AcademyWorld({ xp, completed, available, onSpeak, onMissionCompl
 
       <div className="academy-mission mt-3"><div className="flex items-center gap-3"><div className="academy-mission-icon">🎯</div><div className="flex-1"><p className="text-[10px] font-black uppercase tracking-wider opacity-60">Today's {klass} mission</p><b>{data.mission}</b></div><button className="academy-check" onClick={completeMission}> {missionDone ? "⭐" : "✓"}</button></div></div>
 
-      <div className="mt-3 rounded-3xl bg-white/80 p-4 backdrop-blur-sm"><div className="flex items-center justify-between gap-2"><div><p className="text-[10px] font-black uppercase tracking-wider text-slate-500">{klass} classroom</p><h3 className="font-display text-xl text-slate-800">{data.tagline} {data.icon}</h3></div><div className="academy-progress-ring" style={{ "--progress": `${progress * 3.6}deg` } as CSSProperties}><span>{progress}%</span></div></div><div className="mt-3 grid grid-cols-2 gap-2">{data.subjects.map((subject, i) => <button key={subject} type="button" onClick={() => window.dispatchEvent(new CustomEvent("lla-open-book", { detail: { subject, klass } }))} className="academy-subject"><span>{["🔤", "🔢", "🎨", "📚"][i]}</span><b>{subject}</b><small>{"Room ready"}</small></button>)}</div></div>
+      <div className="mt-3 rounded-3xl bg-white/80 p-4 backdrop-blur-sm"><div className="flex items-center justify-between gap-2"><div><p className="text-[10px] font-black uppercase tracking-wider text-slate-500">{klass} classroom</p><h3 className="font-display text-xl text-slate-800">{data.tagline} {data.icon}</h3></div><div className="academy-progress-ring" style={{ "--progress": `${progress * 3.6}deg` } as CSSProperties}><span>{progress}%</span></div></div><div className="mt-3 grid grid-cols-2 gap-2">{data.subjects.map((subject, i) => <button key={subject} type="button" onClick={() => window.dispatchEvent(new CustomEvent("lla-open-book", { detail: { subject, klass } }))} className="academy-subject"><span className="text-4xl">{SUBJECT_BOOK_ICONS[subject] ?? "📖"}</span><b>{subject}</b><small>📖 Open learning book</small></button>)}</div></div>
 
       <SmartLearningFriend className="mt-3" />
       <SmartJourneyPanel className="mt-3" onSpeak={onSpeak} />
