@@ -160,3 +160,16 @@ function playProceduralAnimalSound(id: AnimalSoundId) {
   pattern[id]();
 }
 
+
+export function playRhymeSound(text = "Twinkle twinkle little star. Let's learn and play!") {
+  unlockAudio();
+  if (typeof window !== "undefined" && "speechSynthesis" in window) {
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = 0.82;
+    u.pitch = 1.12;
+    window.speechSynthesis.speak(u);
+  }
+  const melody = [523, 523, 784, 784, 880, 880, 784, 698, 698, 659, 659, 587, 587, 523];
+  melody.forEach((freq, i) => window.setTimeout(() => beep(freq, 0.22, "triangle", 0.055), i * 180));
+}
