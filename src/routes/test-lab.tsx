@@ -18,7 +18,6 @@ import {
   XCircle,
 } from "lucide-react";
 import { QA_CATEGORY_META, QA_ITEMS, type QAItem, type QACategory } from "@/lib/test-lab/qaCatalog";
-import { TEST_LAB_FEATURES, TEST_LAB_FEATURE_COUNT } from "@/lib/test-lab/featureCatalog";
 import { GAME_FEATURE_TESTS, GAME_FEATURE_TEST_COUNT, runGameFeatureAutomation } from "@/lib/test-lab/gameFeatureTests";
 import { useGame } from "@/lib/store";
 import type { ScreenId } from "@/lib/game/types";
