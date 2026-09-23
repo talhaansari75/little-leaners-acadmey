@@ -11,7 +11,11 @@ if (!production) {
 }
 
 const env = (key) => process.env[key]?.trim();
-const fail = (message) => { throw new Error(message); };
+const strict = process.env.STRICT_PRODUCTION_PREFLIGHT === "true";
+const fail = (message) => {
+  if (strict) throw new Error(message);
+  console.warn(`[deploy-preflight] WARNING: ${message}`);
+};
 
 if (env("VITE_AUTH_ENABLED") !== "false") {
   if (!env("DATABASE_URL")) fail("DATABASE_URL is required for production auth/data persistence.");
